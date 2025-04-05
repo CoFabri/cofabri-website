@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import AnimatedGradient from './AnimatedGradient';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden pt-16">
       {/* Background Elements */}
+      <AnimatedGradient />
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-100 rounded-full filter blur-3xl opacity-50 animate-float" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100 rounded-full filter blur-3xl opacity-50 animate-float" style={{ animationDelay: '2s' }} />
@@ -17,7 +19,7 @@ const Hero = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="flex justify-center mb-0">
+        <div className="flex justify-center mb-8">
           <Logo size="hero" />
         </div>
         <h1 className="text-4xl md:text-6xl font-bold mb-6 animated-gradient-text">

@@ -1,168 +1,136 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  CalendarIcon,
-  ClockIcon,
-  TagIcon
-} from '@heroicons/react/24/outline';
+import Blog from '@/components/ui/Blog';
+import GradientHeading from '@/components/ui/GradientHeading';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
-const BlogPage = () => {
-  const posts = [
-    {
-      title: 'The Future of SaaS: Trends to Watch in 2024',
-      description: 'Explore the emerging trends shaping the future of SaaS and how they will impact businesses in the coming years.',
-      image: '/images/blog/saas-trends-2024.jpg',
-      category: 'Industry Insights',
-      date: 'March 15, 2024',
-      readTime: '6 min read',
-      slug: 'saas-trends-2024'
-    },
-    {
-      title: 'Building Scalable SaaS Architecture',
-      description: 'Learn the best practices for building and maintaining scalable SaaS applications that can grow with your business.',
-      image: '/images/blog/scalable-architecture.jpg',
-      category: 'Technical',
-      date: 'March 10, 2024',
-      readTime: '8 min read',
-      slug: 'scalable-architecture'
-    },
-    {
-      title: 'The Rise of No-Code Platforms',
-      description: 'How no-code platforms are revolutionizing software development and empowering non-technical users.',
-      image: '/images/blog/no-code-platforms.jpg',
-      category: 'Industry Insights',
-      date: 'March 5, 2024',
-      readTime: '5 min read',
-      slug: 'no-code-platforms'
-    },
-    {
-      title: 'SaaS Security Best Practices',
-      description: 'Essential security measures every SaaS company should implement to protect their users and data.',
-      image: '/images/blog/saas-security.jpg',
-      category: 'Security',
-      date: 'February 28, 2024',
-      readTime: '7 min read',
-      slug: 'saas-security'
-    }
-  ];
-
-  const categories = [
-    { name: 'All', count: posts.length },
-    { name: 'Industry Insights', count: posts.filter(p => p.category === 'Industry Insights').length },
-    { name: 'Technical', count: posts.filter(p => p.category === 'Technical').length },
-    { name: 'Security', count: posts.filter(p => p.category === 'Security').length }
-  ];
+export default function BlogPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-100 rounded-full filter blur-3xl opacity-60" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100 rounded-full filter blur-3xl opacity-60" />
-        </div>
+    <div className="min-h-screen">
+      <GradientHeading
+        title="Blog"
+        subtitle="Discover our latest insights, tutorials, and industry updates"
+        extraContent={
+          <div className="flex flex-col gap-6 mt-8">
+            {/* Search Bar */}
+            <div className="relative w-full">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="Search articles"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  aria-label="Clear search"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
 
-        <div className="relative z-10 container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 animated-gradient-text">
-            Insights & Updates
-          </h1>
-          <p className="text-xl text-gray-700 text-center max-w-2xl mx-auto mb-12">
-            Stay informed with the latest trends, best practices, and company news
-            from the CoFabri team.
-          </p>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto">
-          {/* Categories */}
-          <div className="flex flex-wrap gap-4 mb-12">
-            {categories.map((category) => (
+            {/* Category Filters */}
+            <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
               <button
-                key={category.name}
-                className="px-4 py-2 rounded-full bg-white text-gray-700 hover:bg-gray-50 transition"
+                onClick={() => setSelectedCategory('')}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+                  selectedCategory === ''
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                aria-label="All posts"
               >
-                {category.name} ({category.count})
+                All Posts
               </button>
-            ))}
-          </div>
-
-          {/* Blog Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="group"
+              <button
+                onClick={() => setSelectedCategory('Tutorials')}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+                  selectedCategory === 'Tutorials'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                aria-label="Filter by Tutorials"
               >
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition">
-                  <div className="relative h-48">
-                    <Image
-                      src={post.image}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                      <div className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-1" />
-                        {post.date}
-                      </div>
-                      <div className="flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1" />
-                        {post.readTime}
-                      </div>
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition">
-                      {post.title}
-                    </h2>
-                    <p className="text-gray-600 mb-4">
-                      {post.description}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <TagIcon className="w-4 h-4 mr-1" />
-                      {post.category}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                Tutorials
+              </button>
+              <button
+                onClick={() => setSelectedCategory('Industry News')}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+                  selectedCategory === 'Industry News'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                aria-label="Filter by Industry News"
+              >
+                Industry News
+              </button>
+              <button
+                onClick={() => setSelectedCategory('Product Updates')}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
+                  selectedCategory === 'Product Updates'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                aria-label="Filter by Product Updates"
+              >
+                Product Updates
+              </button>
+              {selectedCategory && (
+                <button
+                  onClick={() => setSelectedCategory('')}
+                  className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                  aria-label="Clear category filter"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
 
-          {/* Newsletter */}
-          <div className="mt-16">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
-              <div className="max-w-2xl mx-auto text-center">
-                <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
-                <p className="text-blue-50 mb-6">
-                  Subscribe to our newsletter to receive the latest updates and insights
-                  directly in your inbox.
-                </p>
-                <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-50 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  />
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition"
-                  >
-                    Subscribe
-                  </button>
-                </form>
+            {/* View Mode Toggle */}
+            <div className="flex justify-end">
+              <div className="flex items-center gap-2 bg-white rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md ${
+                    viewMode === 'grid'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  aria-label="Grid view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md ${
+                    viewMode === 'list'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  aria-label="List view"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
+      <Blog searchQuery={searchQuery} selectedCategory={selectedCategory} viewMode={viewMode} />
     </div>
   );
-};
-
-export default BlogPage; 
+} 

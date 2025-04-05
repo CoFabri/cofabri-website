@@ -1,106 +1,113 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { BlogPost } from '@/lib/airtable';
+import SectionHeading from './SectionHeading';
 
-const posts = [
-  {
-    title: 'Maximizing Productivity with Project Manager Pro',
-    description: 'Learn how to leverage AI-powered features to boost your team\'s efficiency and project success rates.',
-    image: '/blog/productivity.jpg',
-    category: 'Productivity',
-    date: 'Mar 15, 2024',
-    readTime: '5 min read',
-  },
-  {
-    title: 'The Future of CRM: AI-Driven Customer Insights',
-    description: 'Discover how artificial intelligence is transforming customer relationship management and driving better business outcomes.',
-    image: '/blog/crm-future.jpg',
-    category: 'Technology',
-    date: 'Mar 12, 2024',
-    readTime: '4 min read',
-  },
-  {
-    title: 'Data-Driven Decision Making with Analytics Dashboard',
-    description: 'A comprehensive guide to using analytics for making informed business decisions and staying ahead of the competition.',
-    image: '/blog/analytics.jpg',
-    category: 'Analytics',
-    date: 'Mar 10, 2024',
-    readTime: '6 min read',
-  },
-];
+export default function Blog() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const Blog = () => {
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const response = await fetch('/api/blog');
+        if (!response.ok) throw new Error('Failed to fetch blog posts');
+        const data = await response.json();
+        setPosts(data);
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch blog posts');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPosts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900">Error</h2>
+            <p className="mt-2 text-gray-600">{error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 animated-gradient-text">
-            Latest from Our Blog
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Insights, updates, and expert tips to help you get the most out of our apps
-          </p>
-        </div>
+        <SectionHeading
+          title="Blog"
+          subtitle="Latest insights and updates from our team"
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {posts.map((post) => (
-            <article
-              key={post.title}
-              className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+            <Link
+              key={post.id}
+              href={`/blog/${post.slug}`}
+              className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
             >
-              <div className="aspect-video overflow-hidden">
+              <div className="aspect-video relative overflow-hidden">
                 <img
-                  src={post.image}
+                  src={post.featuredImage || '/images/placeholder.jpg'}
                   alt={post.title}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
                 />
               </div>
-              
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
                     {post.category}
                   </span>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span>{post.date}</span>
-                    <span className="mx-2">•</span>
-                    <span>{post.readTime}</span>
-                  </div>
                 </div>
-
-                <h3 className="text-xl font-semibold mb-2 text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
                   {post.title}
                 </h3>
-                
-                <p className="text-gray-600 mb-4">
-                  {post.description}
+                <p className="text-gray-600 mb-4 line-clamp-2">
+                  {post.excerpt || ''}
                 </p>
-
-                <Link
-                  href="/blog"
-                  className="inline-flex items-center text-indigo-600 hover:text-indigo-700 transition-colors duration-200"
-                >
-                  Read More
-                  <ArrowRightIcon className="w-4 h-4 ml-2" />
-                </Link>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {post.tags?.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center text-sm text-gray-500">
+                  <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                  <span className="mx-2">•</span>
+                  <span>{post.readingTime} min read</span>
+                </div>
               </div>
-            </article>
+            </Link>
           ))}
-        </div>
-
-        <div className="text-center">
-          <Link
-            href="/blog"
-            className="inline-flex items-center px-6 py-3 text-lg font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
-          >
-            View All Posts
-          </Link>
         </div>
       </div>
     </section>
   );
-};
-
-export default Blog; 
+} 

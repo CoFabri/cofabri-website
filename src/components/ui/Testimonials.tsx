@@ -2,43 +2,40 @@
 
 import React from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
+import SectionHeading from './SectionHeading';
 
 const testimonials = [
   {
     name: 'Sarah Johnson',
-    role: 'CEO at TechFlow',
-    content: 'The Project Manager Pro app has completely transformed how we handle our projects. The AI-powered insights have helped us improve efficiency by 40%.',
+    role: 'CEO, TechStart',
     image: '/testimonials/sarah.jpg',
     rating: 5,
+    content: 'The apps have transformed how we work. The collaboration features are game-changing.'
   },
   {
     name: 'Michael Chen',
-    role: 'Marketing Director at GrowthLabs',
-    content: 'CRM Suite is a game-changer. The intelligent customer insights have helped us personalize our approach and increase customer retention significantly.',
+    role: 'CTO, InnovateCorp',
     image: '/testimonials/michael.jpg',
     rating: 5,
+    content: 'Best-in-class security and compliance features. Exactly what we needed.'
   },
   {
     name: 'Emily Rodriguez',
-    role: 'Operations Manager at ScaleUp',
-    content: 'The Analytics Dashboard provides crystal-clear insights that help us make data-driven decisions. It\'s become an essential tool for our business growth.',
+    role: 'Product Manager, GrowthLabs',
     image: '/testimonials/emily.jpg',
     rating: 5,
-  },
+    content: 'The analytics and insights have helped us make better decisions.'
+  }
 ];
 
 const Testimonials = () => {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 animated-gradient-text">
-            What Our Clients Say
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Hear from businesses that have transformed their operations with our apps
-          </p>
-        </div>
+        <SectionHeading
+          title="What Our Customers Say"
+          subtitle="Hear from businesses that have transformed their operations with our apps"
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (

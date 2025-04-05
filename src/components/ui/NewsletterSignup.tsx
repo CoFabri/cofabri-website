@@ -1,71 +1,74 @@
 'use client';
 
 import React, { useState } from 'react';
+import { EnvelopeIcon } from '@heroicons/react/24/outline';
 
-const NewsletterSignup = () => {
+interface NewsletterSignupProps {
+  className?: string;
+  title?: string;
+  description?: string;
+}
+
+export default function NewsletterSignup({ 
+  className = '',
+  title = 'Subscribe to our newsletter',
+  description = 'Get weekly updates on the latest articles and insights.'
+}: NewsletterSignupProps) {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('loading');
+    setIsSubmitting(true);
+    setError('');
+    setIsSuccess(false);
 
     try {
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) throw new Error('Subscription failed');
-
-      setStatus('success');
-      setMessage('Thanks for subscribing!');
+      // TODO: Implement newsletter signup API call
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      setIsSuccess(true);
       setEmail('');
-    } catch (error) {
-      setStatus('error');
-      setMessage('Something went wrong. Please try again.');
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-600">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Stay Updated</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Subscribe to our newsletter for the latest updates and insights
-          </p>
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className={`bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold transition-colors
-                ${status === 'loading' ? 'opacity-75 cursor-not-allowed' : 'hover:bg-blue-50'}`}
-            >
-              {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
-            </button>
-          </form>
-          {message && (
-            <p className={`mt-4 text-sm ${status === 'success' ? 'text-green-200' : 'text-red-200'}`}>
-              {message}
-            </p>
-          )}
-        </div>
+    <div className={`space-y-4 ${className}`}>
+      <div className="text-center">
+        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+        <p className="text-blue-100">{description}</p>
       </div>
-    </section>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+        <div className="relative">
+          <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            required
+            className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-3 px-4 rounded-lg bg-white text-blue-600 font-medium hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
+        </button>
+      </form>
+      {error && (
+        <p className="text-sm text-red-200">{error}</p>
+      )}
+      {isSuccess && (
+        <p className="text-sm text-green-200">Successfully subscribed! Check your email to confirm.</p>
+      )}
+    </div>
   );
-};
-
-export default NewsletterSignup; 
+} 

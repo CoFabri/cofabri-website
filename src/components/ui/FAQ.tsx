@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import SectionHeading from './SectionHeading';
 
 const faqs = [
   {
@@ -34,16 +35,12 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 animated-gradient-text">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Find answers to common questions about our apps and services
-          </p>
-        </div>
+        <SectionHeading
+          title="Frequently Asked Questions"
+          subtitle="Find answers to common questions about our products and services"
+        />
 
         <div className="max-w-3xl mx-auto">
           {faqs.map((faq, index) => (

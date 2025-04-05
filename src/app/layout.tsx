@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
+import SitewideBanner from "@/components/ui/SitewideBanner";
+import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,6 +15,14 @@ export const metadata: Metadata = {
   authors: [{ name: 'CoFabri Team' }],
   creator: 'CoFabri',
   publisher: 'CoFabri',
+  icons: {
+    icon: [
+      { url: '/icon?<generated>', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon?<generated>', type: 'image/png' },
+    ],
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -66,11 +76,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <SitewideBanner />
         <Navbar />
         <main className="flex-grow">
           {children}
         </main>
         <Footer />
+        <MarketingPopupWrapper />
       </body>
     </html>
   );
