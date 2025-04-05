@@ -3,9 +3,14 @@ import { notFound } from 'next/navigation';
 import { getBlogPost } from '@/lib/airtable';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeftIcon, BookOpenIcon, ClockIcon, TagIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
-import BackButton from '@/components/ui/BackButton';
-import NewsletterSignup from '@/components/ui/NewsletterSignup';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+
+interface AirtableImage {
+  url: string;
+  width: number;
+  height: number;
+  filename: string;
+}
 
 interface BlogPostPageProps {
   params: {
@@ -43,46 +48,56 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Featured Image Section */}
-      {post.featuredImage && (
-        <div className="relative w-full h-[70vh] min-h-[500px] max-h-[700px]">
-          <Image
-            src={post.featuredImage}
-            alt={post.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent" />
-          <div className="absolute top-8 left-8 z-10">
-            <BackButton />
-          </div>
-        </div>
-      )}
-
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex flex-col lg:flex-row gap-16">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 pt-24 pb-8">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Content */}
           <div className="flex-1">
-            {/* Title and Metadata */}
-            <div className="max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">{post.title}</h1>
+            {/* Featured Image */}
+            <div className="relative w-full h-[400px] mb-8 rounded-2xl overflow-hidden shadow-xl">
+              <Image
+                src={post.featuredImage || '/images/placeholder.jpg'}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+              <div className="absolute top-6 left-6 z-10">
+                <Link 
+                  href="/blog" 
+                  className="inline-flex items-center px-4 py-2 text-sm text-white bg-black/30 backdrop-blur-sm rounded-lg hover:bg-black/40 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                  Back to Blog
+                </Link>
+              </div>
+            </div>
+
+            {/* Content Container */}
+            <div className="bg-white rounded-2xl shadow-sm p-8 mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">{post.title}</h1>
               
-              <div className="flex flex-wrap items-center gap-8 text-gray-600 mb-8">
-                <div className="flex items-center gap-2">
-                  <BookOpenIcon className="h-5 w-5 text-blue-500" />
-                  <span className="text-gray-900 font-medium">{post.authorId}</span>
+              {post.excerpt && (
+                <p className="text-xl text-gray-600 mb-8 leading-relaxed">{post.excerpt}</p>
+              )}
+
+              <div className="flex items-center gap-8 text-sm mb-8 pb-8 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Image
+                      src={Array.isArray(post.authorImage) && post.authorImage[0]?.url || '/images/placeholder-avatar.jpg'}
+                      alt={post.authorId}
+                      width={32}
+                      height={32}
+                      className="rounded-full ring-2 ring-white shadow-sm"
+                    />
+                  </div>
+                  <span className="font-medium text-gray-900">{post.authorId}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <ClockIcon className="h-5 w-5 text-blue-500" />
-                  <span>{post.readingTime} min read</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TagIcon className="h-5 w-5 text-blue-500" />
-                  <span>{post.category}</span>
-                </div>
-                <time dateTime={post.publishedAt} className="text-gray-500">
+                <div className="text-gray-500">{post.readingTime} min read</div>
+                <div className="text-gray-500">{post.category}</div>
+                <time className="text-gray-500" dateTime={post.publishedAt}>
                   {new Date(post.publishedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -93,100 +108,95 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-10">
+                <div className="flex flex-wrap gap-2 mb-8">
                   {post.tags.map((tag) => (
-                    <span
+                    <Link
                       key={tag}
-                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50/80 rounded-full ring-1 ring-blue-100/50"
+                      href={`/blog/tag/${tag.toLowerCase()}`}
+                      className="px-4 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors duration-200"
                     >
                       {tag}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               )}
 
-              {/* Excerpt */}
-              {post.excerpt && (
-                <div className="prose prose-lg mb-12">
-                  <p className="text-xl text-gray-600 italic border-l-4 border-blue-500/50 pl-6">{post.excerpt}</p>
-                </div>
-              )}
-
               {/* Content */}
-              <div className="prose prose-lg max-w-none mb-12">
+              <div className="prose prose-lg prose-gray max-w-none mb-12">
                 <div 
-                  className="text-gray-700 leading-relaxed"
+                  className="text-gray-600 leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: post.content }} 
                 />
               </div>
 
-              {/* Bottom Newsletter Signup - Hidden on Mobile */}
-              <div className="hidden md:block bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-sm rounded-2xl p-8 mb-8 shadow-sm ring-1 ring-blue-100/50">
-                <div className="flex items-center gap-3 mb-4">
-                  <EnvelopeIcon className="h-6 w-6 text-blue-500" />
-                  <h2 className="text-2xl font-bold text-gray-900">Stay Updated</h2>
-                </div>
-                <p className="text-gray-600 mb-6">
-                  Subscribe to our newsletter to get the latest insights and updates delivered straight to your inbox.
-                </p>
-                <NewsletterSignup />
+              {/* Share Section */}
+              <div className="flex items-center gap-4 pt-8 border-t border-gray-100">
+                <button className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">Share</button>
+                <button className="px-6 py-2 text-sm text-gray-600 hover:text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">Copy Link</button>
+              </div>
+            </div>
+
+            {/* Bottom Newsletter */}
+            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Stay Updated</h2>
+              <p className="text-gray-600 mb-6">
+                Subscribe to our newsletter to get the latest insights and updates delivered straight to your inbox.
+              </p>
+              <div className="flex gap-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+                />
+                <button className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow">
+                  Subscribe Now
+                </button>
               </div>
             </div>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:w-80 space-y-8">
+          <div className="lg:w-80 space-y-6">
             {/* Author Profile */}
-            {post.authorId && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100/50 p-6 shadow-sm ring-1 ring-gray-100/50">
-                <div className="flex items-center gap-4 mb-4">
-                  {post.authorImage && (
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-blue-100/50">
-                      <Image
-                        src={post.authorImage}
-                        alt={post.authorId}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{post.authorId}</h3>
-                    {post.authorRole && (
-                      <p className="text-sm text-gray-600">{post.authorRole}</p>
-                    )}
-                  </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="relative">
+                  <Image
+                    src={Array.isArray(post.authorImage) && post.authorImage[0]?.url || '/images/placeholder-avatar.jpg'}
+                    alt={post.authorId}
+                    width={56}
+                    height={56}
+                    className="rounded-full ring-4 ring-white shadow-md"
+                  />
                 </div>
-                {post.authorBio && (
-                  <p className="text-gray-600 mb-4">{post.authorBio}</p>
-                )}
-                {post.authorSocial && post.authorSocial.length > 0 && (
-                  <div className="flex gap-4">
-                    {post.authorSocial.map((social) => (
-                      <Link
-                        key={social.platform}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-blue-500 transition-colors"
-                        dangerouslySetInnerHTML={{ __html: social.icon }}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div>
+                  <h3 className="font-semibold text-gray-900">{post.authorId}</h3>
+                  {post.authorRole && (
+                    <p className="text-sm text-gray-500">{post.authorRole}</p>
+                  )}
+                </div>
               </div>
-            )}
+              {post.authorBio && (
+                <p className="text-sm text-gray-600 leading-relaxed">{post.authorBio}</p>
+              )}
+            </div>
 
-            {/* Sidebar Newsletter Signup */}
-            <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm ring-1 ring-blue-100/50">
-              <div className="flex items-center gap-3 mb-4">
-                <EnvelopeIcon className="h-5 w-5 text-blue-500" />
-                <h2 className="text-xl font-bold text-gray-900">Newsletter</h2>
-              </div>
-              <p className="text-gray-600 mb-4">
+            {/* Sidebar Newsletter */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Newsletter</h2>
+              <p className="text-sm text-gray-600 mb-6">
                 Get the latest insights delivered to your inbox.
               </p>
-              <NewsletterSignup />
+              <div className="space-y-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+                />
+                <button className="w-full px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow">
+                  Subscribe Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
