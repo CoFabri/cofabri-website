@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BlogPost } from '@/lib/airtable';
-import SectionHeading from './SectionHeading';
 
 interface BlogProps {
   searchQuery: string;
@@ -71,11 +70,6 @@ export default function Blog({ searchQuery, selectedCategory, viewMode }: BlogPr
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <SectionHeading
-          title="Blog"
-          subtitle="Latest insights and updates from our team"
-        />
-
         <div className={`grid gap-8 max-w-6xl mx-auto ${
           viewMode === 'grid' 
             ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
