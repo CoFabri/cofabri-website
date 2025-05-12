@@ -8,7 +8,6 @@ const Footer = () => {
   const navigation = {
     main: [
       { name: 'Apps', href: '/apps' },
-      { name: 'Blog', href: '/blog' },
       { name: 'Roadmaps', href: '/roadmaps' },
       { name: 'Knowledge Base', href: '/knowledge-base' },
       { name: 'Support', href: '/support' },

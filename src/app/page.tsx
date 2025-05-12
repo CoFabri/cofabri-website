@@ -3,7 +3,6 @@ import Hero from '@/components/ui/Hero';
 import HomepageApps from '@/components/ui/HomepageApps';
 import About from '@/components/ui/About';
 import Testimonials from '@/components/ui/Testimonials';
-import HomepageBlogPreview from '@/components/ui/HomepageBlogPreview';
 import CompactRoadmap from '@/components/ui/CompactRoadmap';
 import FAQ from '@/components/ui/FAQ';
 import NewsletterSignup from '@/components/ui/NewsletterSignup';
@@ -16,7 +15,6 @@ export default function Home() {
       <HomepageApps />
       <About />
       <Testimonials />
-      <HomepageBlogPreview />
       <CompactRoadmap />
       <FAQ />
       <section className="py-20 bg-gradient-to-r from-blue-500 to-indigo-600">

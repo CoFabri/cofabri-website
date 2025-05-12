@@ -95,17 +95,17 @@ export interface BlogPost {
 export interface KnowledgeBaseArticle {
   id: string;
   title: string;
-  slug: string;
   content: string;
   excerpt?: string;
   category: string;
+  slug: string;
   author: string;
   readTime: number;
   publishedAt: string;
   lastUpdated?: string;
   isPopular?: boolean;
   isFeatured?: boolean;
-  tags: string[];
+  tags?: string[];
 }
 
 export interface App {
@@ -167,44 +167,6 @@ export interface MarketingPopupConfig {
 }
 
 // Updated API functions to use server-side fetch
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  try {
-    const records = await fetchFromAirtable<{
-      Title: string;
-      Slug: string;
-      Content: string;
-      Excerpt?: string;
-      'Featured Image'?: string;
-      Author: string;
-      Category: string;
-      'Reading Time': number;
-      'Published At': string;
-      Tags?: string[];
-      'Is Featured'?: boolean;
-      'Related Posts'?: string[];
-    }>('Blog Posts');
-    
-    return records.map(record => ({
-      id: record.id,
-      title: record.fields.Title,
-      slug: record.fields.Slug,
-      content: record.fields.Content,
-      excerpt: record.fields.Excerpt,
-      featuredImage: record.fields['Featured Image'],
-      authorId: record.fields.Author,
-      category: record.fields.Category,
-      readingTime: record.fields['Reading Time'],
-      publishedAt: record.fields['Published At'],
-      tags: record.fields.Tags,
-      isFeatured: record.fields['Is Featured'],
-      relatedPostIds: record.fields['Related Posts'],
-    }));
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
-}
-
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const records = await fetchFromAirtable<{
@@ -238,6 +200,88 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
     }));
   } catch (error) {
     console.error('Error fetching knowledge base articles:', error);
+    return [];
+  }
+}
+
+export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
+  const base = getAirtableBase();
+  if (!base) {
+    throw new Error('Airtable not configured');
+  }
+
+  try {
+    const records = await base('Knowledge Base')
+      .select({
+        filterByFormula: `{Slug} = '${slug}'`,
+      })
+      .all();
+
+    if (records.length === 0) {
+      return null;
+    }
+
+    const record = records[0];
+    
+    // Debug logging
+    console.log('Raw Airtable record:', record.fields);
+    console.log('All field names:', Object.keys(record.fields));
+    console.log('Published At from Airtable:', record.get('Published At'));
+    console.log('Published At type:', typeof record.get('Published At'));
+    
+    return {
+      id: record.id,
+      title: record.get('Title') as string,
+      slug: record.get('Slug') as string,
+      content: record.get('Content') as string,
+      excerpt: record.get('Excerpt') as string,
+      category: record.get('Category') as string,
+      author: record.get('Author') as string,
+      readTime: record.get('Read Time') as number,
+      publishedAt: record.get('Published At') as string,
+      lastUpdated: record.get('Last Updated') as string,
+      isPopular: record.get('Is Popular') as boolean,
+      isFeatured: record.get('Is Featured') as boolean,
+      tags: record.get('Tags') as string[],
+    };
+  } catch (error) {
+    console.error('Error fetching knowledge base article:', error);
+    return null;
+  }
+}
+
+export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
+  const base = getAirtableBase();
+  if (!base) {
+    console.warn('Airtable not configured - returning empty array');
+    return [];
+  }
+
+  try {
+    const records = await base('Knowledge Base')
+      .select({
+        filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
+        sort: [{ field: 'Published At', direction: 'desc' }],
+        maxRecords: 6,
+      })
+      .all();
+    return records.map(record => ({
+      id: record.id,
+      title: record.get('Title') as string,
+      slug: record.get('Slug') as string,
+      content: record.get('Content') as string,
+      excerpt: record.get('Excerpt') as string,
+      category: record.get('Category') as string,
+      author: record.get('Author') as string,
+      readTime: record.get('Read Time') as number,
+      publishedAt: record.get('Published At') as string,
+      lastUpdated: record.get('Last Updated') as string,
+      isPopular: record.get('Is Popular') as boolean,
+      isFeatured: record.get('Is Featured') as boolean,
+      tags: record.get('Tags') as string[],
+    }));
+  } catch (error) {
+    console.error('Error fetching featured knowledge base articles:', error);
     return [];
   }
 }
@@ -280,42 +324,6 @@ export async function getApps(): Promise<App[]> {
     }));
   } catch (error) {
     console.error('Error fetching apps from Airtable:', error);
-    return [];
-  }
-}
-
-export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
-  try {
-    const records = await base('Knowledge Base')
-      .select({
-        filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
-        sort: [{ field: 'Published At', direction: 'desc' }],
-        maxRecords: 6,
-      })
-      .all();
-    return records.map(record => ({
-      id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      category: record.get('Category') as string,
-      author: record.get('Author') as string,
-      readTime: record.get('Read Time') as number,
-      publishedAt: record.get('Published At') as string,
-      lastUpdated: record.get('Last Updated') as string,
-      isPopular: record.get('Is Popular') as boolean,
-      isFeatured: record.get('Is Featured') as boolean,
-      tags: record.get('Tags') as string[],
-    }));
-  } catch (error) {
-    console.error('Error fetching featured knowledge base articles:', error);
     return [];
   }
 }
@@ -438,52 +446,6 @@ export async function getAllContent<T extends BlogPost | KnowledgeBaseArticle | 
   })) as T[];
 }
 
-export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
-  const base = getAirtableBase();
-  if (!base) {
-    throw new Error('Airtable not configured');
-  }
-
-  try {
-    const records = await base('Knowledge Base')
-      .select({
-        filterByFormula: `{Slug} = '${slug}'`,
-      })
-      .all();
-
-    if (records.length === 0) {
-      return null;
-    }
-
-    const record = records[0];
-    
-    // Debug logging
-    console.log('Raw Airtable record:', record.fields);
-    console.log('All field names:', Object.keys(record.fields));
-    console.log('Published At from Airtable:', record.get('Published At'));
-    console.log('Published At type:', typeof record.get('Published At'));
-    
-    return {
-      id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      category: record.get('Category') as string,
-      author: record.get('Author') as string,
-      readTime: record.get('Read Time') as number,
-      publishedAt: record.get('Published At') as string,
-      lastUpdated: record.get('Last Updated') as string,
-      isPopular: record.get('Is Popular') as boolean,
-      isFeatured: record.get('Is Featured') as boolean,
-      tags: record.get('Tags') as string[],
-    };
-  } catch (error) {
-    console.error('Error fetching knowledge base article:', error);
-    return null;
-  }
-}
-
 export async function getAirtableRecords<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
   try {
     return await fetchFromAirtable<T>(tableName, options);
@@ -533,78 +495,6 @@ export async function getMarketingPopupConfig(options: { signal?: AbortSignal } 
   }
 }
 
-export async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot fetch blog post');
-    return null;
-  }
-
-  try {
-    const records = await base('Blog Posts')
-      .select({
-        filterByFormula: `{Slug} = '${slug}'`,
-        maxRecords: 1
-      })
-      .firstPage();
-
-    if (!records || records.length === 0) {
-      return null;
-    }
-
-    const record = records[0];
-    const fields = record.fields as Record<string, any>;
-
-    // If this is a blog post, fetch the author data
-    if (fields.Author) {
-      const authorId = Array.isArray(fields.Author) ? fields.Author[0] : fields.Author;
-      try {
-        const authorRecord = await base('Authors').find(authorId);
-        const authorFields = authorRecord.fields as Record<string, any>;
-        
-        fields.Author = {
-          Name: authorFields.Name as string,
-          Role: authorFields.Role as string,
-          Bio: authorFields.Bio as string,
-          Image: Array.isArray(authorFields.Image) && authorFields.Image.length > 0 
-            ? [{ url: (authorFields.Image[0] as any).url }] 
-            : undefined,
-          'Social Links': authorFields['Social Links'] as string[]
-        };
-      } catch (error) {
-        console.error('Error fetching author:', error);
-      }
-    }
-
-    return {
-      id: record.id,
-      title: fields.Title as string,
-      content: fields.Content as string,
-      excerpt: fields.Excerpt as string,
-      category: fields.Category as string,
-      slug: fields.Slug as string,
-      authorId: fields.Author?.Name || 'Unknown Author',
-      authorImage: fields.Author?.Image?.[0]?.url,
-      authorRole: fields.Author?.Role,
-      authorBio: fields.Author?.Bio,
-      authorSocial: fields.Author?.['Social Links']?.map((link: string) => ({
-        platform: link.split('/').pop() || '',
-        url: link,
-        icon: getSocialIcon(link)
-      })),
-      readingTime: fields['Reading Time'] as number,
-      isPopular: fields['Is Popular'] as boolean,
-      isFeatured: fields['Is Featured'] as boolean,
-      publishedAt: fields['Published At'] as string,
-      tags: fields.Tags as string[],
-      featuredImage: fields['Featured Image']?.[0]?.url
-    };
-  } catch (error) {
-    console.error('Error fetching blog post:', error);
-    return null;
-  }
-}
-
 // Helper function to get social media icon based on URL
 function getSocialIcon(url: string): string {
   if (url.includes('twitter.com') || url.includes('x.com')) {
@@ -625,65 +515,4 @@ function getSocialIcon(url: string): string {
   return `<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
     <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.492 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/>
   </svg>`;
-}
-
-export async function getRelatedPosts(currentPost: BlogPost, limit: number = 3): Promise<BlogPost[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot fetch related posts');
-    return [];
-  }
-
-  try {
-    // Build filter formula to exclude current post and match category or tags
-    const filterFormula = `AND(
-      RECORD_ID() != '${currentPost.id}',
-      OR(
-        {Category} = '${currentPost.category}',
-        ${currentPost.tags?.map(tag => `FIND('${tag}', {Tags})`).join(',')}
-      )
-    )`;
-
-    const records = await base('Blog Posts')
-      .select({
-        filterByFormula: filterFormula,
-        maxRecords: limit,
-        sort: [{ field: 'Published At', direction: 'desc' }]
-      })
-      .firstPage();
-
-    if (!records || records.length === 0) {
-      return [];
-    }
-
-    return records.map(record => {
-      const fields = record.fields as Record<string, any>;
-      return {
-        id: record.id,
-        title: fields.Title as string,
-        content: fields.Content as string,
-        excerpt: fields.Excerpt as string,
-        category: fields.Category as string,
-        slug: fields.Slug as string,
-        authorId: fields.Author?.Name || 'Unknown Author',
-        authorImage: fields.Author?.Image?.[0]?.url,
-        authorRole: fields.Author?.Role,
-        authorBio: fields.Author?.Bio,
-        authorSocial: fields.Author?.['Social Links']?.map((link: string) => ({
-          platform: link.split('/').pop() || '',
-          url: link,
-          icon: getSocialIcon(link)
-        })),
-        readingTime: fields['Reading Time'] as number,
-        isPopular: fields['Is Popular'] as boolean,
-        isFeatured: fields['Is Featured'] as boolean,
-        publishedAt: fields['Published At'] as string,
-        tags: fields.Tags as string[],
-        featuredImage: fields['Featured Image']?.[0]?.url
-      };
-    });
-  } catch (error) {
-    console.error('Error fetching related posts:', error);
-    return [];
-  }
 } 

@@ -82,7 +82,6 @@ export default function PreviewPage() {
 
         // Define required and optional fields
         const requiredFieldsMap = {
-          blog: ['Title', 'Content', 'Slug', 'Author'],
           kb: ['Title', 'Content', 'Slug', 'Category'],
           apps: [
             'Name',
@@ -467,118 +466,6 @@ export default function PreviewPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Blog Preview */}
-          {content.type === 'blog' && (
-            <section className="bg-white">
-              <div className="container mx-auto px-4 py-12">
-                <div className="flex justify-center">
-                  <div className="w-full max-w-2xl space-y-8">
-                    {/* Blog Card */}
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition">
-                      {content.featuredImage && (
-                        <div className="relative w-full h-48">
-                          <Image
-                            src={content.featuredImage}
-                            alt={content.Title || content.title || 'Blog Post'}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="p-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">
-                          {content.Title || content.title || 'Untitled'}
-                        </h2>
-                        <p className="text-gray-600 mb-4">
-                          {content.Excerpt || content.excerpt || content.Content?.substring(0, 150) || 'No excerpt available'}...
-                        </p>
-                        {(content.Tags || content.tags) && (
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {(Array.isArray(content.Tags || content.tags) 
-                              ? (content.Tags || content.tags) 
-                              : (content.Tags || content.tags || '').split(',').filter(Boolean)
-                            ).map((tag: string) => (
-                              <span
-                                key={tag}
-                                className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800"
-                              >
-                                {tag.trim()}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <div className="flex items-center gap-2">
-                            <ClockIcon className="w-4 h-4" />
-                            <span>{content.ReadingTime || content.readingTime || '5'} min read</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <UserIcon className="w-4 h-4" />
-                            <span>
-                              {typeof (content.Author || content.author) === 'object' 
-                                ? (content.Author?.Name || content.author?.name || 'Anonymous')
-                                : (content.Author || content.author || 'Anonymous')}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <TagIcon className="w-4 h-4" />
-                            <span>{content.Category || content.category || 'Uncategorized'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                      <div className="p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Content</h3>
-                        <div className="prose prose-sm max-w-none">
-                          {content.Content || content.content || 'No content available'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Author Card */}
-                    {(content.Author || content.author) && (
-                      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                        <div className="p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">About the Author</h3>
-                          <div className="flex items-start gap-4">
-                            {typeof (content.Author || content.author) === 'object' && (
-                              <>
-                                {(content.Author?.Image || content.author?.image) && (
-                                  <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                                    <Image
-                                      src={content.Author?.Image || content.author?.image}
-                                      alt={content.Author?.Name || content.author?.name || 'Author'}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                  </div>
-                                )}
-                                <div>
-                                  <h4 className="font-medium text-gray-900">
-                                    {content.Author?.Name || content.author?.name || 'Anonymous'}
-                                  </h4>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {content.Author?.Role || content.author?.role || 'Author'}
-                                  </p>
-                                  <p className="text-sm text-gray-600 mt-2">
-                                    {content.Author?.Bio || content.author?.bio || 'No bio available'}
-                                  </p>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
