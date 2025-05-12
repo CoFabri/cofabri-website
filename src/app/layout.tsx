@@ -76,8 +76,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SitewideBanner />
         <Navbar />
+        <SitewideBanner />
         <main className="flex-grow">
           {children}
         </main>

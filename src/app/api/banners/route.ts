@@ -10,9 +10,9 @@ interface BannerFields {
   'Is Active': boolean;
   'Link URL'?: string;
   'Link Text'?: string;
-  'Background Color': 'Default' | 'Blue' | 'Green' | 'Yellow' | 'Red';
-  'Text Color': 'White' | 'Dark';
-  'Position': 'Top' | 'Bottom';
+  'Background Color'?: 'Default' | 'Blue' | 'Green' | 'Yellow' | 'Red';
+  'Text Color'?: 'White' | 'Dark';
+  'Position'?: 'Top' | 'Bottom';
   Priority?: number;
 }
 
@@ -35,9 +35,9 @@ export async function GET(request: Request) {
         isActive: record.fields['Is Active'],
         linkUrl: record.fields['Link URL'],
         linkText: record.fields['Link Text'],
-        backgroundColor: record.fields['Background Color'],
-        textColor: record.fields['Text Color'],
-        position: record.fields['Position'],
+        backgroundColor: record.fields['Background Color'] || 'Default',
+        textColor: record.fields['Text Color'] || 'Dark',
+        position: record.fields['Position'] || 'Top',
         priority: record.fields.Priority || 0,
       };
       console.log('Processed banner:', banner);

@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Apps', href: '/apps' },
   { name: 'Roadmaps', href: '/roadmaps' },
   { name: 'Knowledge Base', href: '/knowledge-base' },
+  { name: 'Support', href: '/support' },
   { name: 'Blog', href: '/blog' },
   { name: 'Contact', href: '/contact' },
 ];

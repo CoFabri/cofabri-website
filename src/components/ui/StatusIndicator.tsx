@@ -58,8 +58,8 @@ export default function StatusIndicator() {
     }
 
     fetchStatus();
-    // Refresh status every minute
-    const interval = setInterval(fetchStatus, 60000);
+    // Refresh status every 5 minutes
+    const interval = setInterval(fetchStatus, 300000);
     return () => clearInterval(interval);
   }, []);
 

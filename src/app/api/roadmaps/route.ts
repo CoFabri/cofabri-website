@@ -1,6 +1,8 @@
 import { getRoadmapFeatures } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
+export const revalidate = 3600; // Revalidate every hour
+
 export async function GET(request: Request) {
   try {
     console.log('API Route: Starting to fetch roadmap features...');
