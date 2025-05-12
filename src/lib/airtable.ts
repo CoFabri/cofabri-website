@@ -4,8 +4,15 @@ import { Collaborator } from 'airtable';
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 
-// Create a function to get the Airtable base instance
+export interface AirtableRecord<T> {
+  id: string;
+  fields: T;
+  createdTime: string;
+}
+
+// Create a function to get the Airtable base instance (for client-side use)
 export function getAirtableBase() {
   if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
     throw new Error('Missing Airtable configuration');
@@ -16,6 +23,36 @@ export function getAirtableBase() {
     requestTimeout: 300000, // 5 minutes
     endpointUrl: 'https://api.airtable.com',
   }).base(AIRTABLE_BASE_ID);
+}
+
+// Server-side fetch function for Airtable
+async function fetchFromAirtable<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
+  if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
+    throw new Error('Missing Airtable configuration');
+  }
+
+  const queryParams = new URLSearchParams();
+  if (options.filterByFormula) queryParams.append('filterByFormula', options.filterByFormula);
+  if (options.maxRecords) queryParams.append('maxRecords', options.maxRecords.toString());
+  if (options.sort) queryParams.append('sort[0][field]', options.sort[0].field);
+  if (options.sort) queryParams.append('sort[0][direction]', options.sort[0].direction);
+
+  const response = await fetch(
+    `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${tableName}?${queryParams.toString()}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Airtable API error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.records;
 }
 
 // Types for our tables
@@ -129,30 +166,38 @@ export interface MarketingPopupConfig {
   isEnabled: boolean;
 }
 
-// API functions that handle the case when Airtable is not configured
+// Updated API functions to use server-side fetch
 export async function getBlogPosts(): Promise<BlogPost[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
   try {
-    const records = await base('Blog Posts').select().all();
+    const records = await fetchFromAirtable<{
+      Title: string;
+      Slug: string;
+      Content: string;
+      Excerpt?: string;
+      'Featured Image'?: string;
+      Author: string;
+      Category: string;
+      'Reading Time': number;
+      'Published At': string;
+      Tags?: string[];
+      'Is Featured'?: boolean;
+      'Related Posts'?: string[];
+    }>('Blog Posts');
+    
     return records.map(record => ({
       id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      featuredImage: record.get('Featured Image') as string,
-      authorId: record.get('Author') as string,
-      category: record.get('Category') as string,
-      readingTime: record.get('Reading Time') as number,
-      publishedAt: record.get('Published At') as string,
-      tags: record.get('Tags') as string[],
-      isFeatured: record.get('Is Featured') as boolean,
-      relatedPostIds: record.get('Related Posts') as string[],
+      title: record.fields.Title,
+      slug: record.fields.Slug,
+      content: record.fields.Content,
+      excerpt: record.fields.Excerpt,
+      featuredImage: record.fields['Featured Image'],
+      authorId: record.fields.Author,
+      category: record.fields.Category,
+      readingTime: record.fields['Reading Time'],
+      publishedAt: record.fields['Published At'],
+      tags: record.fields.Tags,
+      isFeatured: record.fields['Is Featured'],
+      relatedPostIds: record.fields['Related Posts'],
     }));
   } catch (error) {
     console.error('Error fetching blog posts:', error);
@@ -161,31 +206,35 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
-  console.log('Getting Airtable base...');
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
   try {
-    console.log('Fetching records from Knowledge Base table...');
-    const records = await base('Knowledge Base').select().all();
-    console.log('Fetched records:', records);
+    const records = await fetchFromAirtable<{
+      Title: string;
+      Slug: string;
+      Content: string;
+      Excerpt?: string;
+      Category: string;
+      Author: string;
+      'Read Time': number;
+      'Last Updated': string;
+      'Is Popular'?: boolean;
+      'Is Featured'?: boolean;
+      Tags?: string[];
+    }>('Knowledge Base');
+    
     return records.map(record => ({
       id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      category: record.get('Category') as string,
-      author: record.get('Author') as string,
-      readTime: record.get('Read Time') as number,
-      publishedAt: record.get('Last Updated') as string,
-      lastUpdated: record.get('Last Updated') as string,
-      isPopular: record.get('Is Popular') as boolean,
-      isFeatured: record.get('Is Featured') as boolean,
-      tags: record.get('Tags') as string[],
+      title: record.fields.Title,
+      slug: record.fields.Slug,
+      content: record.fields.Content,
+      excerpt: record.fields.Excerpt,
+      category: record.fields.Category,
+      author: record.fields.Author,
+      readTime: record.fields['Read Time'],
+      publishedAt: record.fields['Last Updated'],
+      lastUpdated: record.fields['Last Updated'],
+      isPopular: record.fields['Is Popular'],
+      isFeatured: record.fields['Is Featured'],
+      tags: record.fields.Tags || [],
     }));
   } catch (error) {
     console.error('Error fetching knowledge base articles:', error);
@@ -194,42 +243,44 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
 }
 
 export async function getApps(): Promise<App[]> {
-  if (!process.env.AIRTABLE_BASE_ID || !process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN) {
-    throw new Error('Airtable configuration is missing');
-  }
-
   try {
-    const base = new Airtable({
-      apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN,
-    }).base(process.env.AIRTABLE_BASE_ID);
-
-    const records = await base('Apps').select().all();
-    console.log('Raw Airtable records:', records.map(record => ({
+    const records = await fetchFromAirtable<{
+      Name: string;
+      Description: string;
+      URL?: string;
+      'Image URL'?: string;
+      'Application Status': App['status'];
+      Category?: string;
+      'Feature 1'?: string;
+      'Feature 2'?: string;
+      'Feature 3'?: string;
+      'Launch Date'?: string;
+      'Released Date'?: string;
+      'Domain(s)'?: string;
+      'Feature On Website?'?: boolean;
+    }>('Apps', {
+      sort: [{ field: 'Name', direction: 'asc' }]
+    });
+    
+    return records.map(record => ({
       id: record.id,
-      fields: record.fields,
-      rawLaunch: record.get('Launch Date'),
-      rawLaunchDate: record.get('Launch'),
-      allFields: Object.keys(record.fields)
-    })));
-    return records.map((record): App => ({
-      id: record.id,
-      name: record.get('Name') as string,
-      description: record.get('Description') as string,
-      url: record.get('URL') as string,
-      screenshot: record.get('Image URL') as string,
-      status: record.get('Application Status') as App['status'],
-      category: record.get('Category') as string,
-      feature1: record.get('Feature 1') as string,
-      feature2: record.get('Feature 2') as string,
-      feature3: record.get('Feature 3') as string,
-      launchDate: record.get('Launch Date') as string,
-      releaseDate: record.get('Released Date') as string,
-      domains: record.get('Domain(s)') as string,
-      featureOnWebsite: record.get('Feature On Website?') as boolean,
+      name: record.fields.Name,
+      description: record.fields.Description,
+      url: record.fields.URL,
+      screenshot: record.fields['Image URL'],
+      status: record.fields['Application Status'],
+      category: record.fields.Category,
+      feature1: record.fields['Feature 1'],
+      feature2: record.fields['Feature 2'],
+      feature3: record.fields['Feature 3'],
+      launchDate: record.fields['Launch Date'],
+      releaseDate: record.fields['Released Date'],
+      domains: record.fields['Domain(s)'],
+      featureOnWebsite: record.fields['Feature On Website?'],
     }));
   } catch (error) {
     console.error('Error fetching apps from Airtable:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -270,26 +321,34 @@ export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseA
 }
 
 export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
   try {
-    const records = await base('Roadmap').select().all();
+    const records = await fetchFromAirtable<{
+      Name: string;
+      Description: string;
+      Status: string;
+      Milestone: string;
+      'Release Type': string;
+      'Released Date': string;
+      Application: string;
+      'Application URL': string;
+      'Features and Changes': string;
+      'Release Notes': string;
+    }>('Roadmap', {
+      sort: [{ field: 'Released Date', direction: 'desc' }]
+    });
+
     return records.map(record => ({
       id: record.id,
-      name: record.get('Name') as string,
-      description: record.get('Description') as string,
-      status: record.get('Status') as string,
-      milestone: record.get('Milestone') as string,
-      releaseType: record.get('Release Type') as string,
-      releasedDate: record.get('Released Date') as string,
-      application: record.get('Application') as string,
-      applicationUrl: record.get('Application URL') as string,
-      featuresAndChanges: record.get('Features and Changes') as string,
-      releaseNotes: record.get('Release Notes') as string,
+      name: record.fields.Name,
+      description: record.fields.Description,
+      status: record.fields.Status,
+      milestone: record.fields.Milestone,
+      releaseType: record.fields['Release Type'],
+      releasedDate: record.fields['Released Date'],
+      application: record.fields.Application,
+      applicationUrl: record.fields['Application URL'],
+      featuresAndChanges: record.fields['Features and Changes'],
+      releaseNotes: record.fields['Release Notes'],
     }));
   } catch (error) {
     console.error('Error fetching roadmap features:', error);
@@ -298,26 +357,35 @@ export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
 }
 
 export async function getSystemStatus(): Promise<SystemStatus[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
   try {
-    const records = await base('System Status').select().all();
+    const records = await fetchFromAirtable<{
+      'Ticket ID': string;
+      Title: string;
+      'Public Status': 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved';
+      Severity: 'Critical' | 'High' | 'Medium' | 'Low';
+      Message: string;
+      'Created Date': string;
+      'Updated At': string;
+      'Resolved Date': string;
+      'Affected Services': string[];
+      Application: string;
+      Updates: string;
+    }>('System Status', {
+      sort: [{ field: 'Created Date', direction: 'desc' }]
+    });
+
     return records.map(record => ({
-      ticketId: record.get('Ticket ID') as string,
-      title: record.get('Title') as string,
-      publicStatus: record.get('Public Status') as 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved',
-      severity: record.get('Severity') as 'Critical' | 'High' | 'Medium' | 'Low',
-      message: record.get('Message') as string,
-      'Created Date': record.get('Created Date') as string,
-      'Updated At': record.get('Updated At') as string,
-      'Resolved Date': record.get('Resolved Date') as string,
-      affectedServices: record.get('Affected Services') as string[],
-      application: record.get('Application') as string,
-      updates: record.get('Updates') as string,
+      ticketId: record.fields['Ticket ID'],
+      title: record.fields.Title,
+      publicStatus: record.fields['Public Status'],
+      severity: record.fields.Severity,
+      message: record.fields.Message,
+      'Created Date': record.fields['Created Date'],
+      'Updated At': record.fields['Updated At'],
+      'Resolved Date': record.fields['Resolved Date'],
+      affectedServices: record.fields['Affected Services'],
+      application: record.fields.Application,
+      updates: record.fields.Updates,
     }));
   } catch (error) {
     console.error('Error fetching system status:', error);
@@ -416,25 +484,16 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
   }
 }
 
-export async function getAirtableRecords(tableName: string) {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot fetch records');
-    throw new Error('Airtable not configured');
-  }
-
-  const table = base(tableName);
-  
+export async function getAirtableRecords<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
   try {
-    const records = await table.select().all();
-    return records;
+    return await fetchFromAirtable<T>(tableName, options);
   } catch (error) {
     console.error(`Error fetching records from ${tableName}:`, error);
     throw error;
   }
 }
 
-export async function getMarketingPopupConfig(): Promise<MarketingPopupConfig | null> {
+export async function getMarketingPopupConfig(options: { signal?: AbortSignal } = {}): Promise<MarketingPopupConfig | null> {
   const base = getAirtableBase();
   if (!base) {
     console.warn('Airtable not configured - cannot fetch marketing popup config');
@@ -465,6 +524,10 @@ export async function getMarketingPopupConfig(): Promise<MarketingPopupConfig | 
       isEnabled: record.get('Is Enabled') as boolean,
     };
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('Request was aborted');
+      return null;
+    }
     console.error('Error fetching marketing popup config:', error);
     return null;
   }

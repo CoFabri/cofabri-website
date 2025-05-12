@@ -25,6 +25,7 @@ const Navbar = () => {
 
   // Function to check if a nav item is active
   const isActive = (href: string) => {
+    if (!pathname) return false;
     if (href === '/') return pathname === href;
     return pathname.startsWith(href);
   };

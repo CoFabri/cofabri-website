@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface Banner {
@@ -14,30 +14,48 @@ interface Banner {
   isActive: boolean;
 }
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
 export default function SitewideBanner() {
   const [banner, setBanner] = useState<Banner | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchBanner() {
-      try {
-        const response = await fetch('/api/banners');
-        if (!response.ok) throw new Error('Failed to fetch banner');
-        const data = await response.json();
-        if (data && data.isActive) {
-          setBanner(data);
-        }
-      } catch (err) {
-        console.error('Error fetching banner:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch banner');
-      } finally {
-        setIsLoading(false);
+  const fetchBanner = useCallback(async (retryCount = 0) => {
+    try {
+      const response = await fetch('/api/banners', {
+        next: { revalidate: 300 }, // 5 minutes
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch banner');
       }
+      
+      const data = await response.json();
+      if (data && data.isActive) {
+        setBanner(data);
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching banner:', err);
+      
+      if (retryCount < MAX_RETRIES) {
+        setTimeout(() => {
+          fetchBanner(retryCount + 1);
+        }, RETRY_DELAY * Math.pow(2, retryCount)); // Exponential backoff
+        return;
+      }
+      
+      setError(err instanceof Error ? err.message : 'Failed to fetch banner');
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchBanner();
   }, []);
+
+  useEffect(() => {
+    fetchBanner();
+  }, [fetchBanner]);
 
   if (isLoading) {
     return null;

@@ -55,6 +55,12 @@ export default function PreviewPage() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        if (!params || typeof params !== 'object' || !('type' in params) || !('id' in params)) {
+          setError('Invalid preview parameters.');
+          setIsLoading(false);
+          setShowLoading(false);
+          return;
+        }
         const response = await fetch(`/api/preview/${params.type}/${params.id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch preview content');
@@ -155,7 +161,7 @@ export default function PreviewPage() {
     };
 
     fetchContent();
-  }, [params.type, params.id]);
+  }, [params && 'type' in params ? params.type : undefined, params && 'id' in params ? params.id : undefined]);
 
   const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -220,10 +226,10 @@ export default function PreviewPage() {
           <p className="text-gray-600 mb-4">{error}</p>
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
             <span>Type:</span>
-            <span className="font-medium">{params.type}</span>
+            <span className="font-medium">{params && 'type' in params ? params.type : 'N/A'}</span>
             <span>•</span>
             <span>ID:</span>
-            <span className="font-medium">{params.id}</span>
+            <span className="font-medium">{params && 'id' in params ? params.id : 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -1012,7 +1018,7 @@ export default function PreviewPage() {
               <span className="text-sm font-medium text-blue-800">Preview Mode</span>
             </div>
             <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-              {params.type}/{params.id}
+              {params && 'type' in params ? params.type : 'N/A'}/{params && 'id' in params ? params.id : 'N/A'}
             </span>
           </div>
         </div>

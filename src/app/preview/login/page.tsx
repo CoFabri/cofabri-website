@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 interface PreviewContent {
@@ -15,11 +15,23 @@ interface MissingField {
 }
 
 export default function LoginPreviewPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <LoginPreviewContent />
+    </Suspense>
+  );
+}
+
+function LoginPreviewContent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirect = searchParams.get('redirect') || '/';
+  const redirect = searchParams ? searchParams.get('redirect') || '/' : '/';
   const [content, setContent] = useState<PreviewContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [requiredFields, setRequiredFields] = useState<string[]>([]);

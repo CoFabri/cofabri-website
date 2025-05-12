@@ -1,35 +1,55 @@
 import { NextResponse } from 'next/server';
-import { getAirtableRecords } from '@/lib/airtable';
-import type { FieldSet, Record } from 'airtable';
+import { getAirtableRecords, AirtableRecord } from '@/lib/airtable';
 
-export async function GET() {
+interface BannerFields {
+  Title: string;
+  Message: string;
+  Type: 'Info' | 'Success' | 'Warning' | 'Error';
+  'Start Date': string;
+  'End Date': string;
+  'Is Active': boolean;
+  'Link URL'?: string;
+  'Link Text'?: string;
+  'Background Color': 'Default' | 'Blue' | 'Green' | 'Yellow' | 'Red';
+  'Text Color': 'White' | 'Dark';
+  'Position': 'Top' | 'Bottom';
+  Priority?: number;
+}
+
+export const revalidate = 300; // Revalidate every 5 minutes
+
+export async function GET(request: Request) {
   try {
     console.log('Fetching banners from Airtable...');
-    const records = await getAirtableRecords('Sitewide Banners');
+    const records = await getAirtableRecords<BannerFields>('Sitewide Banners');
     console.log('Fetched records:', records.length);
     
-    const banners = records.map((record: Record<FieldSet>) => {
+    const banners = records.map((record: AirtableRecord<BannerFields>) => {
       const banner = {
         id: record.id,
-        title: record.get('Title') as string,
-        message: record.get('Message') as string,
-        type: record.get('Type') as 'Info' | 'Success' | 'Warning' | 'Error',
-        startDate: record.get('Start Date') as string,
-        endDate: record.get('End Date') as string,
-        isActive: record.get('Is Active') as boolean,
-        linkUrl: record.get('Link URL') as string,
-        linkText: record.get('Link Text') as string,
-        backgroundColor: record.get('Background Color') as 'Default' | 'Blue' | 'Green' | 'Yellow' | 'Red',
-        textColor: record.get('Text Color') as 'White' | 'Dark',
-        position: record.get('Position') as 'Top' | 'Bottom',
-        priority: record.get('Priority') as number,
+        title: record.fields.Title,
+        message: record.fields.Message,
+        type: record.fields.Type,
+        startDate: record.fields['Start Date'],
+        endDate: record.fields['End Date'],
+        isActive: record.fields['Is Active'],
+        linkUrl: record.fields['Link URL'],
+        linkText: record.fields['Link Text'],
+        backgroundColor: record.fields['Background Color'],
+        textColor: record.fields['Text Color'],
+        position: record.fields['Position'],
+        priority: record.fields.Priority || 0,
       };
       console.log('Processed banner:', banner);
       return banner;
     });
 
     console.log('Returning banners:', banners);
-    return NextResponse.json(banners);
+    return NextResponse.json(banners, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Error fetching banners:', error);
     return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });

@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { BlogPost } from '@/lib/airtable';
 import SectionHeading from './SectionHeading';
 
-export default function Blog() {
+interface BlogProps {
+  searchQuery: string;
+  selectedCategory: string;
+  viewMode: 'grid' | 'list';
+}
+
+export default function Blog({ searchQuery, selectedCategory, viewMode }: BlogProps) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +33,15 @@ export default function Blog() {
 
     fetchPosts();
   }, []);
+
+  // Filter posts based on search query and selected category
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = !selectedCategory || post.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   if (isLoading) {
     return (
@@ -61,14 +76,22 @@ export default function Blog() {
           subtitle="Latest insights and updates from our team"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {posts.map((post) => (
+        <div className={`grid gap-8 max-w-6xl mx-auto ${
+          viewMode === 'grid' 
+            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+            : 'grid-cols-1'
+        }`}>
+          {filteredPosts.map((post) => (
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}
-              className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+              className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${
+                viewMode === 'list' ? 'flex' : ''
+              }`}
             >
-              <div className="aspect-video relative overflow-hidden">
+              <div className={`aspect-video relative overflow-hidden ${
+                viewMode === 'list' ? 'w-1/3' : 'w-full'
+              }`}>
                 <img
                   src={post.featuredImage || '/images/placeholder.jpg'}
                   alt={post.title}
@@ -76,7 +99,7 @@ export default function Blog() {
                   loading="lazy"
                 />
               </div>
-              <div className="p-6">
+              <div className={`p-6 ${viewMode === 'list' ? 'w-2/3' : ''}`}>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
                     {post.category}

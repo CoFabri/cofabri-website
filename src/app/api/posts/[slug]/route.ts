@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { base } from '@/lib/airtable';
+import { getAirtableBase } from '@/lib/airtable';
 
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
   try {
+    const base = getAirtableBase();
     const records = await base('Blog Posts')
       .select({
         filterByFormula: `AND({Status} = 'Published', {Slug} = '${params.slug}')`,

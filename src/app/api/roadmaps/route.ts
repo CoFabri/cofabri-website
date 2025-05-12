@@ -1,7 +1,7 @@
 import { getRoadmapFeatures } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     console.log('API Route: Starting to fetch roadmap features...');
     const features = await getRoadmapFeatures();

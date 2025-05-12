@@ -27,9 +27,9 @@ export default function AppCard({ app }: AppCardProps) {
           ? 'border-blue-400 shadow-lg hover:shadow-xl hover:border-blue-500 animate-pulse' 
           : 'border-gray-100 hover:shadow-md'}`}>
         <div className="relative w-full h-auto">
-          {app.imageUrl && (
+          {app.screenshot && (
             <Image
-              src={app.imageUrl}
+              src={app.screenshot}
               alt={app.name}
               width={1200}
               height={630}
