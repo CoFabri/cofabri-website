@@ -151,11 +151,17 @@ export default function HomepageApps() {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <Image
-                    src={app.screenshot || '/images/placeholder.jpg'}
+                    src={typeof app.screenshot === 'string' ? app.screenshot : app.screenshot?.[0]?.url || '/images/placeholder.jpg'}
                     alt={app.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    onError={(e) => {
+                      console.error(`Error loading image for ${app.name}:`, e);
+                      // Fallback to placeholder
+                      const imgElement = e.target as HTMLImageElement;
+                      imgElement.src = '/images/placeholder.jpg';
+                    }}
                   />
                   {isLaunchingToday && (
                     <div className="absolute top-0 right-0 mt-4 mr-4">

@@ -1,35 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { EnvelopeIcon, PhoneIcon, ClockIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
-interface FormData {
-  name: string;
-  email: string;
-  message: string;
-}
+// Airtable form configuration
+const AIRTABLE_FORM_URL = 'https://airtable.com/embed/app9KvSkBwix9MnSr/pagGflxAdmJG76KS8/form';
 
 export default function Contact() {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    message: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement form submission
-    console.log('Form submitted:', formData);
-  };
-
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
@@ -95,62 +71,14 @@ export default function Contact() {
 
           {/* Contact Form */}
           <div className="bg-white rounded-3xl p-8 shadow-sm flex flex-col justify-center min-h-full">
-            <h2 className="text-2xl font-semibold mb-6 text-center">Send us a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto w-full">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-full border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                  required
-                  placeholder="Your name"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-full border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                  required
-                  placeholder="your@email.com"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                  required
-                  placeholder="How can we help you?"
-                />
-              </div>
-              <div className="mt-2">
-                <button
-                  type="submit"
-                  className="w-full bg-blue-600 text-white rounded-full py-3 px-6 font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Send Message
-                </button>
-              </div>
-            </form>
+            <iframe
+              className="airtable-embed"
+              src={AIRTABLE_FORM_URL}
+              frameBorder="0"
+              width="100%"
+              height="725"
+              style={{ background: 'transparent' }}
+            />
           </div>
         </div>
       </div>

@@ -1,4 +1,3 @@
-import Airtable from 'airtable';
 import { FieldSet } from 'airtable';
 import { Collaborator } from 'airtable';
 
@@ -12,21 +11,8 @@ export interface AirtableRecord<T> {
   createdTime: string;
 }
 
-// Create a function to get the Airtable base instance (for client-side use)
-export function getAirtableBase() {
-  if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-    throw new Error('Missing Airtable configuration');
-  }
-
-  return new Airtable({ 
-    apiKey: AIRTABLE_API_KEY,
-    requestTimeout: 300000, // 5 minutes
-    endpointUrl: 'https://api.airtable.com',
-  }).base(AIRTABLE_BASE_ID);
-}
-
 // Server-side fetch function for Airtable
-async function fetchFromAirtable<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
+export async function fetchFromAirtable<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
   if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
     throw new Error('Missing Airtable configuration');
   }
@@ -113,7 +99,7 @@ export interface App {
   name: string;
   description: string;
   url?: string;
-  screenshot?: string;
+  screenshot?: string | { url: string }[];
   status: 'Live' | 'Beta' | 'Alpha' | 'In Development' | 'Coming Soon';
   category?: string;
   feature1?: string;
@@ -166,6 +152,31 @@ export interface MarketingPopupConfig {
   isEnabled: boolean;
 }
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  rating: number;
+  image: {
+    id: string;
+    url: string;
+    filename: string;
+    type: string;
+    size: number;
+    thumbnails?: {
+      small: { url: string; width: number; height: number };
+      large: { url: string; width: number; height: number };
+    };
+  }[];
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  apps: string[];
+  featured: boolean;
+}
+
 // Updated API functions to use server-side fetch
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
@@ -205,17 +216,23 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
 }
 
 export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
-  const base = getAirtableBase();
-  if (!base) {
-    throw new Error('Airtable not configured');
-  }
-
   try {
-    const records = await base('Knowledge Base')
-      .select({
-        filterByFormula: `{Slug} = '${slug}'`,
-      })
-      .all();
+    const records = await fetchFromAirtable<{
+      Title: string;
+      Slug: string;
+      Content: string;
+      Excerpt: string;
+      Category: string;
+      Author: string;
+      'Read Time': number;
+      'Published At': string;
+      'Last Updated': string;
+      'Is Popular': boolean;
+      'Is Featured': boolean;
+      Tags: string[];
+    }>('Knowledge Base', {
+      filterByFormula: `{Slug} = '${slug}'`,
+    });
 
     if (records.length === 0) {
       return null;
@@ -223,26 +240,20 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
 
     const record = records[0];
     
-    // Debug logging
-    console.log('Raw Airtable record:', record.fields);
-    console.log('All field names:', Object.keys(record.fields));
-    console.log('Published At from Airtable:', record.get('Published At'));
-    console.log('Published At type:', typeof record.get('Published At'));
-    
     return {
       id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      category: record.get('Category') as string,
-      author: record.get('Author') as string,
-      readTime: record.get('Read Time') as number,
-      publishedAt: record.get('Published At') as string,
-      lastUpdated: record.get('Last Updated') as string,
-      isPopular: record.get('Is Popular') as boolean,
-      isFeatured: record.get('Is Featured') as boolean,
-      tags: record.get('Tags') as string[],
+      title: record.fields.Title,
+      slug: record.fields.Slug,
+      content: record.fields.Content,
+      excerpt: record.fields.Excerpt,
+      category: record.fields.Category,
+      author: record.fields.Author,
+      readTime: record.fields['Read Time'],
+      publishedAt: record.fields['Published At'],
+      lastUpdated: record.fields['Last Updated'],
+      isPopular: record.fields['Is Popular'],
+      isFeatured: record.fields['Is Featured'],
+      tags: record.fields.Tags,
     };
   } catch (error) {
     console.error('Error fetching knowledge base article:', error);
@@ -251,34 +262,40 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
 }
 
 export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - returning empty array');
-    return [];
-  }
-
   try {
-    const records = await base('Knowledge Base')
-      .select({
-        filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
-        sort: [{ field: 'Published At', direction: 'desc' }],
-        maxRecords: 6,
-      })
-      .all();
+    const records = await fetchFromAirtable<{
+      Title: string;
+      Slug: string;
+      Content: string;
+      Excerpt: string;
+      Category: string;
+      Author: string;
+      'Read Time': number;
+      'Published At': string;
+      'Last Updated': string;
+      'Is Popular': boolean;
+      'Is Featured': boolean;
+      Tags: string[];
+    }>('Knowledge Base', {
+      filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
+      sort: [{ field: 'Published At', direction: 'desc' }],
+      maxRecords: 6,
+    });
+
     return records.map(record => ({
       id: record.id,
-      title: record.get('Title') as string,
-      slug: record.get('Slug') as string,
-      content: record.get('Content') as string,
-      excerpt: record.get('Excerpt') as string,
-      category: record.get('Category') as string,
-      author: record.get('Author') as string,
-      readTime: record.get('Read Time') as number,
-      publishedAt: record.get('Published At') as string,
-      lastUpdated: record.get('Last Updated') as string,
-      isPopular: record.get('Is Popular') as boolean,
-      isFeatured: record.get('Is Featured') as boolean,
-      tags: record.get('Tags') as string[],
+      title: record.fields.Title,
+      slug: record.fields.Slug,
+      content: record.fields.Content,
+      excerpt: record.fields.Excerpt,
+      category: record.fields.Category,
+      author: record.fields.Author,
+      readTime: record.fields['Read Time'],
+      publishedAt: record.fields['Published At'],
+      lastUpdated: record.fields['Last Updated'],
+      isPopular: record.fields['Is Popular'],
+      isFeatured: record.fields['Is Featured'],
+      tags: record.fields.Tags,
     }));
   } catch (error) {
     console.error('Error fetching featured knowledge base articles:', error);
@@ -292,7 +309,7 @@ export async function getApps(): Promise<App[]> {
       Name: string;
       Description: string;
       URL?: string;
-      'Image URL'?: string;
+      'Image URL'?: { url: string }[];
       'Application Status': App['status'];
       Category?: string;
       'Feature 1'?: string;
@@ -306,22 +323,28 @@ export async function getApps(): Promise<App[]> {
       sort: [{ field: 'Name', direction: 'asc' }]
     });
     
-    return records.map(record => ({
-      id: record.id,
-      name: record.fields.Name,
-      description: record.fields.Description,
-      url: record.fields.URL,
-      screenshot: record.fields['Image URL'],
-      status: record.fields['Application Status'],
-      category: record.fields.Category,
-      feature1: record.fields['Feature 1'],
-      feature2: record.fields['Feature 2'],
-      feature3: record.fields['Feature 3'],
-      launchDate: record.fields['Launch Date'],
-      releaseDate: record.fields['Released Date'],
-      domains: record.fields['Domain(s)'],
-      featureOnWebsite: record.fields['Feature On Website?'],
-    }));
+    const apps = records.map(record => {
+      const screenshot = record.fields['Image URL']?.[0]?.url;
+      
+      return {
+        id: record.id,
+        name: record.fields.Name,
+        description: record.fields.Description,
+        url: record.fields.URL,
+        screenshot,
+        status: record.fields['Application Status'],
+        category: record.fields.Category,
+        feature1: record.fields['Feature 1'],
+        feature2: record.fields['Feature 2'],
+        feature3: record.fields['Feature 3'],
+        launchDate: record.fields['Launch Date'],
+        releaseDate: record.fields['Released Date'],
+        domains: record.fields['Domain(s)'],
+        featureOnWebsite: record.fields['Feature On Website?'],
+      };
+    });
+    
+    return apps;
   } catch (error) {
     console.error('Error fetching apps from Airtable:', error);
     return [];
@@ -342,7 +365,10 @@ export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
       'Features and Changes': string;
       'Release Notes': string;
     }>('Roadmap', {
-      sort: [{ field: 'Released Date', direction: 'desc' }]
+      sort: [
+        { field: 'Milestone', direction: 'asc' },
+        { field: 'Released Date', direction: 'desc' }
+      ]
     });
 
     return records.map(record => ({
@@ -407,16 +433,25 @@ export async function updateContentStatus(
   recordId: string,
   status: string
 ): Promise<boolean> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot update status');
-    return false;
-  }
-
   try {
-    await base(table).update(recordId, {
-      status,
-    });
+    const response = await fetch(
+      `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${table}/${recordId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fields: { status }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Airtable API error: ${response.statusText}`);
+    }
+
     return true;
   } catch (error) {
     console.error(`Error updating status for ${table}:`, error);
@@ -428,25 +463,22 @@ export async function updateContentStatus(
 export async function getAllContent<T extends BlogPost | KnowledgeBaseArticle | App>(
   table: 'Blog Posts' | 'Knowledge Base' | 'Apps'
 ): Promise<T[]> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot fetch all content');
+  try {
+    const records = await fetchFromAirtable<T>(table, {
+      sort: [{ field: 'status', direction: 'asc' }],
+    });
+
+    return records.map((record) => ({
+      ...record.fields,
+      id: record.id,
+    })) as T[];
+  } catch (error) {
+    console.error(`Error fetching all content from ${table}:`, error);
     return [];
   }
-
-  const records = await base(table)
-    .select({
-      sort: [{ field: 'status', direction: 'asc' }],
-    })
-    .all();
-
-  return records.map((record) => ({
-    id: record.id,
-    ...record.fields,
-  })) as T[];
 }
 
-export async function getAirtableRecords<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
+export async function getAirtableRecords<T extends FieldSet>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
   try {
     return await fetchFromAirtable<T>(tableName, options);
   } catch (error) {
@@ -456,34 +488,39 @@ export async function getAirtableRecords<T>(tableName: string, options: { filter
 }
 
 export async function getMarketingPopupConfig(options: { signal?: AbortSignal } = {}): Promise<MarketingPopupConfig | null> {
-  const base = getAirtableBase();
-  if (!base) {
-    console.warn('Airtable not configured - cannot fetch marketing popup config');
-    return null;
-  }
-
   try {
-    const records = await base('Marketing Popups')
-      .select({
-        filterByFormula: 'AND({Is Enabled}=TRUE(),{Start Date}<=NOW(),{End Date}>=NOW())',
-        maxRecords: 1,
-      })
-      .firstPage();
+    const records = await fetchFromAirtable<{
+      Title: string;
+      Content: string;
+      'Button Text': string;
+      'Button Link': string;
+      'Background Color': string;
+      'Text Color': string;
+      'Button Color': string;
+      Position: 'Center' | 'Bottom Right' | 'Bottom Left';
+      Delay: number;
+      'Is Enabled': boolean;
+      'Start Date': string;
+      'End Date': string;
+    }>('Marketing Popups', {
+      filterByFormula: 'AND({Is Enabled}=TRUE(),{Start Date}<=NOW(),{End Date}>=NOW())',
+      maxRecords: 1,
+    });
 
     if (records.length === 0) return null;
 
     const record = records[0];
     return {
-      title: record.get('Title') as string,
-      content: record.get('Content') as string,
-      buttonText: record.get('Button Text') as string,
-      buttonLink: record.get('Button Link') as string,
-      backgroundColor: record.get('Background Color') as string,
-      textColor: record.get('Text Color') as string,
-      buttonColor: record.get('Button Color') as string,
-      position: record.get('Position') as 'Center' | 'Bottom Right' | 'Bottom Left',
-      delay: record.get('Delay') as number,
-      isEnabled: record.get('Is Enabled') as boolean,
+      title: record.fields.Title,
+      content: record.fields.Content,
+      buttonText: record.fields['Button Text'],
+      buttonLink: record.fields['Button Link'],
+      backgroundColor: record.fields['Background Color'],
+      textColor: record.fields['Text Color'],
+      buttonColor: record.fields['Button Color'],
+      position: record.fields.Position,
+      delay: record.fields.Delay,
+      isEnabled: record.fields['Is Enabled'],
     };
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
@@ -515,4 +552,71 @@ function getSocialIcon(url: string): string {
   return `<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
     <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.492 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/>
   </svg>`;
+}
+
+export async function getTestimonials(randomCount?: number): Promise<Testimonial[]> {
+  try {
+    const records = await fetchFromAirtable<{
+      Name: string;
+      'Role/Position': string;
+      Company: string;
+      Content: string;
+      Rating: number;
+      'Profile Image': Testimonial['image'];
+      'Active?': boolean;
+      Order: number;
+      Created: string;
+      Apps: string[];
+      'Featured?': boolean;
+    }>('Testimonials', {
+      filterByFormula: '{Active?} = TRUE()',
+      sort: [{ field: 'Featured?', direction: 'desc' }]
+    });
+
+    const testimonials = records.map(record => ({
+      id: record.id,
+      name: record.fields.Name,
+      role: record.fields['Role/Position'],
+      company: record.fields.Company,
+      content: record.fields.Content,
+      rating: record.fields.Rating,
+      image: record.fields['Profile Image'],
+      isActive: record.fields['Active?'],
+      order: record.fields.Order,
+      createdAt: record.fields.Created,
+      apps: record.fields.Apps,
+      featured: record.fields['Featured?']
+    }));
+
+    if (randomCount && randomCount > 0) {
+      // Separate featured and non-featured testimonials
+      const featured = testimonials.filter(t => t.featured);
+      const nonFeatured = testimonials.filter(t => !t.featured);
+
+      // Shuffle both arrays
+      const shuffle = (array: Testimonial[]) => {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      };
+
+      const shuffledFeatured = shuffle([...featured]);
+      const shuffledNonFeatured = shuffle([...nonFeatured]);
+
+      // If we have enough featured testimonials, use them
+      if (shuffledFeatured.length >= randomCount) {
+        return shuffledFeatured.slice(0, randomCount);
+      }
+
+      // Otherwise, combine featured and non-featured
+      return [...shuffledFeatured, ...shuffledNonFeatured].slice(0, randomCount);
+    }
+
+    return testimonials;
+  } catch (error) {
+    console.error('Error fetching testimonials:', error);
+    return [];
+  }
 } 

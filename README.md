@@ -212,7 +212,7 @@ cofabri/
    - Status
    - Apps
    - Authors
-   - Banners
+   - Sitewide Banners
    - Launches
 
 2. Required fields for each table:
@@ -281,7 +281,7 @@ cofabri/
 - Image (optional)
 - Social Links (optional)
 
-#### Banners
+#### Sitewide Banners
 - Title
 - Message
 - Type (Info, Warning, Success, Error)
@@ -324,7 +324,7 @@ Supported types:
 
 The banner system allows you to display important announcements across the website:
 
-1. Create a new banner in the Banners table
+1. Create a new banner in the Sitewide Banners table
 2. Set the banner type (Info, Warning, Success, Error)
 3. Configure display dates
 4. Add optional call-to-action link

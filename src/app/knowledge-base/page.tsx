@@ -53,17 +53,13 @@ export default function KnowledgeBasePage() {
     return matchesSearch && matchesCategory;
   });
 
-  console.log('Filtered articles:', filteredArticles);
-
   // Calculate pagination for All Articles section
   const regularArticles = filteredArticles;
-  console.log('Regular articles:', regularArticles);
   const totalPages = Math.ceil(regularArticles.length / articlesPerPage);
   const paginatedArticles = regularArticles.slice(
     (currentPage - 1) * articlesPerPage,
     currentPage * articlesPerPage
   );
-  console.log('Paginated articles:', paginatedArticles);
 
   return (
     <div className="min-h-screen">

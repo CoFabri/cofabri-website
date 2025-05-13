@@ -25,7 +25,6 @@ interface Banner {
 let requestCount = 0;
 const fetcher = async (url: string) => {
   requestCount++;
-  console.log(`Banner request #${requestCount}`);
   const res = await fetch(url);
   return res.json();
 };
@@ -123,15 +122,15 @@ export default function SitewideBanner() {
     >
       <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col">
-              <h3 className="text-sm font-semibold tracking-tight">{banner.title}</h3>
-              <p className="text-sm font-medium opacity-90">{banner.message}</p>
-            </div>
+          <div className="flex flex-col">
+            <h3 className="text-sm font-semibold tracking-tight">{banner.title}</h3>
+            <p className="text-sm font-medium opacity-90">{banner.message}</p>
+          </div>
+          <div className="flex items-center gap-3">
             {banner.link && (
               <a
                 href={banner.link.url}
-                className="ml-2 text-sm font-medium inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 transition-all duration-200 group"
+                className="text-sm font-medium inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 transition-all duration-200 group"
               >
                 {banner.link.text}
                 <svg 
@@ -144,18 +143,18 @@ export default function SitewideBanner() {
                 </svg>
               </a>
             )}
+            <button
+              type="button"
+              className="flex items-center justify-center p-1.5 rounded-md hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200"
+              onClick={() => {
+                localStorage.setItem(`banner-${banner.id}-dismissed`, 'true');
+                setDismissedBanners(prev => new Set([...prev, banner.id]));
+              }}
+            >
+              <span className="sr-only">Dismiss</span>
+              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
-          <button
-            type="button"
-            className="flex items-center justify-center p-1.5 rounded-md hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-200"
-            onClick={() => {
-              localStorage.setItem(`banner-${banner.id}-dismissed`, 'true');
-              setDismissedBanners(prev => new Set([...prev, banner.id]));
-            }}
-          >
-            <span className="sr-only">Dismiss</span>
-            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-          </button>
         </div>
       </div>
     </div>

@@ -47,9 +47,9 @@ export default function CompactRoadmap() {
     return null;
   }
 
-  // Get the next quarter's milestone
-  const nextQuarter = features[0];
-  const nextQuarterFeatures = [nextQuarter];
+  // Get the next quarter's milestone and its features
+  const nextQuarter = features[0].milestone;
+  const nextQuarterFeatures = features.filter(feature => feature.milestone === nextQuarter);
 
   return (
     <section className="py-20 bg-white">
@@ -59,95 +59,54 @@ export default function CompactRoadmap() {
           subtitle="See what's coming next and track our progress"
         />
 
-        <div className="space-y-12 mb-12">
+        <div className="space-y-8 mb-12">
           <div className="relative">
             <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm py-4 mb-6">
               <h3 className="text-2xl font-bold text-gray-900">
-                {nextQuarter.milestone}
+                {nextQuarter}
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {nextQuarterFeatures.map((feature) => (
                 <div
                   key={feature.id}
-                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
-                  transition-all duration-300 border border-gray-100 relative flex flex-col"
+                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md 
+                  transition-all duration-200 border border-gray-100 relative flex flex-col
+                  hover:border-blue-100 hover:shadow-blue-50"
                 >
-                  <div className="p-6">
-                    <div className="flex items-start gap-3 mb-4">
+                  <div className="p-5">
+                    <div className="flex items-start gap-3 mb-3">
                       <div className="flex-shrink-0 mt-1">
                         {getStatusIcon(feature.status)}
                       </div>
                       <div className="flex-grow">
-                        <h4 className="text-lg font-semibold text-gray-900">
+                        <h4 className="text-base font-semibold text-gray-900">
                           {feature.name}
                         </h4>
                         {feature.application && (
                           <div className="mt-1">
-                            {feature.applicationUrl ? (
-                              <Link 
-                                href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                                bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors duration-200"
-                              >
-                                {feature.application}
-                                <ArrowTopRightOnSquareIcon className="ml-1 h-3 w-3" />
-                              </Link>
-                            ) : (
-                              <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
-                                {feature.application}
-                              </span>
-                            )}
+                            <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2 py-0.5 rounded-md">
+                              {feature.application}
+                            </span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {feature.description}
                     </p>
-
-                    {feature.featuresAndChanges && (
-                      <div className="mb-4 bg-gray-50/80 p-4 rounded-lg">
-                        <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          {feature.featuresAndChanges.split('\n').map((item: string, index: number) => {
-                            const trimmedItem = item.trim();
-                            const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                            return cleanedItem ? (
-                              <div key={index} className="flex items-start gap-2">
-                                <span className="text-blue-500 mt-1.5">•</span>
-                                <span className="flex-grow">{cleanedItem}</span>
-                              </div>
-                            ) : null;
-                          }).filter(Boolean)}
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   <div className="mt-auto">
-                    <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                    <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
-                          {feature.releaseType}
-                        </span>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(feature.status)}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(feature.status)}`}>
                           {feature.status}
                         </span>
                       </div>
                     </div>
-
-                    {feature.releasedDate && (
-                      <div className="text-center py-3 px-4 bg-green-50 border-t border-green-100">
-                        <div className="text-sm font-medium text-green-800">
-                          Released {new Date(feature.releasedDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
@@ -158,10 +117,10 @@ export default function CompactRoadmap() {
         <div className="text-center">
           <Link
             href="/roadmaps"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-duration-150 ease-in-out"
+            className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-duration-150 ease-in-out"
           >
             View All Roadmaps
-            <ChevronRightIcon className="ml-2 -mr-1 h-5 w-5" />
+            <ChevronRightIcon className="ml-2 -mr-1 h-4 w-4" />
           </Link>
         </div>
       </div>

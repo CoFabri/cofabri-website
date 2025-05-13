@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import AppPreviewCard from '@/components/ui/AppPreviewCard';
 import RoadmapPreviewCard from '@/components/ui/RoadmapPreviewCard';
+import TestimonialPreviewCard from '@/components/ui/TestimonialPreviewCard';
 import type { App } from '@/lib/airtable';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, UserIcon, TagIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
@@ -11,6 +12,17 @@ import Image from 'next/image';
 interface PreviewContent {
   id: string;
   type: string;
+  name?: string;
+  role?: string;
+  company?: string;
+  content?: string;
+  rating?: number;
+  image?: {
+    url: string;
+    thumbnails?: {
+      large: { url: string };
+    };
+  }[];
   [key: string]: any;
 }
 
@@ -92,7 +104,8 @@ export default function PreviewPage() {
           ],
           authors: ['Name', 'Role'],
           roadmap: ['Name', 'Description', 'Status'],
-          status: ['Title', 'Message', 'Severity']
+          status: ['Title', 'Message', 'Severity'],
+          testimonial: ['Name', 'Role/Position', 'Company', 'Content', 'Rating', 'Profile Image']
         };
 
         const optionalFieldsMap = {
@@ -104,6 +117,11 @@ export default function PreviewPage() {
             'Launch Announcement',
             'Launch Countdown',
             'Image URL'
+          ],
+          testimonial: [
+            'Featured',
+            'Order',
+            'Apps'
           ]
         };
 
@@ -111,10 +129,6 @@ export default function PreviewPage() {
         const optionalFieldsList = optionalFieldsMap[params.type as keyof typeof optionalFieldsMap] || [];
         const missing: MissingField[] = [];
         const allFields = Object.keys(data);
-        
-        // Debug logging
-        console.log('All fields from Airtable:', allFields);
-        console.log('Required fields to check:', fields);
         
         // Use all required fields, don't filter them
         const required = fields;
@@ -132,8 +146,6 @@ export default function PreviewPage() {
           const actualField = allFields.find(f => f.toLowerCase() === field.toLowerCase()) || field;
           const value = data[actualField];
           
-          console.log(`Checking value for ${field} (${actualField}):`, value);
-          
           if (
             value === undefined || 
             value === null || 
@@ -145,7 +157,6 @@ export default function PreviewPage() {
           }
         });
 
-        console.log('Missing fields:', missing);
         setMissingFields(missing);
         setIsReadyToPost(missing.length === 0);
       } catch (err) {
@@ -687,6 +698,32 @@ export default function PreviewPage() {
             </section>
           )}
 
+          {/* Testimonial Preview */}
+          {content.type === 'testimonial' && content.name && content['Role/Position'] && content.company && content.content && content.rating && content.image && (
+            <section className="bg-white">
+              <div className="container mx-auto px-4 py-12">
+                <div className="flex justify-center">
+                  <div className="w-full max-w-2xl">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                      <div className="p-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Testimonial Preview</h2>
+                        <TestimonialPreviewCard testimonial={{
+                          id: content.id,
+                          name: content.name,
+                          role: content['Role/Position'],
+                          company: content.company,
+                          content: content.content,
+                          rating: content.rating,
+                          image: content.image
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Elements Check */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-6">
@@ -722,8 +759,6 @@ export default function PreviewPage() {
                         value !== '' && 
                         !(Array.isArray(value) && value.length === 0) &&
                         !(typeof value === 'string' && value.trim() === '');
-                      
-                      console.log(`Rendering field ${field} (${actualField}):`, { value, isPresent });
                       
                       return (
                         <div key={field} className={`flex flex-col p-3 rounded-lg border transition-colors ${

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAirtableBase } from '@/lib/airtable';
+import { fetchFromAirtable, AirtableRecord } from '@/lib/airtable';
 import { FieldSet } from 'airtable';
 
 // Map URL types to Airtable table names
@@ -10,8 +10,9 @@ const typeToTable: Record<string, string> = {
   'roadmap': 'Roadmap',
   'status': 'System Status',
   'marketing': 'Marketing Popups',
-  'banner': 'Banners',
-  'popup': 'Marketing Popups'
+  'banner': 'Sitewide Banners',
+  'popup': 'Marketing Popups',
+  'testimonial': 'Testimonials'
 };
 
 interface AuthorFields {
@@ -22,67 +23,77 @@ interface AuthorFields {
   'Social Links'?: string[];
 }
 
-interface AirtableRecord {
-  id: string;
-  type: string;
-  Author?: AuthorFields;
-  [key: string]: any;
-}
-
-interface AirtableAttachment {
-  url: string;
-  [key: string]: any;
-}
+// Define required fields for each content type
+const requiredFieldsMap = {
+  kb: ['Title', 'Content', 'Slug', 'Category'],
+  apps: [
+    'Name',
+    'Description',
+    'Application Status',
+    'Category',
+    'URL'
+  ],
+  authors: ['Name', 'Role'],
+  roadmap: ['Name', 'Description', 'Status'],
+  status: ['Title', 'Message', 'Severity'],
+  testimonial: ['Name', 'Role', 'Company', 'Content', 'Rating', 'Profile Image']
+};
 
 export async function GET(
   request: Request,
   { params }: { params: { type: string; id: string } }
 ) {
   try {
-    const base = getAirtableBase();
-    if (!base) {
-      return NextResponse.json(
-        { error: 'Airtable not configured' },
-        { status: 500 }
-      );
-    }
-
     const { type, id } = params;
+    console.log('Fetching preview for:', { type, id });
+    
     const tableName = typeToTable[type];
+    console.log('Table name:', tableName);
     
     if (!tableName) {
+      console.error('Invalid content type:', type);
       return NextResponse.json(
         { error: 'Invalid content type' },
         { status: 400 }
       );
     }
 
-    try {
-      const record = await base(tableName).find(id);
-      const content = {
-        ...record.fields,
-        id: record.id,
-        type
-      };
+    console.log('Attempting to find record in table:', tableName, 'with id:', id);
+    
+    const records = await fetchFromAirtable<FieldSet>(tableName, {
+      filterByFormula: `RECORD_ID() = '${id}'`
+    });
 
-      return NextResponse.json(content, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-        },
-      });
-    } catch (error) {
-      console.error('Error finding record:', error);
+    if (records.length === 0) {
+      console.error('Record not found');
       return NextResponse.json(
-        { error: 'Content not found', details: error instanceof Error ? error.message : 'Unknown error' },
+        { error: 'Record not found' },
         { status: 404 }
       );
     }
+
+    const record = records[0];
+    const requiredFields = requiredFieldsMap[type as keyof typeof requiredFieldsMap] || [];
+
+    // Check if all required fields are present
+    const missingFields = requiredFields.filter(field => !record.fields[field]);
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      return NextResponse.json(
+        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      id: record.id,
+      type,
+      ...record.fields
+    });
   } catch (error) {
-    console.error('Error fetching preview content:', error);
+    console.error('Error finding record:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch preview content', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch record' },
       { status: 500 }
     );
   }

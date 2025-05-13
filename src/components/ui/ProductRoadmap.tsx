@@ -407,7 +407,8 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                     <div
                       key={feature.id}
                       className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
-                      transition-all duration-300 border border-gray-100 relative flex flex-col"
+                      transition-all duration-300 border border-gray-100 relative flex flex-col
+                      hover:border-blue-100 hover:shadow-blue-50/50"
                     >
                       <div className="p-6">
                         <div className="flex items-start gap-3 mb-4">
@@ -426,15 +427,15 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                                    bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors duration-200"
+                                    bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
                                   >
                                     {feature.application}
-                                    <svg className="ml-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                     </svg>
                                   </Link>
                                 ) : (
-                                  <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded-md">
+                                  <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
                                     {feature.application}
                                   </span>
                                 )}
@@ -448,12 +449,11 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                         </p>
 
                         {feature.featuresAndChanges && (
-                          <div className="mb-4 bg-gray-50/80 p-4 rounded-lg">
+                          <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
                             <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
                             <div className="text-sm text-gray-600 space-y-1.5">
                               {feature.featuresAndChanges.split('\n').map((item: string, index: number) => {
                                 const trimmedItem = item.trim();
-                                // Handle items that already have bullets or dashes
                                 const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
                                 return cleanedItem ? (
                                   <div key={index} className="flex items-start">
@@ -467,7 +467,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                         )}
 
                         {feature.releaseNotes && (
-                          <div className="mb-4 bg-blue-50/80 p-4 rounded-lg">
+                          <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
                             <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
                             <p className="text-sm text-blue-700">{feature.releaseNotes}</p>
                           </div>

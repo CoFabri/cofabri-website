@@ -1,34 +1,80 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
 import SectionHeading from './SectionHeading';
-
-const testimonials = [
-  {
-    name: 'Sarah Johnson',
-    role: 'CEO, TechStart',
-    image: '/testimonials/sarah.jpg',
-    rating: 5,
-    content: 'The apps have transformed how we work. The collaboration features are game-changing.'
-  },
-  {
-    name: 'Michael Chen',
-    role: 'CTO, InnovateCorp',
-    image: '/testimonials/michael.jpg',
-    rating: 5,
-    content: 'Best-in-class security and compliance features. Exactly what we needed.'
-  },
-  {
-    name: 'Emily Rodriguez',
-    role: 'Product Manager, GrowthLabs',
-    image: '/testimonials/emily.jpg',
-    rating: 5,
-    content: 'The analytics and insights have helped us make better decisions.'
-  }
-];
+import { Testimonial, getTestimonials } from '@/lib/airtable';
 
 const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        const response = await fetch('/api/testimonials');
+        if (!response.ok) throw new Error('Failed to fetch testimonials');
+        const data = await response.json();
+        setTestimonials(data);
+      } catch (err) {
+        console.error('Error fetching testimonials:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch testimonials');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchTestimonials();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <SectionHeading
+            title="What Our Customers Say"
+            subtitle="Hear from businesses that have transformed their operations with our apps"
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, index) => (
+              <div
+                key={index}
+                className="relative p-8 rounded-2xl bg-white shadow-lg animate-pulse"
+              >
+                <div className="flex items-center mb-6">
+                  <div className="w-14 h-14 rounded-full bg-gray-200" />
+                  <div className="ml-4">
+                    <div className="h-4 w-32 bg-gray-200 rounded" />
+                    <div className="h-3 w-24 bg-gray-200 rounded mt-2" />
+                  </div>
+                </div>
+                <div className="h-4 w-full bg-gray-200 rounded mb-4" />
+                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <SectionHeading
+            title="What Our Customers Say"
+            subtitle="Hear from businesses that have transformed their operations with our apps"
+          />
+          <div className="text-center text-red-500">
+            {error}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -38,14 +84,14 @@ const Testimonials = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
+          {testimonials.map((testimonial) => (
             <div
-              key={testimonial.name}
+              key={testimonial.id}
               className="relative p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <div className="flex items-center mb-6">
                 <img
-                  src={testimonial.image}
+                  src={testimonial.image[0]?.thumbnails?.large?.url || testimonial.image[0]?.url}
                   alt={testimonial.name}
                   className="w-14 h-14 rounded-full object-cover"
                 />
@@ -55,6 +101,9 @@ const Testimonials = () => {
                   </h3>
                   <p className="text-gray-600">
                     {testimonial.role}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    {testimonial.company}
                   </p>
                 </div>
               </div>

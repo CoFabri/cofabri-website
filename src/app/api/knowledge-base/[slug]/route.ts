@@ -11,10 +11,6 @@ export async function GET(
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
     
-    // Debug logging
-    console.log('API Response:', article);
-    console.log('Published At:', article.publishedAt);
-    
     return NextResponse.json(article);
   } catch (error) {
     console.error('Error fetching knowledge base article:', error);

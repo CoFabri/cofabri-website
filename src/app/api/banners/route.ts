@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAirtableRecords, AirtableRecord } from '@/lib/airtable';
+import { FieldSet } from 'airtable';
 
-interface BannerFields {
+interface BannerFields extends FieldSet {
   Title: string;
   Message: string;
   Type: 'Info' | 'Success' | 'Warning' | 'Error';
@@ -14,6 +15,7 @@ interface BannerFields {
   'Text Color'?: 'White' | 'Dark';
   'Position'?: 'Top' | 'Bottom';
   Priority?: number;
+  [key: string]: any; // Add index signature to satisfy FieldSet constraint
 }
 
 export const revalidate = 300; // Revalidate every 5 minutes
@@ -33,8 +35,10 @@ export async function GET(request: Request) {
         startDate: record.fields['Start Date'],
         endDate: record.fields['End Date'],
         isActive: record.fields['Is Active'],
-        linkUrl: record.fields['Link URL'],
-        linkText: record.fields['Link Text'],
+        link: record.fields['Link URL'] ? {
+          text: record.fields['Link Text'] || 'Learn More',
+          url: record.fields['Link URL']
+        } : undefined,
         backgroundColor: record.fields['Background Color'] || 'Default',
         textColor: record.fields['Text Color'] || 'Dark',
         position: record.fields['Position'] || 'Top',
