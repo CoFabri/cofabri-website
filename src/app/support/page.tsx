@@ -68,7 +68,7 @@ export default function SupportPage() {
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
               
               <iframe
-                className="w-full h-[1125px] border-0 rounded-lg"
+                className="w-full h-[1237px] border-0 rounded-lg"
                 src="https://airtable.com/embed/appLCRokCHruMDfuB/pagFEHyIO9FvMYWaM/form"
                 title="Support Ticket Form"
               />

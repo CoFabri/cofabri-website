@@ -10,6 +10,7 @@ const Footer = () => {
       { name: 'Apps', href: '/apps' },
       { name: 'Roadmaps', href: '/roadmaps' },
       { name: 'Knowledge Base', href: '/knowledge-base' },
+      { name: 'Legal', href: '/legal' },
       { name: 'Support', href: '/support' },
     ],
     social: [

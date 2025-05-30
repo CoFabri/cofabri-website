@@ -76,7 +76,7 @@ export default function Contact() {
               src={AIRTABLE_FORM_URL}
               frameBorder="0"
               width="100%"
-              height="725"
+              height="950"
               style={{ background: 'transparent' }}
             />
           </div>
