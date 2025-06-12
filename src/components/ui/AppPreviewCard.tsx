@@ -29,11 +29,17 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
         <div className="relative w-full h-auto">
           {app.screenshot && (
             <Image
-              src={typeof app.screenshot === 'string' ? app.screenshot : app.screenshot[0]?.url}
+              src={typeof app.screenshot === 'string' ? app.screenshot : '/images/placeholder.jpg'}
               alt={app.name}
               width={1200}
               height={630}
               className="object-cover w-full h-auto"
+              onError={(e) => {
+                console.error(`Error loading image for ${app.name}:`, e);
+                // Fallback to placeholder
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = '/images/placeholder.jpg';
+              }}
             />
           )}
         </div>

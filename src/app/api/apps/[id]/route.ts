@@ -4,32 +4,42 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 
-interface Testimonial {
-  ID: string;
-  Statement: string;
-}
-
 interface AppData {
   betaSpotsTotal: number;
   betaSpotsFilled: number;
   betaDescription: string;
   status: string;
   name: string;
+  testimonials: Array<{
+    ID: string;
+    Statement: string;
+  }>;
 }
 
 async function fetchFromAirtable(endpoint: string) {
-  const response = await fetch(`${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${endpoint}`, {
-    headers: {
-      'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error(`Airtable API error: ${response.statusText}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('Airtable API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(`Airtable API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error in fetchFromAirtable:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 export async function GET(
@@ -53,12 +63,12 @@ export async function GET(
       Statement: record.fields.Statement
     }));
 
-    const response = {
-      betaSpotsTotal: appData.fields['Beta Spots Total'],
-      betaSpotsFilled: appData.fields['Beta Spots Filled'],
-      betaDescription: appData.fields['Beta Description'],
-      status: appData.fields['Status'],
-      name: appData.fields['Name'],
+    const response: AppData = {
+      betaSpotsTotal: appData.fields['Beta Spots Total'] || 0,
+      betaSpotsFilled: appData.fields['Beta Spots Filled'] || 0,
+      betaDescription: appData.fields['Beta Description'] || '',
+      status: appData.fields['Status'] || 'Coming Soon',
+      name: appData.fields['Name'] || 'Unknown App',
       testimonials
     };
 

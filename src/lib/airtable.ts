@@ -1,4 +1,4 @@
-import { FieldSet } from 'airtable';
+import { FieldSet, Attachment, Thumbnail } from 'airtable';
 import { Collaborator } from 'airtable';
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
@@ -11,34 +11,61 @@ export interface AirtableRecord<T> {
   createdTime: string;
 }
 
+interface AirtableFields extends FieldSet {
+  [key: string]: any;
+}
+
 // Server-side fetch function for Airtable
-export async function fetchFromAirtable<T>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
-  if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-    throw new Error('Missing Airtable configuration');
-  }
-
-  const queryParams = new URLSearchParams();
-  if (options.filterByFormula) queryParams.append('filterByFormula', options.filterByFormula);
-  if (options.maxRecords) queryParams.append('maxRecords', options.maxRecords.toString());
-  if (options.sort) queryParams.append('sort[0][field]', options.sort[0].field);
-  if (options.sort) queryParams.append('sort[0][direction]', options.sort[0].direction);
-
-  const response = await fetch(
-    `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${tableName}?${queryParams.toString()}`,
-    {
+export async function fetchFromAirtable<T extends AirtableFields>(
+  table: string,
+  options: {
+    filterByFormula?: string;
+    sort?: { field: string; direction: string }[];
+    maxRecords?: number;
+  } = {}
+): Promise<AirtableRecord<T>[]> {
+  try {
+    const url = new URL(`${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(table)}`);
+    
+    // Add query parameters
+    if (options.filterByFormula) {
+      url.searchParams.append('filterByFormula', options.filterByFormula);
+    }
+    if (options.sort) {
+      url.searchParams.append('sort[0][field]', options.sort[0].field);
+      url.searchParams.append('sort[0][direction]', options.sort[0].direction);
+    }
+    if (options.maxRecords) {
+      url.searchParams.append('maxRecords', options.maxRecords.toString());
+    }
+    
+    const response = await fetch(url.toString(), {
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
+      next: {
+        revalidate: 300 // Cache for 5 minutes
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('Airtable API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+        url: url.toString()
+      });
+      throw new Error(`Airtable API error: ${response.statusText}`);
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(`Airtable API error: ${response.statusText}`);
+    const data = await response.json();
+    return data.records;
+  } catch (error) {
+    console.error(`Error fetching from Airtable table ${table}:`, error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.records;
 }
 
 // Types for our tables
@@ -309,7 +336,7 @@ export async function getApps(): Promise<App[]> {
       Name: string;
       Description: string;
       URL?: string;
-      'Image URL'?: { url: string }[];
+      'Image URL'?: Attachment[];
       'Application Status': App['status'];
       Category?: string;
       'Feature 1'?: string;
@@ -319,18 +346,62 @@ export async function getApps(): Promise<App[]> {
       'Released Date'?: string;
       'Domain(s)'?: string;
       'Feature On Website?'?: boolean;
+      [key: string]: any;
     }>('Apps', {
       sort: [{ field: 'Name', direction: 'asc' }]
     });
     
     const apps = records.map(record => {
-      const screenshot = record.fields['Image URL']?.[0]?.url;
+      // Handle image URL properly
+      let screenshot: string | undefined;
+      if (record.fields['Image URL']?.[0]) {
+        try {
+          // Get the attachment object
+          const attachment = record.fields['Image URL'][0];
+          // Use the fresh URL from the attachment
+          const imageUrl = attachment.url;
+          
+          // Ensure the URL is properly formatted
+          const url = new URL(imageUrl);
+          
+          // Check if it's an Airtable URL
+          if (url.hostname.includes('airtable.com') || 
+              url.hostname.includes('dl.airtable.com') || 
+              url.hostname.includes('airtableusercontent.com')) {
+            // Add cache-busting parameter to force fresh URL
+            url.searchParams.set('cache', Date.now().toString());
+            screenshot = url.toString();
+          } else {
+            console.warn(`Invalid image URL hostname for app ${record.fields.Name}: ${url.hostname}`);
+            screenshot = '/images/placeholder.jpg';
+          }
+        } catch (e) {
+          console.warn(`Invalid image URL for app ${record.fields.Name}:`, e);
+          screenshot = '/images/placeholder.jpg';
+        }
+      } else {
+        screenshot = '/images/placeholder.jpg';
+      }
+
+      // Validate app URL
+      let appUrl = record.fields.URL;
+      try {
+        if (appUrl && !appUrl.startsWith('http')) {
+          appUrl = `https://${appUrl}`;
+        }
+        if (appUrl) {
+          new URL(appUrl);
+        }
+      } catch (e) {
+        console.warn(`Invalid app URL for ${record.fields.Name}:`, appUrl);
+        appUrl = undefined;
+      }
       
       return {
         id: record.id,
         name: record.fields.Name,
         description: record.fields.Description,
-        url: record.fields.URL,
+        url: appUrl,
         screenshot,
         status: record.fields['Application Status'],
         category: record.fields.Category,
@@ -478,7 +549,7 @@ export async function getAllContent<T extends BlogPost | KnowledgeBaseArticle | 
   }
 }
 
-export async function getAirtableRecords<T extends FieldSet>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
+export async function getAirtableRecords<T extends AirtableFields>(tableName: string, options: { filterByFormula?: string; sort?: { field: string; direction: string }[]; maxRecords?: number } = {}): Promise<AirtableRecord<T>[]> {
   try {
     return await fetchFromAirtable<T>(tableName, options);
   } catch (error) {
@@ -502,6 +573,7 @@ export async function getMarketingPopupConfig(options: { signal?: AbortSignal } 
       'Is Enabled': boolean;
       'Start Date': string;
       'End Date': string;
+      [key: string]: any;
     }>('Marketing Popups', {
       filterByFormula: 'AND({Is Enabled}=TRUE(),{Start Date}<=NOW(),{End Date}>=NOW())',
       maxRecords: 1,
@@ -510,23 +582,34 @@ export async function getMarketingPopupConfig(options: { signal?: AbortSignal } 
     if (records.length === 0) return null;
 
     const record = records[0];
+    
+    // Validate button link URL
+    let buttonLink = record.fields['Button Link'];
+    try {
+      if (buttonLink && !buttonLink.startsWith('http')) {
+        buttonLink = `https://${buttonLink}`;
+      }
+      if (buttonLink) {
+        new URL(buttonLink);
+      }
+    } catch (e) {
+      console.warn(`Invalid button link URL for popup ${record.id}:`, buttonLink);
+      buttonLink = '/';
+    }
+
     return {
       title: record.fields.Title,
       content: record.fields.Content,
       buttonText: record.fields['Button Text'],
-      buttonLink: record.fields['Button Link'],
-      backgroundColor: record.fields['Background Color'],
-      textColor: record.fields['Text Color'],
-      buttonColor: record.fields['Button Color'],
-      position: record.fields.Position,
-      delay: record.fields.Delay,
-      isEnabled: record.fields['Is Enabled'],
+      buttonLink,
+      backgroundColor: record.fields['Background Color'] || '#ffffff',
+      textColor: record.fields['Text Color'] || '#000000',
+      buttonColor: record.fields['Button Color'] || '#000000',
+      position: record.fields.Position || 'Center',
+      delay: record.fields.Delay || 0,
+      isEnabled: true, // Since we're filtering for enabled popups, this will always be true
     };
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.log('Request was aborted');
-      return null;
-    }
     console.error('Error fetching marketing popup config:', error);
     return null;
   }

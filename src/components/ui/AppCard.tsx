@@ -29,11 +29,24 @@ export default function AppCard({ app }: AppCardProps) {
         <div className="relative w-full h-auto">
           {app.screenshot && (
             <Image
-              src={typeof app.screenshot === 'string' ? app.screenshot : app.screenshot[0]?.url}
+              src={typeof app.screenshot === 'string' ? app.screenshot : '/images/placeholder.jpg'}
               alt={app.name}
               width={1200}
               height={630}
               className="object-cover w-full h-auto"
+              onError={(e) => {
+                console.error(`Error loading image for ${app.name}:`, e);
+                // Fallback to placeholder
+                const imgElement = e.target as HTMLImageElement;
+                if (imgElement.src !== '/images/placeholder.jpg') {
+                  imgElement.src = '/images/placeholder.jpg';
+                  imgElement.onerror = null; // Prevent infinite loop
+                }
+              }}
+              priority={isLaunchingToday()}
+              loading={isLaunchingToday() ? 'eager' : 'lazy'}
+              unoptimized={process.env.NODE_ENV === 'development'}
+              quality={75}
             />
           )}
         </div>

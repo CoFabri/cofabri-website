@@ -151,7 +151,7 @@ export default function HomepageApps() {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <Image
-                    src={typeof app.screenshot === 'string' ? app.screenshot : app.screenshot?.[0]?.url || '/images/placeholder.jpg'}
+                    src={typeof app.screenshot === 'string' ? app.screenshot : '/images/placeholder.jpg'}
                     alt={app.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
