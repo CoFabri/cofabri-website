@@ -30,12 +30,15 @@ async function fetchFromAirtable(endpoint: string) {
       console.error('Airtable API error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorData
+        error: errorData,
+        endpoint
       });
       throw new Error(`Airtable API error: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('Airtable response:', { endpoint, data });
+    return data;
   } catch (error) {
     console.error('Error in fetchFromAirtable:', error);
     throw error;
@@ -50,25 +53,29 @@ export async function GET(
     console.log('Fetching app data for ID:', params.id);
     
     // Fetch app data
-    const appData = await fetchFromAirtable(`Apps/${params.id}`);
-    console.log('Successfully fetched app record:', appData.id);
+    const appResponse = await fetchFromAirtable(`Apps/${params.id}`);
+    console.log('Raw app response:', appResponse);
+    
+    if (!appResponse || !appResponse.fields) {
+      throw new Error('Invalid app data response');
+    }
     
     // Fetch testimonials
     const testimonialsResponse = await fetchFromAirtable(
       `Beta Statements?filterByFormula={App Record ID}='${params.id}'&fields[]=ID&fields[]=Statement`
     );
     
-    const testimonials = testimonialsResponse.records.map((record: any) => ({
+    const testimonials = testimonialsResponse.records?.map((record: any) => ({
       ID: String(record.fields.ID),
       Statement: record.fields.Statement
-    }));
+    })) || [];
 
     const response: AppData = {
-      betaSpotsTotal: appData.fields['Beta Spots Total'] || 0,
-      betaSpotsFilled: appData.fields['Beta Spots Filled'] || 0,
-      betaDescription: appData.fields['Beta Description'] || '',
-      status: appData.fields['Status'] || 'Coming Soon',
-      name: appData.fields['Name'] || 'Unknown App',
+      betaSpotsTotal: appResponse.fields['Beta Spots Total'] || 0,
+      betaSpotsFilled: appResponse.fields['Beta Spots Filled'] || 0,
+      betaDescription: appResponse.fields['Beta Description'] || '',
+      status: appResponse.fields['Status'] || 'Coming Soon',
+      name: appResponse.fields['Name'] || 'Unknown App',
       testimonials
     };
 
@@ -77,7 +84,7 @@ export async function GET(
   } catch (error) {
     console.error('Error in GET /api/apps/[id]:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch app data' },
+      { error: 'Failed to fetch app data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
