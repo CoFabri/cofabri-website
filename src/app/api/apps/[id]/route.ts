@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import Airtable from 'airtable';
 
-// Initialize Airtable
-const base = new Airtable({ apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN }).base(process.env.AIRTABLE_BASE_ID!);
+const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 
 interface Testimonial {
   ID: string;
@@ -17,53 +17,49 @@ interface AppData {
   name: string;
 }
 
+async function fetchFromAirtable(endpoint: string) {
+  const response = await fetch(`${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${endpoint}`, {
+    headers: {
+      'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Airtable API error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     console.log('Fetching app data for ID:', params.id);
-    console.log('Using Airtable Base ID:', process.env.AIRTABLE_BASE_ID);
     
     // Fetch app data
-    const appRecord = await base('Apps').find(params.id);
-    console.log('Successfully fetched app record:', appRecord.id);
+    const appData = await fetchFromAirtable(`Apps/${params.id}`);
+    console.log('Successfully fetched app record:', appData.id);
     
-    // Fetch testimonials for this app
-    const testimonialsTable = base('Beta Statements');
-    console.log('Fetching testimonials for app ID:', params.id);
+    // Fetch testimonials
+    const testimonialsResponse = await fetchFromAirtable(
+      `Beta Statements?filterByFormula={App Record ID}='${params.id}'&fields[]=ID&fields[]=Statement`
+    );
     
-    // DEBUG: Fetch one record to inspect all fields
-    const debugRecords = await testimonialsTable.select({
-      maxRecords: 1,
-    }).firstPage();
-    
-    if (debugRecords.length > 0) {
-      console.log('DEBUG: Full fields of first Beta Statement record:', debugRecords[0].fields);
-    }
-
-    const testimonials = await testimonialsTable
-      .select({
-        filterByFormula: `{App Record ID} = '${params.id}'`,
-        fields: ['ID', 'Statement']  
-      })
-      .all();
-    
-    console.log('Successfully fetched testimonials:', testimonials.length);
-    if (testimonials.length > 0) {
-      console.log('Sample testimonial:', testimonials[0].fields);
-    }
+    const testimonials = testimonialsResponse.records.map((record: any) => ({
+      ID: String(record.fields.ID),
+      Statement: record.fields.Statement
+    }));
 
     const response = {
-      betaSpotsTotal: appRecord.get('Beta Spots Total'),
-      betaSpotsFilled: appRecord.get('Beta Spots Filled'),
-      betaDescription: appRecord.get('Beta Description'),
-      status: appRecord.get('Status'),
-      name: appRecord.get('Name'),
-      testimonials: testimonials.map(t => ({
-        ID: String(t.fields.ID),  
-        Statement: t.fields.Statement
-      }))
+      betaSpotsTotal: appData.fields['Beta Spots Total'],
+      betaSpotsFilled: appData.fields['Beta Spots Filled'],
+      betaDescription: appData.fields['Beta Description'],
+      status: appData.fields['Status'],
+      name: appData.fields['Name'],
+      testimonials
     };
 
     console.log('Prepared response:', response);
