@@ -1,4 +1,3 @@
-version: 1
 frontend:
   phases:
     preBuild:
@@ -26,4 +25,7 @@ frontend:
         - key: 'X-Frame-Options'
           value: 'DENY'
         - key: 'X-XSS-Protection'
-          value: '1; mode=block' 
+          value: '1; mode=block'
+  env:
+    AIRTABLE_PERSONAL_ACCESS_TOKEN: ${AIRTABLE_PERSONAL_ACCESS_TOKEN}
+    AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
