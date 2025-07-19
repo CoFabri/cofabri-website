@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getApps } from '@/lib/airtable';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const apps = await getApps();

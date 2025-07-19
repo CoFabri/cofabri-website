@@ -14,7 +14,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 - 🎉 Interactive celebrations with confetti effects
 
 ### Content Management
-- 📝 Blog system with rich text support
 - 📚 Knowledge base with categorized articles
 - 🗺️ Product roadmap with milestone tracking
 - 📢 Status page for system monitoring
@@ -36,7 +35,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 - 📧 Newsletter subscription system
 - 💬 Live chat widget (HighLevel integration)
 - ❓ FAQ section
-- 📝 Blog comments
 - 📊 Analytics tracking
 - 🎯 Call-to-action components
 - 🎉 Interactive celebrations
@@ -177,7 +175,7 @@ cofabri/
 │   │   ├── preview/           # Content preview system
 │   │   ├── roadmaps/          # Product roadmap pages
 │   │   ├── status/            # System status pages
-│   │   ├── blog/              # Blog pages
+
 │   │   ├── knowledge-base/    # Knowledge base pages
 │   │   ├── apps/              # App showcase pages
 │   │   └── api/               # API routes
@@ -206,7 +204,6 @@ cofabri/
 ### Airtable Setup
 
 1. Create an Airtable base with the following tables:
-   - Blog
    - Knowledge Base
    - Roadmap
    - Status
@@ -217,7 +214,7 @@ cofabri/
 
 2. Required fields for each table:
 
-#### Blog Posts
+
 - Title
 - Content
 - Slug
@@ -269,6 +266,7 @@ cofabri/
 - Application Status (Live, Beta, Alpha, Coming Soon)
 - Category
 - URL
+- Featured Image URL (direct URL to image)
 - Feature 1-3 (optional)
 - Launch Date (optional)
 - Launch Announcement (optional)
@@ -309,7 +307,6 @@ The preview system allows you to view content before publishing. Access previews
 ```
 
 Supported types:
-- blog
 - kb
 - apps
 - authors

@@ -6,6 +6,9 @@ import Link from 'next/link';
 import Testimonials from '@/components/ui/Testimonials';
 import FeaturedApp from '@/components/ui/FeaturedApp';
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 // Define app categories
 const categories = [
   { id: 'all', name: 'All Apps' },
@@ -80,6 +83,7 @@ export default function AppsPage() {
       </div>
 
       {/* Testimonials Section */}
+      {/* To filter testimonials by app, pass appId: <Testimonials appId={appId} /> */}
       <Testimonials />
 
       {/* Newsletter Section */}

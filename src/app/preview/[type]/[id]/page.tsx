@@ -116,7 +116,7 @@ export default function PreviewPage() {
             'Launch Date',
             'Launch Announcement',
             'Launch Countdown',
-            'Image URL'
+            'Featured Image URL'
           ],
           testimonial: [
             'Featured',
@@ -262,7 +262,7 @@ export default function PreviewPage() {
     id: content.id,
     name: content.Name || content.name || '',
     description: content.Description || content.description || '',
-    screenshot: content['Image URL'] || content.imageUrl || '',
+    screenshot: content['Featured Image URL'] || content.imageUrl || '',
     url: content.URL || content.url || '',
     feature1: content['Feature 1'] || content.feature1 || '',
     feature2: content['Feature 2'] || content.feature2 || '',
@@ -714,7 +714,9 @@ export default function PreviewPage() {
                           company: content.company,
                           content: content.content,
                           rating: content.rating,
-                          image: content.image
+                          image: Array.isArray(content.image) && content.image.length > 0 
+                            ? content.image[0].url 
+                            : '/images/placeholder.jpg'
                         }} />
                       </div>
                     </div>

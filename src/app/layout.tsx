@@ -6,6 +6,10 @@ import Footer from "@/components/ui/Footer";
 import SitewideBanner from "@/components/ui/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
 
+// Force dynamic rendering for the entire app
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

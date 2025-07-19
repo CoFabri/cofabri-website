@@ -25,15 +25,23 @@ interface Banner {
 let requestCount = 0;
 const fetcher = async (url: string) => {
   requestCount++;
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+    },
+  });
   return res.json();
 };
 
 export default function SitewideBanner() {
   const { data: banners, error, isLoading } = useSWR<Banner[]>('/api/banners', fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    refreshInterval: 300000, // 5 minutes
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    refreshInterval: 0, // Disable automatic refresh
+    dedupingInterval: 0, // Disable deduplication
+    focusThrottleInterval: 0, // Disable focus throttling
   });
 
   const pathname = usePathname();

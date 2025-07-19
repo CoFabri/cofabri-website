@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { fetchFromAirtable, AirtableRecord } from '@/lib/airtable';
 import { FieldSet } from 'airtable';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // Map URL types to Airtable table names
 const typeToTable: Record<string, string> = {
   'kb': 'Knowledge Base',

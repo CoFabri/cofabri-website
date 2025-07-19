@@ -1,9 +1,15 @@
 'use client';
 
+import React from 'react';
+import Link from 'next/link';
+import GradientHeading from '@/components/ui/GradientHeading';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SparklesIcon, RocketLaunchIcon, StarIcon, HeartIcon, CheckCircleIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import AnimatedGradient from '@/components/ui/AnimatedGradient';
+
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 
 interface FormData {
   email: string;

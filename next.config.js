@@ -4,17 +4,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'airtable.com',
+        hostname: '**',
         pathname: '/**',
       },
       {
-        protocol: 'https',
-        hostname: 'dl.airtable.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.airtableusercontent.com',
+        protocol: 'http',
+        hostname: '**',
         pathname: '/**',
       }
     ],
@@ -30,7 +25,15 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
           },
         ],
       },
@@ -39,7 +42,15 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, s-maxage=300, stale-while-revalidate=600',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
           },
         ],
       },

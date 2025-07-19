@@ -66,7 +66,7 @@ export default function AppsScrollCelebration({ apps }: AppsScrollCelebrationPro
     }
 
     return () => observer.disconnect();
-  }, [apps]);
+  }, [apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
 
   return (
     <div 

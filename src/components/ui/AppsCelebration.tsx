@@ -65,7 +65,7 @@ export default function AppsCelebration({ apps }: AppsCelebrationProps) {
     }, 400);
 
     return () => clearInterval(interval);
-  }, [apps]);
+  }, [apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
 
   return null;
 } 

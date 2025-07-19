@@ -5,7 +5,11 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import SectionHeading from './SectionHeading';
 import { Testimonial, getTestimonials } from '@/lib/airtable';
 
-const Testimonials = () => {
+interface TestimonialsProps {
+  appId?: string;
+}
+
+const Testimonials = ({ appId }: TestimonialsProps) => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,7 +17,11 @@ const Testimonials = () => {
   useEffect(() => {
     async function fetchTestimonials() {
       try {
-        const response = await fetch('/api/testimonials');
+        let url = '/api/testimonials';
+        if (appId) {
+          url += `?appId=${encodeURIComponent(appId)}`;
+        }
+        const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch testimonials');
         const data = await response.json();
         setTestimonials(data);
@@ -26,7 +34,7 @@ const Testimonials = () => {
     }
 
     fetchTestimonials();
-  }, []);
+  }, [appId]);
 
   if (isLoading) {
     return (
@@ -91,7 +99,7 @@ const Testimonials = () => {
             >
               <div className="flex items-center mb-6">
                 <img
-                  src={testimonial.image[0]?.thumbnails?.large?.url || testimonial.image[0]?.url}
+                  src={testimonial.image && testimonial.image.trim() !== '' ? testimonial.image : '/images/placeholder.jpg'}
                   alt={testimonial.name}
                   className="w-14 h-14 rounded-full object-cover"
                 />

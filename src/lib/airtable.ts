@@ -43,10 +43,10 @@ export async function fetchFromAirtable<T extends AirtableFields>(
       headers: {
         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
       },
-      next: {
-        revalidate: 300 // Cache for 5 minutes
-      }
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -85,25 +85,7 @@ interface AuthorSocial {
   icon: string;
 }
 
-export interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  excerpt?: string;
-  category: string;
-  slug: string;
-  authorId: string;
-  authorImage?: string;
-  authorRole?: string;
-  authorBio?: string;
-  authorSocial?: AuthorSocial[];
-  readingTime: number;
-  isPopular?: boolean;
-  isFeatured?: boolean;
-  publishedAt: string;
-  tags?: string[];
-  featuredImage?: string;
-}
+
 
 export interface KnowledgeBaseArticle {
   id: string;
@@ -126,7 +108,7 @@ export interface App {
   name: string;
   description: string;
   url?: string;
-  screenshot?: string | { url: string }[];
+  screenshot?: string;
   status: 'Live' | 'Beta' | 'Alpha' | 'In Development' | 'Coming Soon';
   category?: string;
   feature1?: string;
@@ -186,17 +168,7 @@ export interface Testimonial {
   company: string;
   content: string;
   rating: number;
-  image: {
-    id: string;
-    url: string;
-    filename: string;
-    type: string;
-    size: number;
-    thumbnails?: {
-      small: { url: string; width: number; height: number };
-      large: { url: string; width: number; height: number };
-    };
-  }[];
+  image: string; // Now a URL string
   isActive: boolean;
   order: number;
   createdAt: string;
@@ -219,7 +191,9 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
       'Is Popular'?: boolean;
       'Is Featured'?: boolean;
       Tags?: string[];
-    }>('Knowledge Base');
+    }>('Knowledge Base', {
+      filterByFormula: '{Status} = "Published"'
+    });
     
     return records.map(record => ({
       id: record.id,
@@ -252,13 +226,12 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
       Category: string;
       Author: string;
       'Read Time': number;
-      'Published At': string;
       'Last Updated': string;
       'Is Popular': boolean;
       'Is Featured': boolean;
       Tags: string[];
     }>('Knowledge Base', {
-      filterByFormula: `{Slug} = '${slug}'`,
+      filterByFormula: `AND({Slug} = '${slug}', {Status} = "Published")`,
     });
 
     if (records.length === 0) {
@@ -276,7 +249,7 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
       category: record.fields.Category,
       author: record.fields.Author,
       readTime: record.fields['Read Time'],
-      publishedAt: record.fields['Published At'],
+      publishedAt: record.fields['Last Updated'],
       lastUpdated: record.fields['Last Updated'],
       isPopular: record.fields['Is Popular'],
       isFeatured: record.fields['Is Featured'],
@@ -291,38 +264,37 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
 export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const records = await fetchFromAirtable<{
-      Title: string;
-      Slug: string;
-      Content: string;
-      Excerpt: string;
-      Category: string;
-      Author: string;
+      'Article Title': string;
+      'Site URL Slug': string;
+      'Article Content': string;
+      'Excerpt': string;
+      'Category': string;
+      'Author': string;
       'Read Time': number;
-      'Published At': string;
       'Last Updated': string;
       'Is Popular': boolean;
       'Is Featured': boolean;
-      Tags: string[];
+      'Tags': string[];
     }>('Knowledge Base', {
       filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
-      sort: [{ field: 'Published At', direction: 'desc' }],
+      sort: [{ field: 'Last Updated', direction: 'desc' }],
       maxRecords: 6,
     });
 
     return records.map(record => ({
       id: record.id,
-      title: record.fields.Title,
-      slug: record.fields.Slug,
-      content: record.fields.Content,
-      excerpt: record.fields.Excerpt,
-      category: record.fields.Category,
-      author: record.fields.Author,
+      title: record.fields['Article Title'],
+      slug: record.fields['Site URL Slug'],
+      content: record.fields['Article Content'],
+      excerpt: record.fields['Excerpt'],
+      category: record.fields['Category'],
+      author: record.fields['Author'],
       readTime: record.fields['Read Time'],
-      publishedAt: record.fields['Published At'],
+      publishedAt: record.fields['Last Updated'],
       lastUpdated: record.fields['Last Updated'],
       isPopular: record.fields['Is Popular'],
       isFeatured: record.fields['Is Featured'],
-      tags: record.fields.Tags,
+      tags: record.fields['Tags'],
     }));
   } catch (error) {
     console.error('Error fetching featured knowledge base articles:', error);
@@ -336,7 +308,7 @@ export async function getApps(): Promise<App[]> {
       Name: string;
       Description: string;
       URL?: string;
-      'Image URL'?: Attachment[];
+      'Featured Image URL'?: string | readonly { url: string }[];
       'Application Status': App['status'];
       Category?: string;
       'Feature 1'?: string;
@@ -345,38 +317,37 @@ export async function getApps(): Promise<App[]> {
       'Launch Date'?: string;
       'Released Date'?: string;
       'Domain(s)'?: string;
-      'Feature On Website?'?: boolean;
+      'Featured App?'?: boolean;
       [key: string]: any;
     }>('Apps', {
       sort: [{ field: 'Name', direction: 'asc' }]
     });
     
     const apps = records.map(record => {
-      // Handle image URL properly
+      
+      // Handle featured image URL (string or attachment array)
       let screenshot: string | undefined;
-      if (record.fields['Image URL']?.[0]) {
-        try {
-          // Get the attachment object
-          const attachment = record.fields['Image URL'][0];
-          // Use the fresh URL from the attachment
-          const imageUrl = attachment.url;
-          
-          // Ensure the URL is properly formatted
-          const url = new URL(imageUrl);
-          
-          // Check if it's an Airtable URL
-          if (url.hostname.includes('airtable.com') || 
-              url.hostname.includes('dl.airtable.com') || 
-              url.hostname.includes('airtableusercontent.com')) {
-            // Add cache-busting parameter to force fresh URL
-            url.searchParams.set('cache', Date.now().toString());
-            screenshot = url.toString();
-          } else {
-            console.warn(`Invalid image URL hostname for app ${record.fields.Name}: ${url.hostname}`);
+      const featuredImageField = record.fields['Featured Image URL'];
+      if (featuredImageField) {
+        if (typeof featuredImageField === 'string') {
+          // String URL
+          try {
+            new URL(featuredImageField);
+            screenshot = featuredImageField;
+          } catch (e) {
+            console.warn(`Invalid featured image URL for app ${record.fields.Name}:`, featuredImageField);
             screenshot = '/images/placeholder.jpg';
           }
-        } catch (e) {
-          console.warn(`Invalid image URL for app ${record.fields.Name}:`, e);
+        } else if (Array.isArray(featuredImageField) && featuredImageField.length > 0 && featuredImageField[0].url) {
+          // Attachment array
+          try {
+            new URL(featuredImageField[0].url);
+            screenshot = featuredImageField[0].url;
+          } catch (e) {
+            console.warn(`Invalid featured image attachment for app ${record.fields.Name}:`, featuredImageField[0].url);
+            screenshot = '/images/placeholder.jpg';
+          }
+        } else {
           screenshot = '/images/placeholder.jpg';
         }
       } else {
@@ -411,7 +382,7 @@ export async function getApps(): Promise<App[]> {
         launchDate: record.fields['Launch Date'],
         releaseDate: record.fields['Released Date'],
         domains: record.fields['Domain(s)'],
-        featureOnWebsite: record.fields['Feature On Website?'],
+        featureOnWebsite: record.fields['Featured App?'],
       };
     });
     
@@ -500,7 +471,7 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
 
 // Admin functions for content management
 export async function updateContentStatus(
-  table: 'Blog Posts' | 'Knowledge Base' | 'Apps',
+  table: 'Knowledge Base' | 'Apps',
   recordId: string,
   status: string
 ): Promise<boolean> {
@@ -531,8 +502,8 @@ export async function updateContentStatus(
 }
 
 // Get all content regardless of status (for admin use)
-export async function getAllContent<T extends BlogPost | KnowledgeBaseArticle | App>(
-  table: 'Blog Posts' | 'Knowledge Base' | 'Apps'
+export async function getAllContent<T extends KnowledgeBaseArticle | App>(
+  table: 'Knowledge Base' | 'Apps'
 ): Promise<T[]> {
   try {
     const records = await fetchFromAirtable<T>(table, {
@@ -560,7 +531,8 @@ export async function getAirtableRecords<T extends AirtableFields>(tableName: st
 
 export async function getMarketingPopupConfig(options: { signal?: AbortSignal } = {}): Promise<MarketingPopupConfig | null> {
   try {
-    const records = await fetchFromAirtable<{
+    // Get all enabled marketing popups
+    const enabledRecords = await fetchFromAirtable<{
       Title: string;
       Content: string;
       'Button Text': string;
@@ -575,14 +547,25 @@ export async function getMarketingPopupConfig(options: { signal?: AbortSignal } 
       'End Date': string;
       [key: string]: any;
     }>('Marketing Popups', {
-      filterByFormula: 'AND({Is Enabled}=TRUE(),{Start Date}<=NOW(),{End Date}>=NOW())',
-      maxRecords: 1,
+      filterByFormula: '{Is Enabled}=TRUE()',
+      maxRecords: 10,
     });
 
-    if (records.length === 0) return null;
+    if (enabledRecords.length === 0) return null;
 
-    const record = records[0];
-    
+    // Manually filter by date since Airtable's NOW() function can be unreliable
+    const now = new Date();
+    const validRecords = enabledRecords.filter(r => {
+      const startDate = new Date(r.fields['Start Date']);
+      const endDate = new Date(r.fields['End Date']);
+      return now >= startDate && now <= endDate;
+    });
+
+    if (validRecords.length === 0) return null;
+
+    // Use the first valid record
+    const record = validRecords[0];
+
     // Validate button link URL
     let buttonLink = record.fields['Button Link'];
     try {
@@ -606,7 +589,7 @@ export async function getMarketingPopupConfig(options: { signal?: AbortSignal } 
       textColor: record.fields['Text Color'] || '#000000',
       buttonColor: record.fields['Button Color'] || '#000000',
       position: record.fields.Position || 'Center',
-      delay: record.fields.Delay || 0,
+      delay: (record.fields.Delay || 0) * 1000, // Convert seconds to milliseconds
       isEnabled: true, // Since we're filtering for enabled popups, this will always be true
     };
   } catch (error) {
@@ -645,7 +628,7 @@ export async function getTestimonials(randomCount?: number): Promise<Testimonial
       Company: string;
       Content: string;
       Rating: number;
-      'Profile Image': Testimonial['image'];
+      'Profile Image URL'?: string;
       'Active?': boolean;
       Order: number;
       Created: string;
@@ -663,7 +646,7 @@ export async function getTestimonials(randomCount?: number): Promise<Testimonial
       company: record.fields.Company,
       content: record.fields.Content,
       rating: record.fields.Rating,
-      image: record.fields['Profile Image'],
+      image: record.fields['Profile Image URL'] || '/images/placeholder.jpg',
       isActive: record.fields['Active?'],
       order: record.fields.Order,
       createdAt: record.fields.Created,

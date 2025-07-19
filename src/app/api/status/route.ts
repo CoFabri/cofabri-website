@@ -1,8 +1,6 @@
 import { getSystemStatus } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
-export const revalidate = 300; // Revalidate every 5 minutes
-
 export async function GET(request: Request) {
   try {
     const status = await getSystemStatus();

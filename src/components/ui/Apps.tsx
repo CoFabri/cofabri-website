@@ -15,7 +15,13 @@ export default function Apps() {
   useEffect(() => {
     async function fetchApps() {
       try {
-        const response = await fetch('/api/apps');
+        const response = await fetch('/api/apps', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch apps');
         const data = await response.json();
         // Limit the number of apps to MAX_APPS

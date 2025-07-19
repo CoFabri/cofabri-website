@@ -16,7 +16,13 @@ export default function HomepageApps() {
   useEffect(() => {
     async function fetchApps() {
       try {
-        const response = await fetch('/api/apps');
+        const response = await fetch('/api/apps', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch apps');
         const data = await response.json();
         setApps(data.filter((app: App) => app.category !== 'Customer Facing'));
@@ -88,7 +94,7 @@ export default function HomepageApps() {
 
     observer.observe(sectionRef.current);
     return () => observer.disconnect();
-  }, [hasTriggeredConfetti, apps]);
+  }, [hasTriggeredConfetti, apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
 
   if (isLoading) {
     return (
@@ -151,7 +157,7 @@ export default function HomepageApps() {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <Image
-                    src={typeof app.screenshot === 'string' ? app.screenshot : '/images/placeholder.jpg'}
+                    src={app.screenshot || '/images/placeholder.jpg'}
                     alt={app.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"

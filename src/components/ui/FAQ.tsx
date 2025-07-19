@@ -6,28 +6,28 @@ import SectionHeading from './SectionHeading';
 
 const faqs = [
   {
-    question: 'How do I get started with CoFabri apps?',
-    answer: 'Getting started is easy! Simply sign up for an account, choose the app you want to use, and follow our quick start guide. We offer a free trial period for all our apps so you can explore their features.',
+    question: 'Who are CoFabri’s tools built for?',
+    answer: 'Our tools are built for anyone looking to save time and work smarter — from solo entrepreneurs to growing teams. While we serve a wide range of industries, most of our early users are business owners looking for affordable, no-code tools that solve real problems fast.',
   },
   {
-    question: 'What kind of support do you offer?',
-    answer: 'We provide comprehensive support including 24/7 email support, live chat during business hours, detailed documentation, video tutorials, and a community forum where you can connect with other users.',
+    question: 'What kind of tools does CoFabri offer?',
+    answer: 'CoFabri offers a growing suite of SaaS apps designed to solve specific business challenges — whether it’s automating workflows, streamlining onboarding, or managing client communications. Each app is built to be simple, efficient, and ready to use.',
   },
   {
-    question: 'Can I integrate CoFabri apps with my existing tools?',
-    answer: 'Yes! Our apps come with robust API support and pre-built integrations for popular tools like Slack, Microsoft Teams, Google Workspace, and more. We also offer custom integration support for enterprise customers.',
+    question: 'How does pricing work?',
+    answer: 'Most CoFabri apps are available on a monthly subscription basis. Some offer a free trial or one-time purchase options depending on the use case. You’ll find clear pricing details on each app’s page — no hidden fees.',
   },
   {
-    question: 'How secure are CoFabri apps?',
-    answer: 'Security is our top priority. We use industry-standard encryption, regular security audits, and comply with SOC 2 and GDPR requirements. Your data is stored in secure, redundant data centers with 99.9% uptime.',
+    question: 'Is any setup required?',
+    answer: 'Nope. Our apps are fully self-serve and designed for quick setup — many users are up and running in just minutes. If you ever need help, our team is available for general support and guidance.',
   },
   {
-    question: 'What are your pricing plans?',
-    answer: 'We offer flexible pricing plans tailored to businesses of all sizes. Our plans start with a basic tier for small teams and scale up to enterprise solutions. All plans come with core features, and you can upgrade or downgrade at any time.',
+    question: 'How is CoFabri different from other platforms?',
+    answer: 'We don’t try to be everything. Each CoFabri app is built around solving one specific problem really well. That focus means our tools are lean, fast, and effective — not bloated with features you’ll never use.',
   },
   {
-    question: 'Do you offer custom solutions?',
-    answer: 'Yes, we offer custom solutions for enterprise customers. Our team can work with you to customize our apps to meet your specific needs, including custom features, integrations, and deployment options.',
+    question: 'Who’s behind CoFabri?',
+    answer: 'We’re a small but mighty team building all our tools in-house. That means we can move fast, adapt to your feedback, and keep improving with every release. No outside agencies. No guesswork.',
   },
 ];
 

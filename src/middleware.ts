@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // Create response
+  let response = NextResponse.next();
+
+  // Add no-cache headers for all routes
+  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+
   // Only apply to preview routes
   if (request.nextUrl.pathname.startsWith('/preview/')) {
     const previewPassword = request.nextUrl.searchParams.get('password');
@@ -9,7 +17,7 @@ export function middleware(request: NextRequest) {
 
     // If no password is set in env, allow access
     if (!expectedPassword) {
-      return NextResponse.next();
+      return response;
     }
 
     // If password doesn't match, redirect to preview login
@@ -20,9 +28,18 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: '/preview/:path*',
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 }; 

@@ -4,6 +4,9 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import GradientHeading from '@/components/ui/GradientHeading';
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 function LegalDocumentsContent() {
   const searchParams = useSearchParams();
   const documentName = searchParams?.get('document') || '';

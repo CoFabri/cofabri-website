@@ -5,6 +5,9 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import GradientHeading from '@/components/ui/GradientHeading';
 import { KnowledgeBaseArticle } from '@/lib/airtable';
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export default function KnowledgeBasePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -20,7 +23,13 @@ export default function KnowledgeBasePage() {
       try {
         // Fetch real content from API
         console.log('Fetching articles from API...');
-        const response = await fetch('/api/knowledge-base');
+        const response = await fetch('/api/knowledge-base', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch knowledge base articles');
         const articleData = await response.json() as KnowledgeBaseArticle[];
         console.log('Received articles:', articleData);

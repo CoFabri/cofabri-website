@@ -10,12 +10,7 @@ interface TestimonialPreviewCardProps {
     company: string;
     content: string;
     rating: number;
-    image: {
-      url: string;
-      thumbnails?: {
-        large: { url: string };
-      };
-    }[];
+    image: string;
   };
 }
 
@@ -25,7 +20,7 @@ export default function TestimonialPreviewCard({ testimonial }: TestimonialPrevi
       <div className="flex items-center mb-6">
         <div className="relative w-14 h-14 rounded-full overflow-hidden">
           <Image
-            src={testimonial.image[0]?.thumbnails?.large?.url || testimonial.image[0]?.url || '/images/placeholder.jpg'}
+            src={testimonial.image || '/images/placeholder.jpg'}
             alt={testimonial.name}
             fill
             className="object-cover"

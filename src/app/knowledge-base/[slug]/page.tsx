@@ -5,6 +5,10 @@ import { ArrowLeftIcon, BookOpenIcon, ClockIcon, TagIcon } from '@heroicons/reac
 import { Metadata } from 'next';
 import AnimatedGradient from '@/components/ui/AnimatedGradient';
 import BackButton from '@/components/ui/BackButton';
+import ArticleContent from './ArticleContent';
+
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 
 interface KnowledgeBaseArticlePageProps {
   params: {
@@ -99,14 +103,14 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
       {/* Content Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="prose prose-lg prose-blue max-w-none">
-              <div 
-                className="text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: article.content }} 
-              />
+                      <div className="max-w-4xl mx-auto">
+              <div className="prose prose-lg prose-blue max-w-none">
+                <div 
+                  className="text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: article.content }} 
+                />
+              </div>
             </div>
-          </div>
         </div>
       </section>
     </div>

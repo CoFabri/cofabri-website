@@ -6,6 +6,9 @@ import GradientHeading from '@/components/ui/GradientHeading';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RoadmapFeature } from '@/lib/airtable';
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 interface DropdownProps {
   value: string;
   onChange: (value: string) => void;
@@ -73,7 +76,13 @@ export default function RoadmapsPage() {
   useEffect(() => {
     async function fetchApplications() {
       try {
-        const response = await fetch('/api/roadmaps');
+        const response = await fetch('/api/roadmaps', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+          },
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch roadmap features');
         }
@@ -92,7 +101,7 @@ export default function RoadmapsPage() {
   return (
     <div className="min-h-screen">
       <GradientHeading
-        title="Product Roadmaps"
+        title="Product Roadmaps & Changelog"
         subtitle="See what's coming next and track our progress in making our apps even better"
         extraContent={
           <div className="relative z-[2] w-full max-w-4xl mx-auto mt-12">

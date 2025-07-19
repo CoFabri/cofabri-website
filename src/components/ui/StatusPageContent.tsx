@@ -95,7 +95,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [statuses]); // Add statuses as dependency to check for active issues
+  }, []); // Remove statuses dependency to prevent infinite re-renders
 
   const getStatusColor = (status: SystemStatus) => {
     switch (status.publicStatus) {

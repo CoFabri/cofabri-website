@@ -1,5 +1,6 @@
-import React from 'react';
-import { Metadata } from 'next';
+'use client';
+
+import React, { Suspense } from 'react';
 import { 
   BookOpenIcon, 
   ChatBubbleLeftRightIcon, 
@@ -9,14 +10,72 @@ import {
   PhoneIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
+import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 import GradientHeading from '@/components/ui/GradientHeading';
 
-export const metadata: Metadata = {
-  title: 'Support - CoFabri',
-  description: 'Get help and support for CoFabri products and services.',
-};
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 
-export default function SupportPage() {
+// Airtable form configuration
+const AIRTABLE_FORM_BASE_URL = 'https://airtable.com/embed/appLCRokCHruMDfuB/pagFEHyIO9FvMYWaM/form';
+
+function SupportPageContent() {
+  const searchParams = useSearchParams();
+  
+  // Construct the Airtable form URL with prefill parameters
+  const airtableFormUrl = useMemo(() => {
+    let url = AIRTABLE_FORM_BASE_URL;
+    const params = [];
+    
+    // Handle language parameter
+    const language = searchParams?.get('language');
+    if (language) {
+      params.push(`prefill_Language+Preference=${encodeURIComponent(language)}`);
+    }
+    
+    // Handle app parameter
+    const app = searchParams?.get('app');
+    if (app) {
+      params.push(`prefill_Application%28s%29=${encodeURIComponent(app)}`);
+    }
+    
+    // Handle first name parameter
+    const firstName = searchParams?.get('firstName');
+    if (firstName) {
+      params.push(`prefill_First+Name=${encodeURIComponent(firstName)}`);
+    }
+    
+    // Handle last name parameter
+    const lastName = searchParams?.get('lastName');
+    if (lastName) {
+      params.push(`prefill_Last+Name=${encodeURIComponent(lastName)}`);
+    }
+    
+    // Handle email parameter
+    const email = searchParams?.get('email');
+    if (email) {
+      params.push(`prefill_Email=${encodeURIComponent(email)}`);
+    }
+    
+    // Handle phone parameter
+    const phone = searchParams?.get('phone');
+    if (phone) {
+      params.push(`prefill_Phone=${encodeURIComponent(phone)}`);
+    }
+    
+    // Add parameters to URL if any exist
+    if (params.length > 0) {
+      url += '?' + params.join('&');
+    }
+    
+    // Debug logging
+    console.log('Original URL params:', { language, app, firstName, lastName, email, phone });
+    console.log('Constructed Airtable URL:', url);
+    
+    return url;
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <GradientHeading
@@ -61,81 +120,74 @@ export default function SupportPage() {
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Support Form Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-              
-              <iframe
-                className="w-full h-[1237px] border-0 rounded-lg"
-                src="https://airtable.com/embed/appLCRokCHruMDfuB/pagFEHyIO9FvMYWaM/form"
-                title="Support Ticket Form"
-              />
+        {/* Response Time Section - Full Width */}
+        <div className="max-w-6xl mx-auto mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center mb-4">
+              <ClockIcon className="h-6 w-6 text-blue-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Response Time</h3>
             </div>
+            <p className="text-gray-600">
+              We typically respond to support tickets within 24 hours during business days.
+            </p>
           </div>
+        </div>
 
-          {/* Sidebar Resources */}
-          <div className="space-y-6">
-            {/* Response Time */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center mb-4">
-                <ClockIcon className="h-6 w-6 text-blue-600 mr-3" />
-                <h3 className="text-lg font-semibold text-gray-900">Response Time</h3>
-              </div>
-              <p className="text-gray-600">
-                We typically respond to support tickets within 24 hours during business days.
-              </p>
-            </div>
-
-            {/* Emergency Support */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center mb-4">
-                <PhoneIcon className="h-6 w-6 text-blue-600 mr-3" />
-                <h3 className="text-lg font-semibold text-gray-900">Emergency Support</h3>
-              </div>
-              <p className="text-gray-600 mb-4">
-                For urgent issues affecting your business operations, please mark your ticket as "High Priority".
-              </p>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                  Business hours: Monday - Friday, 9:00 AM - 6:00 PM EST
-                </p>
-              </div>
-            </div>
-
-            {/* Helpful Resources */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center mb-4">
-                <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
-                <h3 className="text-lg font-semibold text-gray-900">Helpful Resources</h3>
-              </div>
-              <ul className="space-y-3">
-                <li>
-                  <a href="/knowledge-base/getting-started" className="text-blue-600 hover:text-blue-800">
-                    Getting Started Guide
-                  </a>
-                </li>
-                <li>
-                  <a href="/knowledge-base/faq" className="text-blue-600 hover:text-blue-800">
-                    Frequently Asked Questions
-                  </a>
-                </li>
-                <li>
-                  <a href="/knowledge-base/troubleshooting" className="text-blue-600 hover:text-blue-800">
-                    Troubleshooting Guide
-                  </a>
-                </li>
-                <li>
-                  <a href="/knowledge-base/api-docs" className="text-blue-600 hover:text-blue-800">
-                    API Documentation
-                  </a>
-                </li>
-              </ul>
-            </div>
+        {/* Support Form Section - Full Width */}
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <iframe
+              key={airtableFormUrl}
+              className="w-full h-[1600px] border-0 rounded-lg"
+              src={airtableFormUrl}
+              title="Support Ticket Form"
+            />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SupportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <GradientHeading
+          title="Support Center"
+          subtitle="We're here to help you succeed with our products and services"
+        />
+        <div className="container mx-auto px-4 mt-16">
+          <div className="max-w-6xl mx-auto">
+            <div className="animate-pulse">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white rounded-xl shadow-sm p-6">
+                    <div className="flex items-center mb-4">
+                      <div className="h-6 w-6 bg-gray-200 rounded mr-3"></div>
+                      <div className="h-5 w-32 bg-gray-200 rounded"></div>
+                    </div>
+                    <div className="h-4 w-full bg-gray-200 rounded mb-4"></div>
+                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <div className="flex items-center mb-4">
+                  <div className="h-6 w-6 bg-gray-200 rounded mr-3"></div>
+                  <div className="h-5 w-32 bg-gray-200 rounded"></div>
+                </div>
+                <div className="h-4 w-full bg-gray-200 rounded"></div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="h-[1600px] bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SupportPageContent />
+    </Suspense>
   );
 } 

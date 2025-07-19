@@ -78,7 +78,7 @@ export default function FeaturedApp() {
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
                 {featuredApp.screenshot && (
                   <img
-                    src={typeof featuredApp.screenshot === 'string' ? featuredApp.screenshot : featuredApp.screenshot[0]?.url}
+                    src={featuredApp.screenshot}
                     alt={featuredApp.name}
                     className="w-full h-full object-cover"
                   />

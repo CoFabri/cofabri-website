@@ -55,7 +55,7 @@ export default function CompactRoadmap() {
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <SectionHeading
-          title="Product Roadmaps"
+          title="Product Roadmaps & Changelog"
           subtitle="See what's coming next and track our progress"
         />
 

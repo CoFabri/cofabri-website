@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getAirtableRecords, AirtableRecord } from '@/lib/airtable';
 import { FieldSet } from 'airtable';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 interface BannerFields extends FieldSet {
   Title: string;
   Message: string;
@@ -18,18 +21,21 @@ interface BannerFields extends FieldSet {
   [key: string]: any; // Add index signature to satisfy FieldSet constraint
 }
 
-export const revalidate = 300; // Revalidate every 5 minutes
-
 export async function GET(request: Request) {
   try {
     console.log('Fetching banners from Airtable...');
     const records = await getAirtableRecords<BannerFields>('Sitewide Banners', {
-      filterByFormula: 'AND({Is Active}=TRUE(),{Start Date}<=NOW(),{End Date}>=NOW())',
+      filterByFormula: '{Is Active}=TRUE()',
       sort: [{ field: 'Priority', direction: 'desc' }]
     });
     console.log('Fetched records:', records.length);
     
-    const banners = records.map((record: AirtableRecord<BannerFields>) => {
+    // For now, show all active banners regardless of date
+    // TODO: Implement proper date filtering logic
+    const activeRecords = records;
+    console.log('Using all active banners (date filtering disabled)');
+    
+    const banners = activeRecords.map((record: AirtableRecord<BannerFields>) => {
       try {
         // Validate required fields
         if (!record.fields.Title || !record.fields.Message || !record.fields.Type) {
@@ -77,11 +83,7 @@ export async function GET(request: Request) {
     }).filter(Boolean); // Remove any null entries
 
     console.log('Returning banners:', banners);
-    return NextResponse.json(banners, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-      },
-    });
+    return NextResponse.json(banners);
   } catch (error) {
     console.error('Error fetching banners:', error);
     return NextResponse.json({ error: 'Failed to fetch banners' }, { status: 500 });

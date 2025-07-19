@@ -1,7 +1,8 @@
 import { getRoadmapFeatures } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
-export const revalidate = 3600; // Revalidate every hour
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {

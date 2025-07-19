@@ -27,15 +27,15 @@ const getStatusMessage = (status: SystemStatus | null) => {
   
   switch (status.publicStatus) {
     case 'Investigating':
-      return `Investigating: ${status.message}`;
+      return status.message ? `Investigating: ${status.message}` : 'Investigating';
     case 'Identified':
-      return `Issue Identified: ${status.message}`;
+      return status.message ? `Issue Identified: ${status.message}` : 'Issue Identified';
     case 'Monitoring':
-      return `Monitoring Resolution: ${status.message}`;
+      return status.message ? `Monitoring Resolution: ${status.message}` : 'Monitoring Resolution';
     case 'Resolved':
-      return `Resolved: ${status.message}`;
+      return status.message ? `Resolved: ${status.message}` : 'Resolved';
     default:
-      return status.message;
+      return status.message || status.publicStatus || 'All systems operational';
   }
 };
 
