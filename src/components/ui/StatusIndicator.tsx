@@ -87,8 +87,8 @@ export default function StatusIndicator() {
       <span className="sr-only">System Status</span>
       
       {/* Tooltip */}
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-        {message}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-normal max-w-xs w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden text-ellipsis">
+        <span className="block truncate">{message}</span>
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1.5 border-4 border-transparent border-b-gray-900" />
       </div>
     </Link>

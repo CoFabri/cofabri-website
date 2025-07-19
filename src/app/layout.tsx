@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   publisher: 'CoFabri',
   icons: {
     icon: [
-      { url: '/icon?<generated>', type: 'image/png' },
+      { url: '/images/cofabri-favicon.png', type: 'image/png' },
     ],
     apple: [
       { url: '/apple-icon?<generated>', type: 'image/png' },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: 'CoFabri builds innovative SaaS applications that solve real business challenges.',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: '/images/placeholder.jpg',
         width: 1200,
         height: 630,
         alt: 'CoFabri - SaaS Apps for Real Business Needs',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CoFabri - SaaS Apps for Real Business Needs',
     description: 'CoFabri builds innovative SaaS applications that solve real business challenges.',
-    images: ['/images/twitter-image.jpg'],
+    images: ['/images/placeholder.jpg'],
     creator: '@cofabri',
   },
   robots: {
