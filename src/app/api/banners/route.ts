@@ -30,10 +30,21 @@ export async function GET(request: Request) {
     });
     console.log('Fetched records:', records.length);
     
-    // For now, show all active banners regardless of date
-    // TODO: Implement proper date filtering logic
-    const activeRecords = records;
-    console.log('Using all active banners (date filtering disabled)');
+    // Filter banners by date range
+    const now = new Date();
+    const activeRecords = records.filter(record => {
+      const startDate = record.fields['Start Date'] ? new Date(record.fields['Start Date']) : null;
+      const endDate = record.fields['End Date'] ? new Date(record.fields['End Date']) : null;
+      
+      // If no start date is set, banner is active from the beginning
+      const isAfterStart = !startDate || now >= startDate;
+      
+      // If no end date is set, banner is active indefinitely
+      const isBeforeEnd = !endDate || now <= endDate;
+      
+      return isAfterStart && isBeforeEnd;
+    });
+    console.log('Active banners after date filtering:', activeRecords.length);
     
     const banners = activeRecords.map((record: AirtableRecord<BannerFields>) => {
       try {
@@ -62,8 +73,8 @@ export async function GET(request: Request) {
           title: record.fields.Title,
           message: record.fields.Message,
           type: record.fields.Type,
-          startDate: record.fields['Start Date'] || new Date().toISOString(),
-          endDate: record.fields['End Date'] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Default to 30 days from now
+          startDate: record.fields['Start Date'] || null,
+          endDate: record.fields['End Date'] || null,
           isActive: record.fields['Is Active'] ?? true,
           link: linkUrl ? {
             text: record.fields['Link Text'] || 'Learn More',

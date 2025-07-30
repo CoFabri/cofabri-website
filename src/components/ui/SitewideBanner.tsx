@@ -10,6 +10,8 @@ interface Banner {
   title: string;
   message: string;
   type: string;
+  startDate?: string | null;
+  endDate?: string | null;
   link?: {
     text: string;
     url: string;
@@ -83,12 +85,32 @@ export default function SitewideBanner() {
     return null;
   }
 
-  // Find the most appropriate banner that hasn't been dismissed
-  const activeBanners = banners.filter(banner => 
-    banner.isActive && 
-    banner.position === 'Top' && 
-    !dismissedBanners.has(banner.id)
-  );
+  // Find the most appropriate banner that hasn't been dismissed and is within date range
+  const now = new Date();
+  const activeBanners = banners.filter(banner => {
+    // Check if banner is active and in correct position
+    if (!banner.isActive || banner.position !== 'Top' || dismissedBanners.has(banner.id)) {
+      return false;
+    }
+    
+    // Check start date
+    if (banner.startDate) {
+      const startDate = new Date(banner.startDate);
+      if (now < startDate) {
+        return false;
+      }
+    }
+    
+    // Check end date
+    if (banner.endDate) {
+      const endDate = new Date(banner.endDate);
+      if (now > endDate) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
   
   if (activeBanners.length === 0) {
     return null;
