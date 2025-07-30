@@ -154,9 +154,26 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 
    # Preview Password
    PREVIEW_PASSWORD=your_preview_password
+
+
    ```
 
-4. Run the development server:
+4. Analytics Setup:
+
+   The site includes Google Analytics 4 and HotJar tracking with cookie consent management.
+   
+   ### Cookie Consent
+   - Users will see a cookie consent banner on their first visit
+   - Analytics only load after explicit user consent
+   - Users can accept or decline tracking
+   - Consent is remembered for 1 year
+   
+   ### Analytics Configuration
+   To update the analytics IDs, edit the following files:
+   - `src/components/ui/Analytics.tsx` - Replace `G-XXXXXXXXXX` with your GA4 ID
+   - `src/components/ui/Analytics.tsx` - Replace `1234567` with your HotJar Site ID
+
+5. Run the development server:
    ```bash
    npm run dev
    # or
@@ -187,6 +204,7 @@ cofabri/
 │   │   │   ├── NewsletterSignup.tsx # Newsletter signup form
 │   │   │   ├── LiveChat.tsx  # Live chat widget
 │   │   │   ├── SocialFeeds.tsx # Social media feeds
+│   │   │   ├── Analytics.tsx # Google Analytics & HotJar integration
 │   │   │   └── Features.tsx  # Feature showcase
 │   │   └── layout/           # Layout components
 │   ├── lib/                   # Utility functions and API clients

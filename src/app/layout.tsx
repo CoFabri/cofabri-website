@@ -5,6 +5,8 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import SitewideBanner from "@/components/ui/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
+import Analytics from "@/components/ui/Analytics";
+import CookieConsent from "@/components/ui/CookieConsent";
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic';
@@ -79,6 +81,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <Analytics />
+      </head>
       <body className={inter.className}>
         <Navbar />
         <SitewideBanner />
@@ -87,6 +92,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <MarketingPopupWrapper />
+        <CookieConsent />
       </body>
     </html>
   );
