@@ -64,6 +64,15 @@ export default function CompactRoadmap() {
     }
   };
 
+  // Helper function to group features into rows of 3
+  const groupFeaturesIntoRows = (features: RoadmapFeature[]) => {
+    const rows: RoadmapFeature[][] = [];
+    for (let i = 0; i < features.length; i += 3) {
+      rows.push(features.slice(i, i + 3));
+    }
+    return rows;
+  };
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -80,15 +89,17 @@ export default function CompactRoadmap() {
               </h3>
             </div>
 
-            <div className={`grid ${getDynamicGridClasses(nextQuarterFeatures.length)} gap-6`}>
-              {nextQuarterFeatures.map((feature) => (
-                <div
-                  key={feature.id}
-                  onClick={() => router.push(`/roadmaps?expand=${feature.id}`)}
-                  className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md 
-                  transition-all duration-200 border border-gray-100 relative flex flex-col
-                  hover:border-blue-100 hover:shadow-blue-50 cursor-pointer group"
-                >
+            <div className="space-y-6">
+              {groupFeaturesIntoRows(nextQuarterFeatures).map((row, rowIndex) => (
+                <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
+                  {row.map((feature) => (
+                    <div
+                      key={feature.id}
+                      onClick={() => router.push(`/roadmaps?expand=${feature.id}`)}
+                      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md 
+                      transition-all duration-200 border border-gray-100 relative flex flex-col
+                      hover:border-blue-100 hover:shadow-blue-50 cursor-pointer group"
+                    >
                   <div className="p-5">
                     <div className="flex items-start gap-3 mb-3">
                       <div className="flex-shrink-0 mt-1">
@@ -125,6 +136,8 @@ export default function CompactRoadmap() {
                       </div>
                     </div>
                   </div>
+                </div>
+                  ))}
                 </div>
               ))}
             </div>

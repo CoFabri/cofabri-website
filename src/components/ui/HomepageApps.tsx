@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { App } from '@/lib/airtable';
 import confetti from 'canvas-confetti';
-import ExpandableText from './ExpandableText';
+import AppPreviewCard from './AppPreviewCard';
 
 export default function HomepageApps() {
   const [apps, setApps] = useState<App[]>([]);
@@ -139,98 +138,9 @@ export default function HomepageApps() {
               ? 'grid-cols-1 md:grid-cols-2' 
               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
         }`}>
-          {apps.map((app) => {
-            const launchDate = app.launchDate ? new Date(app.launchDate) : null;
-            const today = new Date();
-            const isLaunchingToday = launchDate && (
-              launchDate.getDate() === today.getDate() &&
-              launchDate.getMonth() === today.getMonth() &&
-              launchDate.getFullYear() === today.getFullYear()
-            );
-            
-            return (
-              <Link
-                key={app.id}
-                href={app.url || '#'}
-                className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${
-                  isLaunchingToday ? 'ring-2 ring-blue-500 ring-offset-2 animate-pulse' : ''
-                }`}
-              >
-                <div className="aspect-video relative overflow-hidden">
-                  <Image
-                    src={app.screenshot || '/images/placeholder.jpg'}
-                    alt={app.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    onError={(e) => {
-                      console.error(`Error loading image for ${app.name}:`, e);
-                      // Fallback to placeholder
-                      const imgElement = e.target as HTMLImageElement;
-                      imgElement.src = '/images/placeholder.jpg';
-                    }}
-                  />
-                  {isLaunchingToday && (
-                    <div className="absolute top-0 right-0 mt-4 mr-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-600 text-white animate-bounce">
-                        <span className="mr-1">🚀</span> Launching Today!
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <div className="flex flex-wrap items-center justify-center gap-2 mb-4 w-full">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      app.status === 'Live' ? 'bg-green-100 text-green-800' :
-                      app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
-                      app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
-                      app.status === 'Coming Soon' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {app.status}
-                    </span>
-                    {launchDate && !isLaunchingToday && (
-                      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                        new Date(launchDate) > today
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {new Date(launchDate) > today
-                          ? `Launching ${launchDate.toLocaleDateString()}`
-                          : `Launched ${launchDate.toLocaleDateString()}`
-                        }
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
-                    {app.name}
-                  </h3>
-                  <ExpandableText 
-                    text={app.description} 
-                    maxLength={150}
-                    className="text-gray-600 mb-4"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {app.feature1 && (
-                      <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
-                        {app.feature1}
-                      </span>
-                    )}
-                    {app.feature2 && (
-                      <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
-                        {app.feature2}
-                      </span>
-                    )}
-                    {app.feature3 && (
-                      <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
-                        {app.feature3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+          {apps.map((app) => (
+            <AppPreviewCard key={app.id} app={app} />
+          ))}
         </div>
 
         {/* View All Apps Button */}

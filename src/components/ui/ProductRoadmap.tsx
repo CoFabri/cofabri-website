@@ -311,6 +311,22 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
     }
   };
 
+  // Helper function to group features into rows of 3
+  const groupFeaturesIntoRows = (features: RoadmapFeature[]) => {
+    const rows: RoadmapFeature[][] = [];
+    for (let i = 0; i < features.length; i += 3) {
+      rows.push(features.slice(i, i + 3));
+    }
+    return rows;
+  };
+
+  // Helper function to separate released and non-released features
+  const separateFeaturesByReleaseStatus = (features: RoadmapFeature[]) => {
+    const released = features.filter(f => f.releasedDate);
+    const nonReleased = features.filter(f => !f.releasedDate);
+    return { released, nonReleased };
+  };
+
   // Handle expand query parameter
   useEffect(() => {
     const expandId = searchParams?.get('expand');
@@ -445,143 +461,308 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                   </h3>
                 </div>
 
-                <div className={`grid ${getDynamicGridClasses(milestone.features.length)} gap-6`}>
-                  {milestone.features.map((feature) => (
-                    <div
-                      key={feature.id}
-                      id={`roadmap-feature-${feature.id}`}
-                      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
-                      transition-all duration-300 border border-gray-100 relative flex flex-col
-                      hover:border-blue-100 hover:shadow-blue-50/50"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-start gap-3 mb-4">
-                          <div className="flex-shrink-0 mt-1">
-                            {getStatusIcon(feature.status)}
-                          </div>
-                          <div className="flex-grow">
-                            <h4 className="text-lg font-semibold text-gray-900">
-                              {feature.name}
-                            </h4>
-                            {feature.application && (
-                              <div className="mt-1">
-                                {feature.applicationUrl ? (
-                                  <Link 
-                                    href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                                    bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                <div className="space-y-8">
+                  {(() => {
+                    const { released, nonReleased } = separateFeaturesByReleaseStatus(milestone.features);
+                    
+                    return (
+                      <>
+                        {/* Non-Released Features */}
+                        {nonReleased.length > 0 && (
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <h4 className="text-lg font-semibold text-gray-700">Coming Soon</h4>
+                              <div className="flex-1 h-px bg-gray-200"></div>
+                            </div>
+                            {groupFeaturesIntoRows(nonReleased).map((row, rowIndex) => (
+                              <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
+                                {row.map((feature) => (
+                                  <div
+                                    key={feature.id}
+                                    id={`roadmap-feature-${feature.id}`}
+                                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
+                                    transition-all duration-300 border border-gray-100 relative flex flex-col
+                                    hover:border-blue-100 hover:shadow-blue-50/50"
                                   >
-                                    {feature.application}
-                                    <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                  </Link>
-                                ) : (
-                                  <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
-                                    {feature.application}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                                    <div className="p-6">
+                                      <div className="flex items-start gap-3 mb-4">
+                                        <div className="flex-shrink-0 mt-1">
+                                          {getStatusIcon(feature.status)}
+                                        </div>
+                                        <div className="flex-grow">
+                                          <h4 className="text-lg font-semibold text-gray-900">
+                                            {feature.name}
+                                          </h4>
+                                          {feature.application && (
+                                            <div className="mt-1">
+                                              {feature.applicationUrl ? (
+                                                <Link 
+                                                  href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
+                                                  bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                                                >
+                                                  {feature.application}
+                                                  <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                  </svg>
+                                                </Link>
+                                              ) : (
+                                                <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
+                                                  {feature.application}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
 
-                        <p className="text-gray-600 mb-4">
-                          {feature.description}
-                        </p>
+                                      <p className="text-gray-600 mb-4">
+                                        {feature.description}
+                                      </p>
 
-                        {feature.featuresAndChanges && (
-                          <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
-                            <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
-                            <div className="text-sm text-gray-600 space-y-1.5">
-                              {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
-                                const trimmedItem = item.trim();
-                                if (!trimmedItem) return null;
-                                
-                                // Check for indentation (sub-bullets)
-                                const originalIndentation = item.length - item.trimStart().length;
-                                const isSubBullet = originalIndentation > 0;
-                                
-                                // Remove bullet points and clean up
-                                const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                                
-                                return (
-                                  <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
-                                    <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
-                                    <span 
-                                      className="flex-grow leading-relaxed"
-                                      dangerouslySetInnerHTML={{ 
-                                        __html: roadmapMarkdownToHtml(cleanedItem) 
-                                      }}
-                                    />
+                                      {feature.featuresAndChanges && (
+                                        <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
+                                          <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
+                                          <div className="text-sm text-gray-600 space-y-1.5">
+                                            {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
+                                              const trimmedItem = item.trim();
+                                              if (!trimmedItem) return null;
+                                              
+                                              // Check for indentation (sub-bullets)
+                                              const originalIndentation = item.length - item.trimStart().length;
+                                              const isSubBullet = originalIndentation > 0;
+                                              
+                                              // Remove bullet points and clean up
+                                              const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
+                                              
+                                              return (
+                                                <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
+                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
+                                                  <span 
+                                                    className="flex-grow leading-relaxed"
+                                                    dangerouslySetInnerHTML={{ 
+                                                      __html: roadmapMarkdownToHtml(cleanedItem) 
+                                                    }}
+                                                  />
+                                                </div>
+                                              );
+                                            }).filter(Boolean)}
+                                          </div>
+                                          {feature.featuresAndChanges.split('\n').filter(line => line.trim()).length > 6 && (
+                                            <button
+                                              onClick={() => {
+                                                setSelectedFeature(feature);
+                                                setIsOverlayOpen(true);
+                                              }}
+                                              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                                            >
+                                              Read More
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {feature.releaseNotes && (
+                                        <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
+                                          <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
+                                          <div className="text-sm text-blue-700">
+                                            <div 
+                                              className="line-clamp-3"
+                                              dangerouslySetInnerHTML={{ 
+                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
+                                              }}
+                                            />
+                                            {feature.releaseNotes.length > 150 && (
+                                              <button
+                                                onClick={() => {
+                                                  setSelectedFeature(feature);
+                                                  setIsOverlayOpen(true);
+                                                }}
+                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                              >
+                                                Read More
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-auto">
+                                      <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
+                                            {feature.releaseType}
+                                          </span>
+                                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(feature.status)}`}>
+                                            {feature.status}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
-                                );
-                              }).filter(Boolean)}
-                            </div>
-                            {feature.featuresAndChanges.split('\n').filter(line => line.trim()).length > 6 && (
-                              <button
-                                onClick={() => {
-                                  setSelectedFeature(feature);
-                                  setIsOverlayOpen(true);
-                                }}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
-                              >
-                                Read More
-                              </button>
-                            )}
+                                ))}
+                              </div>
+                            ))}
                           </div>
                         )}
 
-                        {feature.releaseNotes && (
-                          <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
-                            <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-                            <div className="text-sm text-blue-700">
-                              <div 
-                                className="line-clamp-3"
-                                dangerouslySetInnerHTML={{ 
-                                  __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
-                                }}
-                              />
-                              {feature.releaseNotes.length > 150 && (
-                                <button
-                                  onClick={() => {
-                                    setSelectedFeature(feature);
-                                    setIsOverlayOpen(true);
-                                  }}
-                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
-                                >
-                                  Read More
-                                </button>
-                              )}
+                        {/* Released Features */}
+                        {released.length > 0 && (
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <h4 className="text-lg font-semibold text-gray-700">Recently Released</h4>
+                              <div className="flex-1 h-px bg-gray-200"></div>
                             </div>
+                            {groupFeaturesIntoRows(released).map((row, rowIndex) => (
+                              <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
+                                {row.map((feature) => (
+                                  <div
+                                    key={feature.id}
+                                    id={`roadmap-feature-${feature.id}`}
+                                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
+                                    transition-all duration-300 border border-green-200 relative flex flex-col
+                                    hover:border-green-300 hover:shadow-green-50/50"
+                                  >
+                                    <div className="p-6">
+                                      <div className="flex items-start gap-3 mb-4">
+                                        <div className="flex-shrink-0 mt-1">
+                                          {getStatusIcon(feature.status)}
+                                        </div>
+                                        <div className="flex-grow">
+                                          <h4 className="text-lg font-semibold text-gray-900">
+                                            {feature.name}
+                                          </h4>
+                                          {feature.application && (
+                                            <div className="mt-1">
+                                              {feature.applicationUrl ? (
+                                                <Link 
+                                                  href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
+                                                  bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                                                >
+                                                  {feature.application}
+                                                  <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                  </svg>
+                                                </Link>
+                                              ) : (
+                                                <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
+                                                  {feature.application}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <p className="text-gray-600 mb-4">
+                                        {feature.description}
+                                      </p>
+
+                                      {feature.featuresAndChanges && (
+                                        <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
+                                          <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
+                                          <div className="text-sm text-gray-600 space-y-1.5">
+                                            {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
+                                              const trimmedItem = item.trim();
+                                              if (!trimmedItem) return null;
+                                              
+                                              // Check for indentation (sub-bullets)
+                                              const originalIndentation = item.length - item.trimStart().length;
+                                              const isSubBullet = originalIndentation > 0;
+                                              
+                                              // Remove bullet points and clean up
+                                              const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
+                                              
+                                              return (
+                                                <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
+                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
+                                                  <span 
+                                                    className="flex-grow leading-relaxed"
+                                                    dangerouslySetInnerHTML={{ 
+                                                      __html: roadmapMarkdownToHtml(cleanedItem) 
+                                                    }}
+                                                  />
+                                                </div>
+                                              );
+                                            }).filter(Boolean)}
+                                          </div>
+                                          {feature.featuresAndChanges.split('\n').filter(line => line.trim()).length > 6 && (
+                                            <button
+                                              onClick={() => {
+                                                setSelectedFeature(feature);
+                                                setIsOverlayOpen(true);
+                                              }}
+                                              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                                            >
+                                              Read More
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {feature.releaseNotes && (
+                                        <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
+                                          <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
+                                          <div className="text-sm text-blue-700">
+                                            <div 
+                                              className="line-clamp-3"
+                                              dangerouslySetInnerHTML={{ 
+                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
+                                              }}
+                                            />
+                                            {feature.releaseNotes.length > 150 && (
+                                              <button
+                                                onClick={() => {
+                                                  setSelectedFeature(feature);
+                                                  setIsOverlayOpen(true);
+                                                }}
+                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                              >
+                                                Read More
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-auto">
+                                      <div className="p-4 border-t border-green-100 bg-green-50/50">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
+                                            {feature.releaseType}
+                                          </span>
+                                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(feature.status)}`}>
+                                            {feature.status}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      {feature.releasedDate && (
+                                        <div className="text-center py-3 px-4 bg-green-50 border-t border-green-100">
+                                          <div className="text-sm font-medium text-green-800">
+                                            Released {new Date(feature.releasedDate).toLocaleDateString()}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
                           </div>
                         )}
-                      </div>
-
-                      <div className="mt-auto">
-                        <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
-                              {feature.releaseType}
-                            </span>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(feature.status)}`}>
-                              {feature.status}
-                            </span>
-                          </div>
-                        </div>
-
-                        {feature.releasedDate && (
-                          <div className="text-center py-3 px-4 bg-green-50 border-t border-green-100">
-                            <div className="text-sm font-medium text-green-800">
-                              Released {new Date(feature.releasedDate).toLocaleDateString()}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             ))}

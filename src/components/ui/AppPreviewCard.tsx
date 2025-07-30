@@ -45,48 +45,48 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
           )}
         </div>
         <div className="p-6">
-          {/* Header Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-            <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition">
-              {app.name}
-              {isLaunchingToday() && (
-                <span className="ml-2 inline-flex items-center text-sm font-medium text-blue-600 animate-bounce">
-                  🎉
-                </span>
-              )}
-            </h2>
-            <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                app.status === 'Live' ? 'bg-green-100 text-green-800' :
-                app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
-                app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
-                'bg-gray-100 text-gray-800'
+          {/* Badges Section */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+              app.status === 'Live' ? 'bg-green-100 text-green-800' :
+              app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
+              app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {app.status}
+            </span>
+            {app.launchDate && (
+              <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                isLaunchingToday()
+                  ? 'bg-blue-100 text-blue-800 animate-pulse'
+                  : new Date(app.launchDate) > new Date() 
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-green-100 text-green-800'
               }`}>
-                {app.status}
+                {isLaunchingToday()
+                  ? '🚀 Launching Today! 🎉'
+                  : new Date(app.launchDate) > new Date()
+                    ? `Launching ${new Date(app.launchDate).toLocaleDateString()}`
+                    : `Launched ${new Date(app.launchDate).toLocaleDateString()}`
+                }
               </span>
-              {app.launchDate && (
-                <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                  isLaunchingToday()
-                    ? 'bg-blue-100 text-blue-800 animate-pulse'
-                    : new Date(app.launchDate) > new Date() 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'
-                }`}>
-                  {isLaunchingToday()
-                    ? '🚀 Launching Today! 🎉'
-                    : new Date(app.launchDate) > new Date()
-                      ? `Launching ${new Date(app.launchDate).toLocaleDateString()}`
-                      : `Launched ${new Date(app.launchDate).toLocaleDateString()}`
-                  }
-                </span>
-              )}
-              {app.releaseDate && (
-                <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                  Released {new Date(app.releaseDate).toLocaleDateString()}
-                </span>
-              )}
-            </div>
+            )}
+            {app.releaseDate && (
+              <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                Released {new Date(app.releaseDate).toLocaleDateString()}
+              </span>
+            )}
           </div>
+
+          {/* App Name */}
+          <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition mb-4">
+            {app.name}
+            {isLaunchingToday() && (
+              <span className="ml-2 inline-flex items-center text-sm font-medium text-blue-600 animate-bounce">
+                🎉
+              </span>
+            )}
+          </h2>
           <ExpandableText 
             text={app.description} 
             maxLength={200}
