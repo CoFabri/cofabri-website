@@ -42,7 +42,7 @@ export default function Analytics() {
         `}
       </Script>
 
-      {/* HotJar */}
+            {/* HotJar */}
       <Script id="hotjar" strategy="afterInteractive">
         {`
           (function(h,o,t,j,a,r){

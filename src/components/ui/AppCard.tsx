@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { App } from '@/lib/airtable';
 import { StarIcon } from '@heroicons/react/20/solid';
+import ExpandableText from './ExpandableText';
 
 interface AppCardProps {
   app: App;
@@ -51,21 +52,19 @@ export default function AppCard({ app }: AppCardProps) {
           )}
         </div>
         <div className="p-6">
-          <div className="flex flex-wrap items-center gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition">
               {app.name}
             </h2>
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  app.status === 'Live' ? 'bg-green-100 text-green-800' :
-                  app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
-                  app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {app.status}
-                </span>
-              </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                app.status === 'Live' ? 'bg-green-100 text-green-800' :
+                app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
+                app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {app.status}
+              </span>
               {app.launchDate && (
                 <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
                   isLaunchingToday()
@@ -84,9 +83,11 @@ export default function AppCard({ app }: AppCardProps) {
               )}
             </div>
           </div>
-          <p className="text-gray-600 mb-4">
-            {app.description}
-          </p>
+          <ExpandableText 
+            text={app.description} 
+            maxLength={200}
+            className="text-gray-600 mb-4"
+          />
 
           <ul className="space-y-2 mb-4">
             {app.feature1 && (

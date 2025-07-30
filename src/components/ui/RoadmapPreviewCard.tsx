@@ -1,4 +1,7 @@
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
+import { useState } from 'react';
+import RoadmapOverlay from './RoadmapOverlay';
 
 interface RoadmapPreviewCardProps {
   roadmap: {
@@ -15,6 +18,8 @@ interface RoadmapPreviewCardProps {
 }
 
 export default function RoadmapPreviewCard({ roadmap }: RoadmapPreviewCardProps) {
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'released':
@@ -91,24 +96,60 @@ export default function RoadmapPreviewCard({ roadmap }: RoadmapPreviewCardProps)
           <div className="mb-4 bg-gray-50/80 p-4 rounded-lg">
             <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
             <div className="text-sm text-gray-600 space-y-1.5">
-              {roadmap.featuresAndChanges.split('\n').map((item: string, index: number) => {
+              {roadmap.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
                 const trimmedItem = item.trim();
+                if (!trimmedItem) return null;
+                
+                // Check for indentation (sub-bullets)
+                const originalIndentation = item.length - item.trimStart().length;
+                const isSubBullet = originalIndentation > 0;
+                
+                // Remove bullet points and clean up
                 const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                return cleanedItem ? (
-                  <div key={index} className="flex items-start">
-                    <span className="text-blue-500 mr-2 mt-[0.2rem]">•</span>
-                    <span className="flex-grow leading-relaxed">{cleanedItem}</span>
+                
+                return (
+                  <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
+                    <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
+                    <span 
+                      className="flex-grow leading-relaxed"
+                      dangerouslySetInnerHTML={{ 
+                        __html: roadmapMarkdownToHtml(cleanedItem) 
+                      }}
+                    />
                   </div>
-                ) : null;
+                );
               }).filter(Boolean)}
             </div>
+            {roadmap.featuresAndChanges.split('\n').filter(line => line.trim()).length > 6 && (
+              <button
+                onClick={() => setIsOverlayOpen(true)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+              >
+                Read More
+              </button>
+            )}
           </div>
         )}
 
         {roadmap.releaseNotes && (
           <div className="mb-4 bg-blue-50/80 p-4 rounded-lg">
             <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-            <p className="text-sm text-blue-700">{roadmap.releaseNotes}</p>
+            <div className="text-sm text-blue-700">
+              <div 
+                className="line-clamp-3"
+                dangerouslySetInnerHTML={{ 
+                  __html: releaseNotesMarkdownToHtml(roadmap.releaseNotes) 
+                }}
+              />
+              {roadmap.releaseNotes.length > 150 && (
+                <button
+                  onClick={() => setIsOverlayOpen(true)}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                >
+                  Read More
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -135,6 +176,13 @@ export default function RoadmapPreviewCard({ roadmap }: RoadmapPreviewCardProps)
           </div>
         )}
       </div>
+      
+      {/* Overlay */}
+      <RoadmapOverlay 
+        isOpen={isOverlayOpen}
+        onClose={() => setIsOverlayOpen(false)}
+        roadmap={roadmap}
+      />
     </div>
   );
 } 

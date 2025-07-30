@@ -4,7 +4,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RoadmapFeature } from '@/lib/airtable';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import AnimatedGradient from '@/components/ui/AnimatedGradient';
+import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
+import RoadmapOverlay from './RoadmapOverlay';
 
 // Demo content for test mode
 const DEMO_ROADMAP_FEATURES: RoadmapFeature[] = [
@@ -286,6 +289,7 @@ interface ProductRoadmapProps {
 }
 
 export default function ProductRoadmap({ selectedApp, selectedReleaseType, selectedStatus }: ProductRoadmapProps) {
+  const searchParams = useSearchParams();
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
   const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>([]);
   const [applications, setApplications] = useState<string[]>([]);
@@ -293,11 +297,50 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
   const [error, setError] = useState<string | null>(null);
   const [releaseTypes] = useState<string[]>(['Major', 'Minor', 'Patch']);
   const [statuses] = useState<string[]>(['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled']);
+  const [selectedFeature, setSelectedFeature] = useState<RoadmapFeature | null>(null);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+
+  // Helper function to get dynamic grid classes based on feature count
+  const getDynamicGridClasses = (featureCount: number) => {
+    if (featureCount === 1) {
+      return 'grid-cols-1 lg:grid-cols-1'; // Single feature takes full width
+    } else if (featureCount === 2) {
+      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'; // Two features, 50% each
+    } else {
+      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'; // Three or more, max 3 per row
+    }
+  };
+
+  // Handle expand query parameter
+  useEffect(() => {
+    const expandId = searchParams?.get('expand');
+    if (expandId && !isOverlayOpen) {
+      // Find the feature to expand
+      const featureToExpand = features.find(f => f.id === expandId);
+      if (featureToExpand) {
+        setSelectedFeature(featureToExpand);
+        setIsOverlayOpen(true);
+        // Scroll to the feature after a short delay to ensure it's rendered
+        setTimeout(() => {
+          const element = document.getElementById(`roadmap-feature-${expandId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+      }
+    }
+  }, [searchParams, features, isOverlayOpen]);
 
   useEffect(() => {
     async function fetchRoadmap() {
       try {
         console.log('ProductRoadmap: Starting to fetch data...');
+        
+        // Close overlay when filters change
+        if (isOverlayOpen) {
+          setIsOverlayOpen(false);
+          setSelectedFeature(null);
+        }
         
         // Fetch real content from API
         const response = await fetch('/api/roadmaps');
@@ -402,10 +445,11 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={`grid ${getDynamicGridClasses(milestone.features.length)} gap-6`}>
                   {milestone.features.map((feature) => (
                     <div
                       key={feature.id}
+                      id={`roadmap-feature-${feature.id}`}
                       className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
                       transition-all duration-300 border border-gray-100 relative flex flex-col
                       hover:border-blue-100 hover:shadow-blue-50/50"
@@ -452,24 +496,66 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                           <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
                             <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
                             <div className="text-sm text-gray-600 space-y-1.5">
-                              {feature.featuresAndChanges.split('\n').map((item: string, index: number) => {
+                              {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
                                 const trimmedItem = item.trim();
+                                if (!trimmedItem) return null;
+                                
+                                // Check for indentation (sub-bullets)
+                                const originalIndentation = item.length - item.trimStart().length;
+                                const isSubBullet = originalIndentation > 0;
+                                
+                                // Remove bullet points and clean up
                                 const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                                return cleanedItem ? (
-                                  <div key={index} className="flex items-start">
-                                    <span className="text-blue-500 mr-2 mt-[0.2rem]">•</span>
-                                    <span className="flex-grow leading-relaxed">{cleanedItem}</span>
+                                
+                                return (
+                                  <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
+                                    <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
+                                    <span 
+                                      className="flex-grow leading-relaxed"
+                                      dangerouslySetInnerHTML={{ 
+                                        __html: roadmapMarkdownToHtml(cleanedItem) 
+                                      }}
+                                    />
                                   </div>
-                                ) : null;
+                                );
                               }).filter(Boolean)}
                             </div>
+                            {feature.featuresAndChanges.split('\n').filter(line => line.trim()).length > 6 && (
+                              <button
+                                onClick={() => {
+                                  setSelectedFeature(feature);
+                                  setIsOverlayOpen(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                              >
+                                Read More
+                              </button>
+                            )}
                           </div>
                         )}
 
                         {feature.releaseNotes && (
                           <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
                             <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-                            <p className="text-sm text-blue-700">{feature.releaseNotes}</p>
+                            <div className="text-sm text-blue-700">
+                              <div 
+                                className="line-clamp-3"
+                                dangerouslySetInnerHTML={{ 
+                                  __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
+                                }}
+                              />
+                              {feature.releaseNotes.length > 150 && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedFeature(feature);
+                                    setIsOverlayOpen(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                >
+                                  Read More
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -502,6 +588,24 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
           </div>
         )}
       </div>
+      
+      {/* Overlay */}
+      {selectedFeature && (
+        <RoadmapOverlay 
+          isOpen={isOverlayOpen}
+          onClose={() => {
+            setIsOverlayOpen(false);
+            setSelectedFeature(null);
+            // Clear the expand parameter from URL when overlay is closed
+            if (searchParams?.get('expand')) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('expand');
+              window.history.replaceState({}, '', url.toString());
+            }
+          }}
+          roadmap={selectedFeature}
+        />
+      )}
     </section>
   );
 } 

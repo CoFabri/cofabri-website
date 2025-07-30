@@ -52,3 +52,49 @@ export async function isTestModeClient(): Promise<boolean> {
     return false;
   }
 } 
+
+/**
+ * Converts markdown text to HTML
+ * Handles bold text (**text**), bullet points, and line breaks
+ */
+export function markdownToHtml(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Convert bold text (**text** to <strong>text</strong>)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert single asterisks (*text* to <em>text</em>) - optional
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>');
+}
+
+/**
+ * Converts markdown text to HTML for roadmap features
+ * Specifically handles the format from Airtable with bullet points and sections
+ */
+export function roadmapMarkdownToHtml(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Convert bold text (**text** to <strong>text</strong>)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert single asterisks (*text* to <em>text</em>)
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+}
+
+/**
+ * Converts markdown text to HTML for release notes
+ * Handles bold, italic, and basic formatting
+ */
+export function releaseNotesMarkdownToHtml(text: string): string {
+  if (!text) return '';
+  
+  return text
+    // Convert bold text (**text** to <strong>text</strong>)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Convert single asterisks (*text* to <em>text</em>)
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Convert line breaks to <br> tags
+    .replace(/\n/g, '<br>');
+} 

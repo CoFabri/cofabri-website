@@ -8,6 +8,7 @@ import TestimonialPreviewCard from '@/components/ui/TestimonialPreviewCard';
 import type { App } from '@/lib/airtable';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, UserIcon, TagIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
 
 interface PreviewContent {
   id: string;
@@ -63,6 +64,8 @@ export default function PreviewPage() {
   const [requiredFields, setRequiredFields] = useState<string[]>([]);
   const [optionalFields, setOptionalFields] = useState<string[]>([]);
   const [showLoading, setShowLoading] = useState(true);
+  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
+  const [isReleaseNotesExpanded, setIsReleaseNotesExpanded] = useState(false);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -387,24 +390,60 @@ export default function PreviewPage() {
                           <div className="mb-4 bg-gray-50/80 p-4 rounded-lg">
                             <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
                             <div className="text-sm text-gray-600 space-y-1.5">
-                              {roadmapContent.featuresAndChanges.split('\n').map((item: string, index: number) => {
+                              {roadmapContent.featuresAndChanges.split('\n').slice(0, isFeaturesExpanded ? undefined : 8).map((item: string, index: number) => {
                                 const trimmedItem = item.trim();
+                                if (!trimmedItem) return null;
+                                
+                                // Check for indentation (sub-bullets)
+                                const originalIndentation = item.length - item.trimStart().length;
+                                const isSubBullet = originalIndentation > 0;
+                                
+                                // Remove bullet points and clean up
                                 const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                                return cleanedItem ? (
-                                  <div key={index} className="flex items-start">
-                                    <span className="text-blue-500 mr-2 mt-[0.2rem]">•</span>
-                                    <span className="flex-grow leading-relaxed">{cleanedItem}</span>
+                                
+                                return (
+                                  <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
+                                    <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
+                                    <span 
+                                      className="flex-grow leading-relaxed"
+                                      dangerouslySetInnerHTML={{ 
+                                        __html: roadmapMarkdownToHtml(cleanedItem) 
+                                      }}
+                                    />
                                   </div>
-                                ) : null;
+                                );
                               }).filter(Boolean)}
                             </div>
+                            {roadmapContent.featuresAndChanges.split('\n').filter(line => line.trim()).length > 8 && (
+                              <button
+                                onClick={() => setIsFeaturesExpanded(!isFeaturesExpanded)}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                              >
+                                {isFeaturesExpanded ? 'Show Less' : 'Read More'}
+                              </button>
+                            )}
                           </div>
                         )}
 
                         {roadmapContent.releaseNotes && (
                           <div className="mb-4 bg-blue-50/80 p-4 rounded-lg">
                             <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-                            <p className="text-sm text-blue-700">{roadmapContent.releaseNotes}</p>
+                            <div className="text-sm text-blue-700">
+                              <div 
+                                className={isReleaseNotesExpanded ? '' : 'line-clamp-3'}
+                                dangerouslySetInnerHTML={{ 
+                                  __html: releaseNotesMarkdownToHtml(roadmapContent.releaseNotes) 
+                                }}
+                              />
+                              {roadmapContent.releaseNotes.length > 200 && (
+                                <button
+                                  onClick={() => setIsReleaseNotesExpanded(!isReleaseNotesExpanded)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                >
+                                  {isReleaseNotesExpanded ? 'Show Less' : 'Read More'}
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>

@@ -1,6 +1,9 @@
 import { getSystemStatus } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const status = await getSystemStatus();

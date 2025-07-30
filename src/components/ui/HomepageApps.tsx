@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { App } from '@/lib/airtable';
 import confetti from 'canvas-confetti';
+import ExpandableText from './ExpandableText';
 
 export default function HomepageApps() {
   const [apps, setApps] = useState<App[]>([]);
@@ -178,21 +179,21 @@ export default function HomepageApps() {
                   )}
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      app.status === 'Live' ? 'text-green-700 bg-green-100' :
-                      app.status === 'Beta' ? 'text-purple-700 bg-purple-100' :
-                      app.status === 'Alpha' ? 'text-orange-700 bg-orange-100' :
-                      app.status === 'Coming Soon' ? 'text-blue-700 bg-blue-100' :
-                      'text-gray-700 bg-gray-100'
+                  <div className="flex flex-wrap items-center justify-center gap-2 mb-4 w-full">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      app.status === 'Live' ? 'bg-green-100 text-green-800' :
+                      app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
+                      app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
+                      app.status === 'Coming Soon' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                       {app.status}
                     </span>
                     {launchDate && !isLaunchingToday && (
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
                         new Date(launchDate) > today
-                          ? 'text-yellow-700 bg-yellow-100'
-                          : 'text-green-700 bg-green-100'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
                       }`}>
                         {new Date(launchDate) > today
                           ? `Launching ${launchDate.toLocaleDateString()}`
@@ -204,9 +205,11 @@ export default function HomepageApps() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
                     {app.name}
                   </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    {app.description}
-                  </p>
+                  <ExpandableText 
+                    text={app.description} 
+                    maxLength={150}
+                    className="text-gray-600 mb-4"
+                  />
                   <div className="flex flex-wrap gap-2">
                     {app.feature1 && (
                       <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">

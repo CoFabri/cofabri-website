@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { RoadmapFeature } from '@/lib/airtable';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getStatusColor, getStatusIcon, getReleaseTypeColor } from './ProductRoadmap';
 import { getRoadmapFeatures } from '@/lib/airtable';
 import SectionHeading from './SectionHeading';
 
 export default function CompactRoadmap() {
+  const router = useRouter();
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,17 @@ export default function CompactRoadmap() {
   const nextQuarter = features[0].milestone;
   const nextQuarterFeatures = features.filter(feature => feature.milestone === nextQuarter);
 
+  // Helper function to get dynamic grid classes based on feature count
+  const getDynamicGridClasses = (featureCount: number) => {
+    if (featureCount === 1) {
+      return 'grid-cols-1 lg:grid-cols-1'; // Single feature takes full width
+    } else if (featureCount === 2) {
+      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'; // Two features, 50% each
+    } else {
+      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'; // Three or more, max 3 per row
+    }
+  };
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -67,13 +80,14 @@ export default function CompactRoadmap() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid ${getDynamicGridClasses(nextQuarterFeatures.length)} gap-6`}>
               {nextQuarterFeatures.map((feature) => (
                 <div
                   key={feature.id}
+                  onClick={() => router.push(`/roadmaps?expand=${feature.id}`)}
                   className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md 
                   transition-all duration-200 border border-gray-100 relative flex flex-col
-                  hover:border-blue-100 hover:shadow-blue-50"
+                  hover:border-blue-100 hover:shadow-blue-50 cursor-pointer group"
                 >
                   <div className="p-5">
                     <div className="flex items-start gap-3 mb-3">
@@ -101,9 +115,12 @@ export default function CompactRoadmap() {
 
                   <div className="mt-auto">
                     <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(feature.status)}`}>
                           {feature.status}
+                        </span>
+                        <span className="text-xs text-blue-600 group-hover:text-blue-800 transition-colors">
+                          View Details →
                         </span>
                       </div>
                     </div>
