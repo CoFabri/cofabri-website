@@ -10,16 +10,27 @@ export const dynamic = 'force-dynamic';
 function LegalDocumentsContent() {
   const searchParams = useSearchParams();
   const documentName = searchParams?.get('document') || '';
+  const associatedApp = searchParams?.get('app') || '';
   const [airtableUrl, setAirtableUrl] = useState('');
 
   useEffect(() => {
     // Base Airtable embed URL
     const baseUrl = 'https://airtable.com/embed/appMlzBsqiq8vNz5X/shrv2Qy8ZDAazuBep?layout=card';
-    const filteredUrl = documentName 
-      ? `${baseUrl}&filter_Document+Name=${encodeURIComponent(documentName)}`
+    
+    // Build filter parameters
+    const filters = [];
+    if (documentName) {
+      filters.push(`filter_Document+Name=${encodeURIComponent(documentName)}`);
+    }
+    if (associatedApp) {
+      filters.push(`filter_Associated+App=${encodeURIComponent(associatedApp)}`);
+    }
+    
+    const filteredUrl = filters.length > 0 
+      ? `${baseUrl}&${filters.join('&')}`
       : baseUrl;
     setAirtableUrl(filteredUrl);
-  }, [documentName]);
+  }, [documentName, associatedApp]);
 
   return (
     <div className="min-h-screen bg-white">

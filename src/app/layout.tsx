@@ -23,12 +23,15 @@ export const metadata: Metadata = {
   publisher: 'CoFabri',
   icons: {
     icon: [
-      { url: '/images/cofabri-favicon.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/images/cofabri-favicon.png', type: 'image/png', sizes: '32x32' },
     ],
     apple: [
-      { url: '/apple-icon?<generated>', type: 'image/png' },
+      { url: '/images/cofabri-favicon.png', type: 'image/png', sizes: '180x180' },
     ],
+    shortcut: '/favicon.ico',
   },
+  manifest: '/manifest.json',
   formatDetection: {
     email: false,
     address: false,
@@ -82,6 +85,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/images/cofabri-favicon.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/images/cofabri-favicon.png" />
+        <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>
       <body className={inter.className}>

@@ -1,0 +1,21 @@
+{
+  "name": "CoFabri - SaaS Apps for Modern Businesses",
+  "short_name": "CoFabri",
+  "description": "Discover our suite of powerful SaaS applications designed to help your business grow and succeed.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/images/cofabri-favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/cofabri-favicon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+} 
