@@ -1,4 +1,4 @@
-import { getKnowledgeBaseArticle } from '@/lib/airtable';
+import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/airtable';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon, BookOpenIcon, ClockIcon, TagIcon } from '@heroicons/react/24/outline';
@@ -6,9 +6,47 @@ import { Metadata } from 'next';
 import AnimatedGradient from '@/components/ui/AnimatedGradient';
 import BackButton from '@/components/ui/BackButton';
 import ArticleContent from './ArticleContent';
+import { marked } from 'marked';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
+
+// Configure marked for safe HTML output
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  headerIds: false,
+  mangle: false,
+  pedantic: false,
+  smartLists: true,
+  smartypants: true,
+});
+
+// Function to convert markdown to HTML
+function convertMarkdownToHtml(markdown: string): string {
+  try {
+    // Convert markdown to HTML
+    let html = marked(markdown);
+    
+    // Add extra spacing for better readability
+    html = html
+      // Add spacing after paragraphs
+      .replace(/<\/p>\s*<p>/g, '</p>\n<p>')
+      // Add spacing after lists
+      .replace(/<\/ul>\s*<p>/g, '</ul>\n<p>')
+      .replace(/<\/ol>\s*<p>/g, '</ol>\n<p>')
+      // Add spacing before lists
+      .replace(/<p>\s*<ul>/g, '<p>\n<ul>')
+      .replace(/<p>\s*<ol>/g, '<p>\n<ol>')
+      // Ensure proper spacing around strong tags
+      .replace(/(<strong>.*?<\/strong>)/g, '<span class="font-semibold text-gray-900">$1</span>');
+    
+    return html;
+  } catch (error) {
+    console.error('Error converting markdown to HTML:', error);
+    return markdown; // Fallback to original text if conversion fails
+  }
+}
 
 interface KnowledgeBaseArticlePageProps {
   params: {
@@ -34,8 +72,13 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
       description: article.excerpt || article.content.substring(0, 160),
       type: 'article',
       publishedTime: article.publishedAt,
+      modifiedTime: article.lastUpdated,
       authors: [article.author],
       tags: article.tags,
+    },
+    other: {
+      'article:published_time': article.publishedAt,
+      'article:modified_time': article.lastUpdated,
     },
   };
 }
@@ -47,9 +90,42 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
     notFound();
   }
 
-  // Debug logging
-  console.log('Article from Airtable:', article);
-  console.log('Published At value:', article.publishedAt);
+  // Fetch related articles if relatedTopics exist
+  let relatedArticles: any[] = [];
+  if (article.relatedTopics) {
+    // Handle both array and string formats
+    let topicSlugs: string[] = [];
+    if (Array.isArray(article.relatedTopics)) {
+      topicSlugs = article.relatedTopics;
+    } else if (typeof article.relatedTopics === 'string') {
+      // If it's a string, try to parse it as comma-separated values
+      topicSlugs = article.relatedTopics.split(',').map(slug => slug.trim()).filter(slug => slug.length > 0);
+    }
+    
+    // Filter out non-slug values and map common titles to slugs
+    const validSlugs = topicSlugs.filter(slug => {
+      // Check if it looks like a valid slug (lowercase, no spaces, alphanumeric + hyphens)
+      return /^[a-z0-9-]+$/.test(slug);
+    });
+    
+    // Map common titles to their actual slugs
+    const titleToSlugMap: { [key: string]: string } = {
+      'Knowledge Base Coming Soon': 'coming-soon',
+      'Welcome to CertiFi Central - Your Certification Exam Platform': 'welcome-certifi-central'
+    };
+    
+    // Add mapped slugs for any titles that were found
+    const mappedSlugs = topicSlugs
+      .filter(slug => !/^[a-z0-9-]+$/.test(slug)) // Get non-slug values
+      .map(title => titleToSlugMap[title])
+      .filter(slug => slug); // Remove undefined values
+    
+    const allSlugs = [...validSlugs, ...mappedSlugs];
+    
+    if (allSlugs.length > 0) {
+      relatedArticles = await getKnowledgeBaseArticlesBySlugs(allSlugs);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -62,30 +138,46 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               <BackButton />
             </div>
 
-            <h1 className="text-5xl md:text-6xl font-bold mb-8 animated-gradient-text">
+                        <h1 className="text-5xl md:text-6xl font-bold mb-8 animated-gradient-text">
               {article.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-gray-600">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-gray-600 mb-6">
               <div className="flex items-center gap-x-2">
                 <BookOpenIcon className="h-5 w-5 text-blue-500" />
                 <span className="text-gray-900">{article.author}</span>
               </div>
+              {article.readTime && (
+                <div className="flex items-center gap-x-2">
+                  <ClockIcon className="h-5 w-5 text-blue-500" />
+                  <span>{article.readTime} min read</span>
+                </div>
+              )}
               <div className="flex items-center gap-x-2">
-                <ClockIcon className="h-5 w-5 text-blue-500" />
-                <span>{article.readTime} min read</span>
+                <span className="text-gray-500">Published:</span>
+                <time dateTime={article.publishedAt} className="text-gray-900">
+                  {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
               </div>
-              <time dateTime={article.lastUpdated} className="text-gray-500">
-                {article.lastUpdated ? new Date(article.lastUpdated).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }) : 'Not updated'}
-              </time>
+              <div className="flex items-center gap-x-2">
+                <span className="text-gray-500">Last Updated:</span>
+                <time dateTime={article.lastUpdated || article.publishedAt} className="text-gray-900">
+                  {new Date(article.lastUpdated || article.publishedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </time>
+              </div>
             </div>
 
+            {/* Tags */}
             {article.tags && article.tags.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mb-6 flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
                   <span
                     key={tag}
@@ -96,6 +188,15 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                 ))}
               </div>
             )}
+
+            {/* Application Logo */}
+            {article.logoUrl && article.applications && article.applications.length > 0 && (
+              <img 
+                src={article.logoUrl} 
+                alt={`${article.applications[0]} Logo`}
+                className="h-8 w-auto object-contain"
+              />
+            )}
           </div>
         </div>
       </section>
@@ -103,14 +204,83 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
       {/* Content Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-                      <div className="max-w-4xl mx-auto">
-              <div className="prose prose-lg prose-blue max-w-none">
+          <div className="max-w-4xl mx-auto">
+            <div className="prose prose-lg prose-blue max-w-none">
+              {article.content ? (
                 <div 
-                  className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: article.content }} 
+                  className="text-gray-700 leading-relaxed markdown-content"
+                  dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(article.content) }} 
+                  style={{
+                    '--tw-prose-body': '#374151',
+                    '--tw-prose-headings': '#111827',
+                    '--tw-prose-links': '#3b82f6',
+                    '--tw-prose-bold': '#111827',
+                    '--tw-prose-counters': '#6b7280',
+                    '--tw-prose-bullets': '#d1d5db',
+                    '--tw-prose-hr': '#e5e7eb',
+                    '--tw-prose-quotes': '#111827',
+                    '--tw-prose-quote-borders': '#e5e7eb',
+                    '--tw-prose-captions': '#6b7280',
+                    '--tw-prose-code': '#111827',
+                    '--tw-prose-pre-code': '#e5e7eb',
+                    '--tw-prose-pre-bg': '#1f2937',
+                    '--tw-prose-th-borders': '#d1d5db',
+                    '--tw-prose-td-borders': '#e5e7eb',
+                  } as React.CSSProperties}
                 />
-              </div>
+              ) : (
+                <div className="text-gray-700 leading-relaxed">
+                  <p>{article.excerpt || 'Content not available.'}</p>
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Related Topics Section */}
+      <section className="py-16 bg-blue-600 border-t border-blue-700">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-8">Related Topics</h2>
+            {relatedArticles.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {relatedArticles.map((relatedArticle) => (
+                  <Link
+                    key={relatedArticle.id}
+                    href={`/knowledge-base/${relatedArticle.slug}`}
+                    className="group p-6 rounded-xl glass-card hover:border-indigo-500/50 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        {relatedArticle.category}
+                      </span>
+                      {relatedArticle.applications && relatedArticle.applications.length > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {relatedArticle.applications[0]}
+                          {relatedArticle.applications.length > 1 && ` +${relatedArticle.applications.length - 1}`}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                      {relatedArticle.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {relatedArticle.excerpt || (relatedArticle.content ? relatedArticle.content.substring(0, 150) + '...' : '')}
+                    </p>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span className="text-indigo-500">⏱️</span>
+                      <span className="ml-2">{relatedArticle.readTime} min read</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-blue-100">No related topics available for this article.</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>

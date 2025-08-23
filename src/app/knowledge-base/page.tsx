@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import GradientHeading from '@/components/ui/GradientHeading';
 import { KnowledgeBaseArticle } from '@/lib/airtable';
@@ -8,14 +9,35 @@ import { KnowledgeBaseArticle } from '@/lib/airtable';
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
-export default function KnowledgeBasePage() {
+function KnowledgeBaseContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
+  const [selectedApplication, setSelectedApplication] = useState('');
   const [articles, setArticles] = useState<KnowledgeBaseArticle[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [applications, setApplications] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 6;
+
+  // Initialize from URL parameters
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    const tagParam = searchParams.get('tag');
+    const applicationParam = searchParams.get('application');
+    const searchParam = searchParams.get('search');
+    
+    if (categoryParam) setSelectedCategory(categoryParam);
+    if (tagParam) setSelectedTag(tagParam);
+    if (applicationParam) setSelectedApplication(applicationParam);
+    if (searchParam) setSearchQuery(searchParam);
+  }, [searchParams]);
 
   // Fetch articles
   useEffect(() => {
@@ -40,6 +62,18 @@ export default function KnowledgeBasePage() {
         const uniqueCategories = Array.from(new Set(articleData.map(article => article.category)));
         console.log('Unique categories:', uniqueCategories);
         setCategories(uniqueCategories);
+        
+        // Extract unique tags
+        const allTags = articleData.flatMap(article => article.tags || []);
+        const uniqueTags = Array.from(new Set(allTags));
+        console.log('Unique tags:', uniqueTags);
+        setTags(uniqueTags);
+        
+        // Extract unique applications
+        const allApplications = articleData.flatMap(article => article.applications || []);
+        const uniqueApplications = Array.from(new Set(allApplications));
+        console.log('Unique applications:', uniqueApplications);
+        setApplications(uniqueApplications);
       } catch (error) {
         console.error('Error loading knowledge base articles:', error);
       } finally {
@@ -50,7 +84,7 @@ export default function KnowledgeBasePage() {
     fetchData();
   }, []);
 
-  // Filter articles based on search and category
+  // Filter articles based on search, category, tags, and applications
   const filteredArticles = articles.filter(article => {
     const matchesSearch = !searchQuery || 
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -59,7 +93,11 @@ export default function KnowledgeBasePage() {
     
     const matchesCategory = !selectedCategory || article.category === selectedCategory;
     
-    return matchesSearch && matchesCategory;
+    const matchesTag = !selectedTag || (article.tags && article.tags.includes(selectedTag));
+    
+    const matchesApplication = !selectedApplication || (article.applications && article.applications.includes(selectedApplication));
+    
+    return matchesSearch && matchesCategory && matchesTag && matchesApplication;
   });
 
   // Calculate pagination for All Articles section
@@ -69,6 +107,44 @@ export default function KnowledgeBasePage() {
     (currentPage - 1) * articlesPerPage,
     currentPage * articlesPerPage
   );
+
+  // URL update functions
+  const updateURL = (newCategory?: string, newTag?: string, newApplication?: string, newSearch?: string) => {
+    const params = new URLSearchParams();
+    
+    if (newCategory) params.set('category', newCategory);
+    if (newTag) params.set('tag', newTag);
+    if (newApplication) params.set('application', newApplication);
+    if (newSearch) params.set('search', newSearch);
+    
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.push(newUrl);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page
+    updateURL(category || undefined, selectedTag || undefined, selectedApplication || undefined, searchQuery || undefined);
+  };
+
+  const handleTagChange = (tag: string) => {
+    setSelectedTag(tag);
+    setCurrentPage(1); // Reset to first page
+    updateURL(selectedCategory || undefined, tag || undefined, selectedApplication || undefined, searchQuery || undefined);
+  };
+
+  const handleApplicationChange = (application: string) => {
+    setSelectedApplication(application);
+    setCurrentPage(1); // Reset to first page
+    updateURL(selectedCategory || undefined, selectedTag || undefined, application || undefined, searchQuery || undefined);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search);
+    setCurrentPage(1); // Reset to first page
+    updateURL(selectedCategory || undefined, selectedTag || undefined, selectedApplication || undefined, search || undefined);
+  };
 
   return (
     <div className="min-h-screen">
@@ -83,7 +159,7 @@ export default function KnowledgeBasePage() {
                   type="text"
                   placeholder="Search articles..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 
                     text-gray-700 font-medium hover:border-blue-400 focus:border-blue-500 focus:ring-2 
                     focus:ring-blue-200 focus:outline-none transition-all duration-200
@@ -91,9 +167,11 @@ export default function KnowledgeBasePage() {
                 />
                 <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
+              {/* Categories */}
               <div className="flex flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-700 mr-2 self-center">Categories:</span>
                 <button
-                  onClick={() => setSelectedCategory('')}
+                  onClick={() => handleCategoryChange('')}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                     ${!selectedCategory
                       ? 'bg-blue-500 text-white shadow-md'
@@ -105,7 +183,7 @@ export default function KnowledgeBasePage() {
                 {categories.map((category) => (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => handleCategoryChange(category)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                       ${selectedCategory === category
                         ? 'bg-blue-500 text-white shadow-md'
@@ -116,6 +194,66 @@ export default function KnowledgeBasePage() {
                   </button>
                 ))}
               </div>
+
+              {/* Tags */}
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 mr-2 self-center">Tags:</span>
+                  <button
+                    onClick={() => handleTagChange('')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
+                      ${!selectedTag
+                        ? 'bg-green-500 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                  >
+                    All Tags
+                  </button>
+                  {tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => handleTagChange(tag)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
+                        ${selectedTag === tag
+                          ? 'bg-green-500 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Applications */}
+              {applications.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm font-medium text-gray-700 mr-2 self-center">Applications:</span>
+                  <button
+                    onClick={() => handleApplicationChange('')}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
+                      ${!selectedApplication
+                        ? 'bg-purple-500 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                  >
+                    All Applications
+                  </button>
+                  {applications.map((application) => (
+                    <button
+                      key={application}
+                      onClick={() => handleApplicationChange(application)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
+                        ${selectedApplication === application
+                          ? 'bg-purple-500 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                      {application}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         }
@@ -158,6 +296,12 @@ export default function KnowledgeBasePage() {
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                 Popular
                               </span>
+                              {article.applications && article.applications.length > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                  {article.applications[0]}
+                                  {article.applications.length > 1 && ` +${article.applications.length - 1}`}
+                                </span>
+                              )}
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-yellow-600 transition-colors duration-300 truncate">
                               {article.title}
@@ -201,6 +345,12 @@ export default function KnowledgeBasePage() {
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                 Featured
                               </span>
+                              {article.applications && article.applications.length > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                  {article.applications[0]}
+                                  {article.applications.length > 1 && ` +${article.applications.length - 1}`}
+                                </span>
+                              )}
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-300 truncate">
                               {article.title}
@@ -236,6 +386,12 @@ export default function KnowledgeBasePage() {
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                         {article.category}
                       </span>
+                      {article.applications && article.applications.length > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {article.applications[0]}
+                          {article.applications.length > 1 && ` +${article.applications.length - 1}`}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-xl font-semibold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
                       {article.title}
@@ -278,5 +434,17 @@ export default function KnowledgeBasePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function KnowledgeBasePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    }>
+      <KnowledgeBaseContent />
+    </Suspense>
   );
 } 

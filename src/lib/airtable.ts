@@ -101,6 +101,9 @@ export interface KnowledgeBaseArticle {
   isPopular?: boolean;
   isFeatured?: boolean;
   tags?: string[];
+  applications?: string[];
+  logoUrl?: string;
+  relatedTopics?: string[] | string;
 }
 
 export interface App {
@@ -179,37 +182,65 @@ export interface Testimonial {
 // Updated API functions to use server-side fetch
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
+    console.log('Fetching knowledge base articles from Airtable...');
     const records = await fetchFromAirtable<{
-      Title: string;
-      Slug: string;
-      Content: string;
-      Excerpt?: string;
-      Category: string;
-      Author: string;
+      'Title': string;
+      'Slug': string;
+      'Content': string;
+      'Excerpt'?: string;
+      'Category': string;
+      'Author': string;
       'Read Time': number;
       'Last Updated': string;
       'Is Popular'?: boolean;
       'Is Featured'?: boolean;
-      Tags?: string[];
+      'Tags'?: string[];
+      'Application(s)'?: string[] | string;
+      'Logo URL'?: string;
     }>('Knowledge Base', {
       filterByFormula: '{Status} = "Published"'
     });
     
-    return records.map(record => ({
-      id: record.id,
-      title: record.fields.Title,
-      slug: record.fields.Slug,
-      content: record.fields.Content,
-      excerpt: record.fields.Excerpt,
-      category: record.fields.Category,
-      author: record.fields.Author,
-      readTime: record.fields['Read Time'],
-      publishedAt: record.fields['Last Updated'],
-      lastUpdated: record.fields['Last Updated'],
-      isPopular: record.fields['Is Popular'],
-      isFeatured: record.fields['Is Featured'],
-      tags: record.fields.Tags || [],
-    }));
+    console.log(`Found ${records.length} published knowledge base articles`);
+    
+    const articles = records.map(record => {
+      try {
+        // Handle applications field - could be string or array
+        let applications: string[] = [];
+        if (record.fields['Application(s)']) {
+          if (Array.isArray(record.fields['Application(s)'])) {
+            applications = record.fields['Application(s)'];
+          } else {
+            applications = [record.fields['Application(s)']];
+          }
+        }
+
+        return {
+          id: record.id,
+          title: record.fields['Title'],
+          slug: record.fields['Slug'],
+          content: record.fields['Content'],
+          excerpt: record.fields['Excerpt'],
+          category: record.fields['Category'],
+          author: record.fields['Author'],
+          readTime: record.fields['Read Time'],
+          publishedAt: record.fields['Last Updated'],
+          lastUpdated: record.fields['Last Updated'],
+          isPopular: record.fields['Is Popular'],
+          isFeatured: record.fields['Is Featured'],
+          tags: record.fields['Tags'] || [],
+          applications: applications,
+          logoUrl: record.fields['Logo URL'],
+        };
+      } catch (error) {
+        console.error(`Error processing knowledge base article ${record.id}:`, error);
+        console.error('Record fields:', record.fields);
+        return null;
+      }
+    }).filter(Boolean) as KnowledgeBaseArticle[];
+    
+    console.log(`Successfully processed ${articles.length} knowledge base articles`);
+    return articles;
   } catch (error) {
     console.error('Error fetching knowledge base articles:', error);
     return [];
@@ -219,54 +250,9 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
 export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
   try {
     const records = await fetchFromAirtable<{
-      Title: string;
-      Slug: string;
-      Content: string;
-      Excerpt: string;
-      Category: string;
-      Author: string;
-      'Read Time': number;
-      'Last Updated': string;
-      'Is Popular': boolean;
-      'Is Featured': boolean;
-      Tags: string[];
-    }>('Knowledge Base', {
-      filterByFormula: `AND({Slug} = '${slug}', {Status} = "Published")`,
-    });
-
-    if (records.length === 0) {
-      return null;
-    }
-
-    const record = records[0];
-    
-    return {
-      id: record.id,
-      title: record.fields.Title,
-      slug: record.fields.Slug,
-      content: record.fields.Content,
-      excerpt: record.fields.Excerpt,
-      category: record.fields.Category,
-      author: record.fields.Author,
-      readTime: record.fields['Read Time'],
-      publishedAt: record.fields['Last Updated'],
-      lastUpdated: record.fields['Last Updated'],
-      isPopular: record.fields['Is Popular'],
-      isFeatured: record.fields['Is Featured'],
-      tags: record.fields.Tags,
-    };
-  } catch (error) {
-    console.error('Error fetching knowledge base article:', error);
-    return null;
-  }
-}
-
-export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
-  try {
-    const records = await fetchFromAirtable<{
-      'Article Title': string;
-      'Site URL Slug': string;
-      'Article Content': string;
+      'Title': string;
+      'Slug': string;
+      'Content': string;
       'Excerpt': string;
       'Category': string;
       'Author': string;
@@ -275,27 +261,174 @@ export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseA
       'Is Popular': boolean;
       'Is Featured': boolean;
       'Tags': string[];
+      'Application(s)'?: string[] | string;
+      'Logo URL'?: string;
+      'Related Topics'?: string[] | string;
+    }>('Knowledge Base', {
+      filterByFormula: `AND({Slug} = '${slug}', {Status} = "Published")`,
+    });
+
+    if (records.length === 0) {
+      console.log(`No published article found with slug: ${slug}`);
+      return null;
+    }
+
+    const record = records[0];
+    
+    try {
+      // Handle applications field - could be string or array
+      let applications: string[] = [];
+      if (record.fields['Application(s)']) {
+        if (Array.isArray(record.fields['Application(s)'])) {
+          applications = record.fields['Application(s)'];
+        } else {
+          applications = [record.fields['Application(s)']];
+        }
+      }
+
+      return {
+        id: record.id,
+        title: record.fields['Title'],
+        slug: record.fields['Slug'],
+        content: record.fields['Content'],
+        excerpt: record.fields['Excerpt'],
+        category: record.fields['Category'],
+        author: record.fields['Author'],
+        readTime: record.fields['Read Time'],
+        publishedAt: record.fields['Last Updated'],
+        lastUpdated: record.fields['Last Updated'],
+        isPopular: record.fields['Is Popular'],
+        isFeatured: record.fields['Is Featured'],
+        tags: record.fields['Tags'],
+        applications: applications,
+        logoUrl: record.fields['Logo URL'],
+        relatedTopics: record.fields['Related Topics'],
+      };
+    } catch (error) {
+      console.error(`Error processing knowledge base article ${record.id}:`, error);
+      console.error('Record fields:', record.fields);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching knowledge base article:', error);
+    return null;
+  }
+}
+
+export async function getKnowledgeBaseArticlesBySlugs(slugs: string[]): Promise<KnowledgeBaseArticle[]> {
+  try {
+    if (slugs.length === 0) return [];
+    
+    // Create filter formula for multiple slugs
+    const slugFilters = slugs.map(slug => `{Slug} = '${slug}'`).join(', ');
+    const filterFormula = `AND(OR(${slugFilters}), {Status} = "Published")`;
+    
+    const records = await fetchFromAirtable<{
+      'Title': string;
+      'Slug': string;
+      'Content': string;
+      'Excerpt': string;
+      'Category': string;
+      'Author': string;
+      'Read Time': number;
+      'Last Updated': string;
+      'Is Popular': boolean;
+      'Is Featured': boolean;
+      'Tags': string[];
+      'Application(s)'?: string[] | string;
+      'Logo URL'?: string;
+      'Related Topics'?: string[] | string;
+    }>('Knowledge Base', {
+      filterByFormula: filterFormula,
+    });
+
+    return records.map(record => {
+      // Handle applications field - could be string or array
+      let applications: string[] = [];
+      if (record.fields['Application(s)']) {
+        if (Array.isArray(record.fields['Application(s)'])) {
+          applications = record.fields['Application(s)'];
+        } else {
+          applications = [record.fields['Application(s)']];
+        }
+      }
+
+      return {
+        id: record.id,
+        title: record.fields['Title'],
+        slug: record.fields['Slug'],
+        content: record.fields['Content'],
+        excerpt: record.fields['Excerpt'],
+        category: record.fields['Category'],
+        author: record.fields['Author'],
+        readTime: record.fields['Read Time'],
+        publishedAt: record.fields['Last Updated'],
+        lastUpdated: record.fields['Last Updated'],
+        isPopular: record.fields['Is Popular'],
+        isFeatured: record.fields['Is Featured'],
+        tags: record.fields['Tags'],
+        applications: applications,
+        logoUrl: record.fields['Logo URL'],
+        relatedTopics: record.fields['Related Topics'],
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching knowledge base articles by slugs:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
+  try {
+    const records = await fetchFromAirtable<{
+      'Title': string;
+      'Slug': string;
+      'Content': string;
+      'Excerpt': string;
+      'Category': string;
+      'Author': string;
+      'Read Time': number;
+      'Last Updated': string;
+      'Is Popular': boolean;
+      'Is Featured': boolean;
+      'Tags': string[];
+      'Application(s)'?: string[] | string;
+      'Logo URL'?: string;
     }>('Knowledge Base', {
       filterByFormula: 'AND({Is Featured} = TRUE(), {Status} = "Published")',
       sort: [{ field: 'Last Updated', direction: 'desc' }],
       maxRecords: 6,
     });
 
-    return records.map(record => ({
-      id: record.id,
-      title: record.fields['Article Title'],
-      slug: record.fields['Site URL Slug'],
-      content: record.fields['Article Content'],
-      excerpt: record.fields['Excerpt'],
-      category: record.fields['Category'],
-      author: record.fields['Author'],
-      readTime: record.fields['Read Time'],
-      publishedAt: record.fields['Last Updated'],
-      lastUpdated: record.fields['Last Updated'],
-      isPopular: record.fields['Is Popular'],
-      isFeatured: record.fields['Is Featured'],
-      tags: record.fields['Tags'],
-    }));
+    return records.map(record => {
+      // Handle applications field - could be string or array
+      let applications: string[] = [];
+      if (record.fields['Application(s)']) {
+        if (Array.isArray(record.fields['Application(s)'])) {
+          applications = record.fields['Application(s)'];
+        } else {
+          applications = [record.fields['Application(s)']];
+        }
+      }
+
+      return {
+        id: record.id,
+        title: record.fields['Title'],
+        slug: record.fields['Slug'],
+        content: record.fields['Content'],
+        excerpt: record.fields['Excerpt'],
+        category: record.fields['Category'],
+        author: record.fields['Author'],
+        readTime: record.fields['Read Time'],
+        publishedAt: record.fields['Last Updated'],
+        lastUpdated: record.fields['Last Updated'],
+        isPopular: record.fields['Is Popular'],
+        isFeatured: record.fields['Is Featured'],
+        tags: record.fields['Tags'],
+        applications: applications,
+        logoUrl: record.fields['Logo URL'],
+      };
+    });
   } catch (error) {
     console.error('Error fetching featured knowledge base articles:', error);
     return [];
