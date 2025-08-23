@@ -15,18 +15,13 @@ export const dynamic = 'force-dynamic';
 marked.setOptions({
   breaks: true,
   gfm: true,
-  headerIds: false,
-  mangle: false,
-  pedantic: false,
-  smartLists: true,
-  smartypants: true,
 });
 
 // Function to convert markdown to HTML
-function convertMarkdownToHtml(markdown: string): string {
+async function convertMarkdownToHtml(markdown: string): Promise<string> {
   try {
     // Convert markdown to HTML
-    let html = marked(markdown);
+    let html = await marked(markdown);
     
     // Add extra spacing for better readability
     html = html
@@ -78,7 +73,7 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
     },
     other: {
       'article:published_time': article.publishedAt,
-      'article:modified_time': article.lastUpdated,
+      'article:modified_time': article.lastUpdated || article.publishedAt,
     },
   };
 }
@@ -88,6 +83,12 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
 
   if (!article) {
     notFound();
+  }
+
+  // Convert markdown to HTML
+  let htmlContent = '';
+  if (article.content) {
+    htmlContent = await convertMarkdownToHtml(article.content);
   }
 
   // Fetch related articles if relatedTopics exist
@@ -209,7 +210,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               {article.content ? (
                 <div 
                   className="text-gray-700 leading-relaxed markdown-content"
-                  dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(article.content) }} 
+                  dangerouslySetInnerHTML={{ __html: htmlContent }} 
                   style={{
                     '--tw-prose-body': '#374151',
                     '--tw-prose-headings': '#111827',

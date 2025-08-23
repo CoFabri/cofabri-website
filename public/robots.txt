@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://cofabri.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /preview/
+Disallow: /debug/
+
+# Allow important pages
+Allow: /apps/
+Allow: /knowledge-base/
+Allow: /contact/
+Allow: /roadmaps/
+Allow: /status/
+Allow: /support/
+Allow: /legal/
+
+# Crawl delay (optional)
+Crawl-delay: 1

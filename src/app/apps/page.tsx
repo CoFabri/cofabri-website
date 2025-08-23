@@ -1,13 +1,41 @@
 import React from 'react';
+import { Metadata } from 'next';
 import Apps from '@/components/ui/Apps';
 import NewsletterSignup from '@/components/ui/NewsletterSignup';
 import GradientHeading from '@/components/ui/GradientHeading';
 import Link from 'next/link';
 import Testimonials from '@/components/ui/Testimonials';
 import FeaturedApp from '@/components/ui/FeaturedApp';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Our Apps',
+  description: 'Explore our full collection of SaaS applications designed to enhance your productivity. From productivity tools to AI-powered solutions, find the perfect app for your business needs.',
+  keywords: ['SaaS apps', 'productivity tools', 'business software', 'web applications', 'AI tools', 'cloud software'],
+  openGraph: {
+    title: 'Our Apps | CoFabri',
+    description: 'Explore our full collection of SaaS applications designed to enhance your productivity.',
+    url: 'https://cofabri.com/apps',
+    images: [
+      {
+        url: '/images/placeholder.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri Apps Collection',
+      },
+    ],
+  },
+  twitter: {
+    title: 'Our Apps | CoFabri',
+    description: 'Explore our full collection of SaaS applications designed to enhance your productivity.',
+  },
+  alternates: {
+    canonical: '/apps',
+  },
+};
 
 // Define app categories
 const categories = [
@@ -21,6 +49,9 @@ const categories = [
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 pt-8">
+        <Breadcrumbs items={[{ name: 'Apps', href: '/apps' }]} />
+      </div>
       <GradientHeading
         title="Our Apps"
         subtitle="Explore our full collection of applications designed to enhance your productivity."

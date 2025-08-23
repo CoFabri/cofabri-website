@@ -1,8 +1,7 @@
-'use client';
-
 import { Suspense } from 'react';
 import Contact from '@/components/ui/Contact';
 import GradientHeading from '@/components/ui/GradientHeading';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -10,6 +9,9 @@ export const dynamic = 'force-dynamic';
 function ContactPageContent() {
   return (
     <div className="min-h-screen">
+      <div className="container mx-auto px-4 pt-8">
+        <Breadcrumbs items={[{ name: 'Contact', href: '/contact' }]} />
+      </div>
       <GradientHeading
         title="Contact Us"
         subtitle="Get in touch with our team for any questions or support"
