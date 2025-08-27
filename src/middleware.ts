@@ -2,7 +2,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+  const { pathname, searchParams, hostname } = request.nextUrl;
+
+  // Redirect www to non-www (canonical domain)
+  if (hostname.startsWith('www.')) {
+    const newHostname = hostname.replace('www.', '');
+    const newUrl = new URL(request.url);
+    newUrl.hostname = newHostname;
+    return NextResponse.redirect(newUrl, 301); // Permanent redirect for SEO
+  }
 
   // Handle redirects for 404 errors found in Google Search Console
   if (pathname === '/privacy') {

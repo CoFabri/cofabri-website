@@ -116,22 +116,26 @@ Crawl-delay: 1
 ### Redirects & 404 Handling
 The middleware (`src/middleware.ts`) handles several types of redirects:
 
-1. **Legacy URL Redirects**:
+1. **Domain Canonicalization**:
+   - `www.cofabri.com/*` → `cofabri.com/*` (301 redirect)
+   - Ensures consistent canonical domain usage
+
+2. **Legacy URL Redirects**:
    - `/privacy` → `/legal` (privacy policy access)
    - Missing knowledge base articles → `/knowledge-base`
 
-2. **Known Missing Articles**:
+3. **Known Missing Articles**:
    - `/knowledge-base/faq` → `/knowledge-base`
    - `/knowledge-base/getting-started` → `/knowledge-base`
    - `/knowledge-base/api-docs` → `/knowledge-base`
    - `/knowledge-base/troubleshooting` → `/knowledge-base`
 
-3. **URL Normalization**:
+4. **URL Normalization**:
    - Legal document URLs with different encoding variations are normalized
    - Spaces, %20, and %2B are all converted to + for consistency
    - Prevents duplicate content from URL encoding differences
 
-4. **Custom 404 Page**:
+5. **Custom 404 Page**:
    - Provides helpful navigation for missing pages
    - Special handling for knowledge base articles
    - Links to relevant sections of the site
@@ -218,6 +222,13 @@ The following "Alternate page with proper canonical tag" issues have been resolv
 - Knowledge base articles (`/knowledge-base/[slug]`) → Self-referencing canonical URLs
 - Legal page (`/legal`) → Self-referencing canonical URL
 - Removed global canonical URL from layout to prevent inheritance issues
+
+### 8. Domain Canonicalization
+- ✅ WWW to Non-WWW redirects implemented
+- ✅ All www URLs redirect to non-www with 301 status
+- ✅ `https://www.cofabri.com/*` → `https://cofabri.com/*`
+- ✅ Ensures consistent canonical domain usage
+- ✅ Prevents duplicate content from www/non-www variations
 
 ## 📊 SEO Monitoring
 
