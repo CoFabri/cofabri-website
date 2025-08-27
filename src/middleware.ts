@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
 
   // Handle redirects for 404 errors found in Google Search Console
   if (pathname === '/privacy') {
@@ -29,6 +29,27 @@ export function middleware(request: NextRequest) {
     // For any other knowledge base slug that might not exist,
     // we'll let the page handle the 404 gracefully
     // The knowledge base article page will show a 404 if the article doesn't exist
+  }
+
+  // Handle duplicate content issues with legal documents
+  if (pathname === '/legal' && searchParams.has('document')) {
+    const documentName = searchParams.get('document');
+    
+    if (documentName) {
+      // Normalize URL encoding to prevent duplicates
+      // Convert spaces to + and ensure consistent encoding
+      const normalizedDocumentName = documentName
+        .replace(/\s+/g, '+') // Replace spaces with +
+        .replace(/%20/g, '+') // Replace %20 with +
+        .replace(/%2B/g, '+'); // Replace %2B with +
+      
+      // If the document name is different from normalized version, redirect
+      if (documentName !== normalizedDocumentName) {
+        const newUrl = new URL(request.url);
+        newUrl.searchParams.set('document', normalizedDocumentName);
+        return NextResponse.redirect(newUrl);
+      }
+    }
   }
 
   // Create response

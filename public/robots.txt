@@ -9,6 +9,10 @@ Disallow: /api/
 Disallow: /preview/
 Disallow: /debug/
 
+# Disallow API endpoints that shouldn't be indexed
+Disallow: /health
+Disallow: /api/health
+
 # Allow important pages
 Allow: /apps/
 Allow: /knowledge-base/

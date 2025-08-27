@@ -22,6 +22,17 @@ export const metadata: Metadata = {
     description: 'Access our comprehensive collection of legal documents including privacy policies, terms of service, and cookie policies.',
   },
   alternates: {
-    canonical: '/legal',
+    canonical: 'https://cofabri.com/legal',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };

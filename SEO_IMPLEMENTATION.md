@@ -45,6 +45,13 @@ This document outlines the comprehensive SEO implementation for the CoFabri webs
 - ✅ Missing knowledge base articles → `/knowledge-base` redirect
 - ✅ Graceful handling of non-existent knowledge base articles
 
+### 7. Duplicate Content Prevention
+- ✅ Canonical URLs on all pages to prevent duplicate content
+- ✅ URL normalization in middleware to handle encoding variations
+- ✅ Legal document canonical URLs pointing to main legal page
+- ✅ API endpoint blocking in robots.txt
+- ✅ Proper robots meta tags for indexing control
+
 ## 📁 File Structure
 
 ```
@@ -86,6 +93,16 @@ Sitemap: https://cofabri.com/sitemap.xml
 Disallow: /api/
 Disallow: /preview/
 Disallow: /debug/
+Disallow: /health
+Disallow: /api/health
+Allow: /apps/
+Allow: /knowledge-base/
+Allow: /contact/
+Allow: /roadmaps/
+Allow: /status/
+Allow: /support/
+Allow: /legal/
+Crawl-delay: 1
 ```
 
 ### Sitemap.xml
@@ -107,10 +124,36 @@ The middleware (`src/middleware.ts`) handles several types of redirects:
    - `/knowledge-base/api-docs` → `/knowledge-base`
    - `/knowledge-base/troubleshooting` → `/knowledge-base`
 
-3. **Custom 404 Page**:
+3. **URL Normalization**:
+   - Legal document URLs with different encoding variations are normalized
+   - Spaces, %20, and %2B are all converted to + for consistency
+   - Prevents duplicate content from URL encoding differences
+
+4. **Custom 404 Page**:
    - Provides helpful navigation for missing pages
    - Special handling for knowledge base articles
    - Links to relevant sections of the site
+
+### Duplicate Content Prevention
+The following measures prevent duplicate content issues:
+
+1. **Canonical URLs**:
+   - All pages have proper canonical URLs
+   - Legal document pages all point to `/legal` as canonical
+   - Prevents Google from indexing multiple versions of the same content
+
+2. **URL Normalization**:
+   - Middleware automatically redirects URL encoding variations
+   - `CertiFi Central - Privacy Policy` → `CertiFi+Central+-+Privacy+Policy`
+   - Ensures consistent URL format across the site
+
+3. **API Endpoint Protection**:
+   - `/health` and `/api/health` endpoints blocked in robots.txt
+   - Prevents API endpoints from being indexed as duplicate content
+
+4. **Robots Meta Tags**:
+   - Explicit indexing instructions for search engines
+   - Proper control over what gets indexed
 
 ### Metadata Structure
 Each page includes:
@@ -120,6 +163,7 @@ Each page includes:
 - Open Graph tags
 - Twitter Card tags
 - Canonical URL
+- Robots meta tags
 
 ### Structured Data
 - Organization schema for company information
@@ -157,6 +201,13 @@ The following 404 errors have been resolved with redirects:
 - `/knowledge-base/api-docs` → `/knowledge-base`
 - `/knowledge-base/troubleshooting` → `/knowledge-base`
 
+### 6. Duplicate Content Resolution
+The following duplicate content issues have been resolved:
+- Legal document URL encoding variations → Normalized to consistent format
+- API health endpoints → Blocked from indexing
+- Legal document pages → All point to `/legal` as canonical
+- URL parameter variations → Normalized through middleware
+
 ## 📊 SEO Monitoring
 
 ### Tools to Use
@@ -174,6 +225,7 @@ The following 404 errors have been resolved with redirects:
 - Mobile usability scores
 - Core Web Vitals
 - 404 error rates
+- Duplicate content issues
 
 ## 🔍 SEO Best Practices
 
@@ -191,6 +243,7 @@ The following 404 errors have been resolved with redirects:
 - Implement proper redirects
 - Monitor for broken links
 - Handle 404 errors gracefully
+- Prevent duplicate content with canonical URLs
 
 ### User Experience
 - Clear navigation structure
@@ -225,6 +278,14 @@ When adding new redirects:
 4. Monitor Google Search Console for 404 errors
 5. Update this documentation
 
+### Duplicate Content Prevention
+When adding new content:
+1. Always include canonical URLs
+2. Use consistent URL encoding
+3. Avoid creating multiple URLs for the same content
+4. Test URL variations to ensure proper normalization
+5. Monitor Google Search Console for duplicate content issues
+
 ## 📈 Performance Optimization
 
 ### Images
@@ -254,6 +315,7 @@ When adding new redirects:
 - Review and update meta descriptions
 - Monitor page speed performance
 - Check for new 404 errors
+- Monitor for duplicate content issues
 
 ### Quarterly Reviews
 - Analyze search performance
@@ -262,6 +324,7 @@ When adding new redirects:
 - Check competitor analysis
 - Review technical SEO
 - Audit redirect rules
+- Review canonical URL implementation
 
 ## 📞 Support
 
@@ -275,6 +338,7 @@ For SEO-related questions or issues:
 ---
 
 **Last Updated:** December 2024
-**Version:** 1.1
+**Version:** 1.2
 **Status:** Production Ready ✅
 **404 Handling:** Implemented ✅
+**Duplicate Content Prevention:** Implemented ✅
