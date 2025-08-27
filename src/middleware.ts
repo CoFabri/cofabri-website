@@ -2,6 +2,35 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Handle redirects for 404 errors found in Google Search Console
+  if (pathname === '/privacy') {
+    return NextResponse.redirect(new URL('/legal', request.url));
+  }
+
+  // Redirect missing knowledge base articles to the main knowledge base page
+  if (pathname.startsWith('/knowledge-base/')) {
+    const slug = pathname.replace('/knowledge-base/', '');
+    
+    // List of known missing articles that should redirect to main KB page
+    const missingArticles = [
+      'faq',
+      'getting-started', 
+      'api-docs',
+      'troubleshooting'
+    ];
+
+    // If it's a known missing article, redirect to main KB page
+    if (missingArticles.includes(slug)) {
+      return NextResponse.redirect(new URL('/knowledge-base', request.url));
+    }
+
+    // For any other knowledge base slug that might not exist,
+    // we'll let the page handle the 404 gracefully
+    // The knowledge base article page will show a 404 if the article doesn't exist
+  }
+
   // Create response
   let response = NextResponse.next();
 

@@ -38,6 +38,13 @@ This document outlines the comprehensive SEO implementation for the CoFabri webs
 - ✅ Breadcrumb navigation
 - ✅ Comprehensive content structure
 
+### 6. 404 Error Handling & Redirects
+- ✅ Custom 404 page with helpful navigation
+- ✅ Redirects for legacy URLs found in Google Search Console
+- ✅ `/privacy` → `/legal` redirect
+- ✅ Missing knowledge base articles → `/knowledge-base` redirect
+- ✅ Graceful handling of non-existent knowledge base articles
+
 ## 📁 File Structure
 
 ```
@@ -52,6 +59,7 @@ src/
 ├── app/
 │   ├── layout.tsx               # Global metadata and structured data
 │   ├── sitemap.ts              # Dynamic sitemap generation
+│   ├── not-found.tsx           # Custom 404 page
 │   ├── page.tsx                # Homepage with SEO metadata
 │   ├── apps/page.tsx           # Apps page with SEO metadata
 │   ├── contact/page.tsx        # Contact page with SEO metadata
@@ -60,6 +68,7 @@ src/
 │   ├── status/page.tsx         # Status page with SEO metadata
 │   ├── support/page.tsx        # Support page with SEO metadata
 │   └── legal/page.tsx          # Legal page with SEO metadata
+├── middleware.ts               # Redirects and security middleware
 └── components/ui/
     ├── StructuredData.tsx      # JSON-LD structured data component
     ├── Breadcrumbs.tsx         # Breadcrumb navigation component
@@ -84,6 +93,24 @@ Disallow: /debug/
 - Includes all static pages with proper priorities
 - Dynamically includes knowledge base articles
 - Updates automatically when content changes
+
+### Redirects & 404 Handling
+The middleware (`src/middleware.ts`) handles several types of redirects:
+
+1. **Legacy URL Redirects**:
+   - `/privacy` → `/legal` (privacy policy access)
+   - Missing knowledge base articles → `/knowledge-base`
+
+2. **Known Missing Articles**:
+   - `/knowledge-base/faq` → `/knowledge-base`
+   - `/knowledge-base/getting-started` → `/knowledge-base`
+   - `/knowledge-base/api-docs` → `/knowledge-base`
+   - `/knowledge-base/troubleshooting` → `/knowledge-base`
+
+3. **Custom 404 Page**:
+   - Provides helpful navigation for missing pages
+   - Special handling for knowledge base articles
+   - Links to relevant sections of the site
 
 ### Metadata Structure
 Each page includes:
@@ -122,6 +149,14 @@ Each page includes:
 - Review mobile usability
 - Check Core Web Vitals
 
+### 5. 404 Error Resolution
+The following 404 errors have been resolved with redirects:
+- `/privacy` → `/legal`
+- `/knowledge-base/faq` → `/knowledge-base`
+- `/knowledge-base/getting-started` → `/knowledge-base`
+- `/knowledge-base/api-docs` → `/knowledge-base`
+- `/knowledge-base/troubleshooting` → `/knowledge-base`
+
 ## 📊 SEO Monitoring
 
 ### Tools to Use
@@ -138,6 +173,7 @@ Each page includes:
 - Page load speed
 - Mobile usability scores
 - Core Web Vitals
+- 404 error rates
 
 ## 🔍 SEO Best Practices
 
@@ -154,6 +190,7 @@ Each page includes:
 - Use HTTPS everywhere
 - Implement proper redirects
 - Monitor for broken links
+- Handle 404 errors gracefully
 
 ### User Experience
 - Clear navigation structure
@@ -161,6 +198,7 @@ Each page includes:
 - Accessible design
 - Clear call-to-actions
 - Mobile-first approach
+- Helpful 404 pages
 
 ## 🛠️ Development Workflow
 
@@ -178,6 +216,14 @@ The `SEOChecklist` component provides real-time SEO feedback during development:
 - Checks for common SEO issues
 - Provides actionable feedback
 - Helps maintain SEO standards
+
+### Redirect Management
+When adding new redirects:
+1. Update `src/middleware.ts` with new redirect rules
+2. Test redirects locally
+3. Deploy and verify redirects work in production
+4. Monitor Google Search Console for 404 errors
+5. Update this documentation
 
 ## 📈 Performance Optimization
 
@@ -207,6 +253,7 @@ The `SEOChecklist` component provides real-time SEO feedback during development:
 - Check for broken links
 - Review and update meta descriptions
 - Monitor page speed performance
+- Check for new 404 errors
 
 ### Quarterly Reviews
 - Analyze search performance
@@ -214,6 +261,7 @@ The `SEOChecklist` component provides real-time SEO feedback during development:
 - Update content strategy
 - Check competitor analysis
 - Review technical SEO
+- Audit redirect rules
 
 ## 📞 Support
 
@@ -227,5 +275,6 @@ For SEO-related questions or issues:
 ---
 
 **Last Updated:** December 2024
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Production Ready ✅
+**404 Handling:** Implemented ✅
