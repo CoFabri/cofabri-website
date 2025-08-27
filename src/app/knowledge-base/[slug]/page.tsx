@@ -62,6 +62,9 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
   return {
     title: `${article.title} | Knowledge Base`,
     description: article.excerpt || article.content.substring(0, 160),
+    alternates: {
+      canonical: `https://cofabri.com/knowledge-base/${params.slug}`,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt || article.content.substring(0, 160),
@@ -70,6 +73,7 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
       modifiedTime: article.lastUpdated,
       authors: [article.author],
       tags: article.tags,
+      url: `https://cofabri.com/knowledge-base/${params.slug}`,
     },
     other: {
       'article:published_time': article.publishedAt,

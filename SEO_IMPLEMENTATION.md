@@ -51,6 +51,8 @@ This document outlines the comprehensive SEO implementation for the CoFabri webs
 - ✅ Legal document canonical URLs pointing to main legal page
 - ✅ API endpoint blocking in robots.txt
 - ✅ Proper robots meta tags for indexing control
+- ✅ Self-referencing canonical URLs for all pages
+- ✅ Fixed "Alternate page with proper canonical tag" issues
 
 ## 📁 File Structure
 
@@ -207,6 +209,15 @@ The following duplicate content issues have been resolved:
 - API health endpoints → Blocked from indexing
 - Legal document pages → All point to `/legal` as canonical
 - URL parameter variations → Normalized through middleware
+
+### 7. Canonical URL Fixes
+The following "Alternate page with proper canonical tag" issues have been resolved:
+- Homepage (`/`) → Self-referencing canonical URL
+- Status page (`/status`) → Self-referencing canonical URL  
+- Knowledge base page (`/knowledge-base`) → Self-referencing canonical URL
+- Knowledge base articles (`/knowledge-base/[slug]`) → Self-referencing canonical URLs
+- Legal page (`/legal`) → Self-referencing canonical URL
+- Removed global canonical URL from layout to prevent inheritance issues
 
 ## 📊 SEO Monitoring
 

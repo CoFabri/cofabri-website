@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: 'Check the real-time status of all CoFabri services and applications.',
   },
   alternates: {
-    canonical: '/status',
+    canonical: 'https://cofabri.com/status',
   },
 };
 
