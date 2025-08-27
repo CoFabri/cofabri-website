@@ -3,6 +3,7 @@
 import { EnvelopeIcon, PhoneIcon, ClockIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
+import AirtableFormLoader from './AirtableFormLoader';
 
 // Airtable form configuration
 const AIRTABLE_FORM_BASE_URL = 'https://airtable.com/embed/app9KvSkBwix9MnSr/pagGflxAdmJG76KS8/form';
@@ -84,14 +85,10 @@ export default function Contact() {
 
           {/* Contact Form - Full Width */}
           <div className="bg-white rounded-3xl p-8 shadow-sm">
-            <iframe
-              key={airtableFormUrl}
-              className="airtable-embed"
+            <AirtableFormLoader
               src={airtableFormUrl}
-              frameBorder="0"
-              width="100%"
-              height="1150"
-              style={{ background: 'transparent' }}
+              height="1150px"
+              title="Contact Form"
             />
           </div>
         </div>

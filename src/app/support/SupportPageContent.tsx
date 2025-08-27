@@ -13,6 +13,7 @@ import {
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 import GradientHeading from '@/components/ui/GradientHeading';
+import AirtableFormLoader from '@/components/ui/AirtableFormLoader';
 
 // Airtable form configuration
 const AIRTABLE_FORM_BASE_URL = 'https://airtable.com/embed/appLCRokCHruMDfuB/pagFEHyIO9FvMYWaM/form';
@@ -133,11 +134,10 @@ export default function SupportPageContent() {
         {/* Support Form Section - Full Width */}
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <iframe
-              key={airtableFormUrl}
-              className="w-full h-[1600px] border-0 rounded-lg"
+            <AirtableFormLoader
               src={airtableFormUrl}
-              title="Support Ticket Form"
+              height="1600px"
+              title="Support Form"
             />
           </div>
         </div>
