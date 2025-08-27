@@ -2,15 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const { pathname, searchParams, hostname } = request.nextUrl;
-
-  // Redirect www to non-www (canonical domain)
-  if (hostname.startsWith('www.')) {
-    const newHostname = hostname.replace('www.', '');
-    const newUrl = new URL(request.url);
-    newUrl.hostname = newHostname;
-    return NextResponse.redirect(newUrl, 301); // Permanent redirect for SEO
-  }
+  const { pathname, searchParams } = request.nextUrl;
 
   // Handle redirects for 404 errors found in Google Search Console
   if (pathname === '/privacy') {
@@ -33,10 +25,6 @@ export function middleware(request: NextRequest) {
     if (missingArticles.includes(slug)) {
       return NextResponse.redirect(new URL('/knowledge-base', request.url));
     }
-
-    // For any other knowledge base slug that might not exist,
-    // we'll let the page handle the 404 gracefully
-    // The knowledge base article page will show a 404 if the article doesn't exist
   }
 
   // Handle duplicate content issues with legal documents
@@ -45,11 +33,10 @@ export function middleware(request: NextRequest) {
     
     if (documentName) {
       // Normalize URL encoding to prevent duplicates
-      // Convert spaces to + and ensure consistent encoding
       const normalizedDocumentName = documentName
-        .replace(/\s+/g, '+') // Replace spaces with +
-        .replace(/%20/g, '+') // Replace %20 with +
-        .replace(/%2B/g, '+'); // Replace %2B with +
+        .replace(/\s+/g, '+')
+        .replace(/%20/g, '+')
+        .replace(/%2B/g, '+');
       
       // If the document name is different from normalized version, redirect
       if (documentName !== normalizedDocumentName) {
@@ -72,13 +59,8 @@ export function middleware(request: NextRequest) {
   // Create response
   let response = NextResponse.next();
 
-  // Add no-cache headers for all routes
-  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-
-  // Only apply to preview routes
-  if (request.nextUrl.pathname.startsWith('/preview/')) {
+  // Only apply to preview routes (excluding login page)
+  if (request.nextUrl.pathname.startsWith('/preview/') && !request.nextUrl.pathname.startsWith('/preview/login')) {
     const previewPassword = request.nextUrl.searchParams.get('password');
     const expectedPassword = process.env.PREVIEW_PASSWORD;
 

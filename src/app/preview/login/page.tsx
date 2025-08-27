@@ -58,14 +58,18 @@ function LoginPreviewContent() {
     fetchContent();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Check if the password matches the preview password from environment variables
-    if (password === process.env.NEXT_PUBLIC_PREVIEW_PASSWORD) {
-      // If password is correct, redirect to the intended destination
-      router.push(redirect);
-    } else {
-      setError('Invalid preview password');
+    setError('');
+    
+    try {
+      // Instead of checking password on client side, redirect with password as query param
+      // The middleware will handle the authentication
+      const redirectUrl = new URL(redirect, window.location.origin);
+      redirectUrl.searchParams.set('password', password);
+      router.push(redirectUrl.toString());
+    } catch (err) {
+      setError('Failed to redirect. Please try again.');
     }
   };
 
