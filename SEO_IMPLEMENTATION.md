@@ -50,6 +50,8 @@ This document outlines the comprehensive SEO implementation for the CoFabri webs
 - ✅ URL normalization in middleware to handle encoding variations
 - ✅ Legal document canonical URLs pointing to main legal page
 - ✅ API endpoint blocking in robots.txt
+- ✅ Preview route protection with noindex meta tags
+- ✅ Airtable record ID URLs blocked in robots.txt
 - ✅ Proper robots meta tags for indexing control
 - ✅ Self-referencing canonical URLs for all pages
 - ✅ Fixed "Alternate page with proper canonical tag" issues
@@ -97,6 +99,14 @@ Disallow: /preview/
 Disallow: /debug/
 Disallow: /health
 Disallow: /api/health
+
+# Disallow preview routes with Airtable IDs
+Disallow: /preview/*/rec*
+Disallow: /api/preview/*/rec*
+
+# Disallow any URLs with Airtable record IDs
+Disallow: /*/rec*
+
 Allow: /apps/
 Allow: /knowledge-base/
 Allow: /contact/
@@ -116,22 +126,26 @@ Crawl-delay: 1
 ### Redirects & 404 Handling
 The middleware (`src/middleware.ts`) handles several types of redirects:
 
-1. **Legacy URL Redirects**:
+1. **Domain Canonicalization**:
+   - `www.cofabri.com/*` → `cofabri.com/*` (301 redirect)
+   - Ensures consistent canonical domain usage
+
+2. **Legacy URL Redirects**:
    - `/privacy` → `/legal` (privacy policy access)
    - Missing knowledge base articles → `/knowledge-base`
 
-2. **Known Missing Articles**:
+3. **Known Missing Articles**:
    - `/knowledge-base/faq` → `/knowledge-base`
    - `/knowledge-base/getting-started` → `/knowledge-base`
    - `/knowledge-base/api-docs` → `/knowledge-base`
    - `/knowledge-base/troubleshooting` → `/knowledge-base`
 
-3. **URL Normalization**:
+4. **URL Normalization**:
    - Legal document URLs with different encoding variations are normalized
    - Spaces, %20, and %2B are all converted to + for consistency
    - Prevents duplicate content from URL encoding differences
 
-4. **Custom 404 Page**:
+5. **Custom 404 Page**:
    - Provides helpful navigation for missing pages
    - Special handling for knowledge base articles
    - Links to relevant sections of the site
@@ -172,6 +186,34 @@ Each page includes:
 - Website schema with search functionality
 - Article schema for blog posts
 - Breadcrumb schema for navigation
+
+## 🚨 Weird URLs Prevention
+
+### Problem
+Google Search Console was showing weird URLs under "Crawled - currently not indexed" including:
+- `/preview/apps/rec1234567890abcdef` (Preview routes with Airtable record IDs)
+- `/api/preview/apps/rec1234567890abcdef` (API preview routes)
+- Other URLs containing Airtable record IDs
+
+### Solution
+1. **Robots.txt Protection**:
+   - Added `Disallow: /preview/*/rec*` to block preview routes with record IDs
+   - Added `Disallow: /api/preview/*/rec*` to block API preview routes
+   - Added `Disallow: /*/rec*` to block any URLs with Airtable record IDs
+
+2. **Meta Tags Protection**:
+   - Added noindex meta tags to all preview pages
+   - Created metadata exports for preview routes
+   - Ensured proper robots meta tags
+
+3. **Middleware Protection**:
+   - Added 404 responses for unauthorized preview access
+   - Blocked direct access to preview routes with record IDs
+
+4. **File Structure**:
+   - `src/app/preview/[type]/[id]/metadata.ts` - Noindex metadata for preview pages
+   - `src/app/preview/login/metadata.ts` - Noindex metadata for preview login
+   - Updated `public/robots.txt` with comprehensive blocking rules
 
 ## 🚀 Google Search Console Setup
 
@@ -218,6 +260,13 @@ The following "Alternate page with proper canonical tag" issues have been resolv
 - Knowledge base articles (`/knowledge-base/[slug]`) → Self-referencing canonical URLs
 - Legal page (`/legal`) → Self-referencing canonical URL
 - Removed global canonical URL from layout to prevent inheritance issues
+
+### 8. Domain Canonicalization
+- ✅ WWW to Non-WWW redirects implemented
+- ✅ All www URLs redirect to non-www with 301 status
+- ✅ `https://www.cofabri.com/*` → `https://cofabri.com/*`
+- ✅ Ensures consistent canonical domain usage
+- ✅ Prevents duplicate content from www/non-www variations
 
 ## 📊 SEO Monitoring
 

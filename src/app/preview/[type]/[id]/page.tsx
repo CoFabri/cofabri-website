@@ -296,7 +296,7 @@ export default function PreviewPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Ready to Post Banner */}
+        {/* Ready to Post Banner */}
       <div className={`w-full mt-16 ${
         isReadyToPost 
           ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200' 
