@@ -25,6 +25,7 @@ export default function Contact() {
     // Handle app parameter
     const app = searchParams?.get('app');
     if (app) {
+      // Use the correct field name: "Related App(s)"
       params.push(`prefill_Related+App%28s%29=${encodeURIComponent(app)}`);
     }
 
@@ -51,10 +52,6 @@ export default function Contact() {
     if (params.length > 0) {
       url += '?' + params.join('&');
     }
-    
-    // Debug logging
-    console.log('Original URL params:', { language, app, firstName, lastName, email });
-    console.log('Constructed Airtable URL:', url);
     
     return url;
   }, [searchParams]);

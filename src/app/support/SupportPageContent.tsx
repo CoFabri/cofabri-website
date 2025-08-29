@@ -35,7 +35,7 @@ export default function SupportPageContent() {
     // Handle app parameter
     const app = searchParams?.get('app');
     if (app) {
-      params.push(`prefill_Related+App%28s%29=${encodeURIComponent(app)}`);
+      params.push(`prefill_Application%28s%29=${encodeURIComponent(app)}`);
     }
     
     // Handle first name parameter
