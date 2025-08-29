@@ -231,10 +231,14 @@ export default function SupportForm() {
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        const response = await fetch('/api/apps');
+        // Use absolute URL to ensure it works in production
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+        const response = await fetch(`${baseUrl}/api/apps`);
         if (response.ok) {
           const appsData = await response.json();
           setApps(appsData);
+        } else {
+          console.error('Failed to fetch apps:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -254,17 +258,21 @@ export default function SupportForm() {
       const appNames = urlApp ? urlApp.split(',').map(name => name.trim()).filter(name => name) : [];
       
       if (appNames.length > 0) {
+        console.log('URL app parameter:', urlApp);
+        console.log('Available apps:', apps.map(app => ({ id: app.id, name: app.name })));
+        
         // Find apps by name (case-insensitive)
         const validAppIds = appNames
           .map(appName => {
             const foundApp = apps.find(app => 
               app.name.toLowerCase() === appName.toLowerCase()
             );
+            console.log(`Looking for app "${appName}":`, foundApp ? `Found: ${foundApp.name} (${foundApp.id})` : 'Not found');
             return foundApp?.id;
           })
           .filter(id => id) as string[];
         
-
+        console.log('Valid app IDs found:', validAppIds);
         
         if (validAppIds.length > 0 && JSON.stringify(validAppIds) !== JSON.stringify(selectedApps)) {
           setSelectedApps(validAppIds);
@@ -276,6 +284,31 @@ export default function SupportForm() {
       }
     }
   }, [isLoadingApps, apps, searchParams, selectedApps]);
+
+  // Retry mechanism for URL parameters if apps fail to load initially
+  useEffect(() => {
+    if (!isLoadingApps && apps.length === 0 && searchParams?.get('app')) {
+      console.log('Apps failed to load but URL has app parameter, retrying...');
+      // Retry fetching apps after a delay
+      const timer = setTimeout(() => {
+        const fetchApps = async () => {
+          try {
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+            const response = await fetch(`${baseUrl}/api/apps`);
+            if (response.ok) {
+              const appsData = await response.json();
+              setApps(appsData);
+            }
+          } catch (error) {
+            console.error('Retry failed to fetch apps:', error);
+          }
+        };
+        fetchApps();
+      }, 2000); // Retry after 2 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingApps, apps.length, searchParams]);
 
   // Pre-fill form with URL parameters
   useEffect(() => {

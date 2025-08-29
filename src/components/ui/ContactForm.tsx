@@ -219,10 +219,14 @@ export default function ContactForm() {
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        const response = await fetch('/api/apps');
+        // Use absolute URL to ensure it works in production
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
+        const response = await fetch(`${baseUrl}/api/apps`);
         if (response.ok) {
           const appsData = await response.json();
           setApps(appsData);
+        } else {
+          console.error('Failed to fetch apps:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -241,10 +245,15 @@ export default function ContactForm() {
       const urlApp = searchParams?.get('app') || '';
       
       if (urlApp) {
+        console.log('URL app parameter:', urlApp);
+        console.log('Available apps:', apps.map(app => ({ id: app.id, name: app.name })));
+        
         // Find app by name (case-insensitive)
         const foundApp = apps.find(app => 
           app.name.toLowerCase() === urlApp.toLowerCase()
         );
+        
+        console.log(`Looking for app "${urlApp}":`, foundApp ? `Found: ${foundApp.name} (${foundApp.id})` : 'Not found');
         
         if (foundApp) {
           setFormData(prev => ({
