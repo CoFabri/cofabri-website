@@ -24,6 +24,13 @@ interface FormErrors {
   turnstile?: string;
 }
 
+// Character limits
+const FIRST_NAME_MAX_LENGTH = 50;
+const LAST_NAME_MAX_LENGTH = 50;
+const EMAIL_MAX_LENGTH = 100;
+const SUBJECT_MAX_LENGTH = 100;
+const MESSAGE_MAX_LENGTH = 2000;
+
 interface App {
   id: string;
   name: string;
@@ -227,21 +234,41 @@ export default function ContactForm() {
     fetchApps();
   }, []);
 
+  // Update relatedApp when apps are loaded and we have URL parameters
+  useEffect(() => {
+    if (!isLoadingApps && apps.length > 0) {
+      // Check if we have URL parameters for apps
+      const urlApp = searchParams?.get('app') || '';
+      
+      if (urlApp) {
+        // Find app by name (case-insensitive)
+        const foundApp = apps.find(app => 
+          app.name.toLowerCase() === urlApp.toLowerCase()
+        );
+        
+        if (foundApp) {
+          setFormData(prev => ({
+            ...prev,
+            relatedApp: foundApp.id
+          }));
+        }
+      }
+    }
+  }, [isLoadingApps, apps, searchParams]);
+
   // Pre-fill form with URL parameters
   useEffect(() => {
     const firstName = searchParams?.get('firstName') || '';
     const lastName = searchParams?.get('lastName') || '';
     const email = searchParams?.get('email') || '';
     const language = searchParams?.get('language') || 'English';
-    const app = searchParams?.get('app') || '';
 
     setFormData(prev => ({
       ...prev,
       firstName,
       lastName,
       email,
-      languagePreference: language,
-      relatedApp: app
+      languagePreference: language
     }));
   }, [searchParams]);
 
@@ -250,26 +277,36 @@ export default function ContactForm() {
 
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
+      newErrors.firstName = `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less`;
     }
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.trim().length > LAST_NAME_MAX_LENGTH) {
+      newErrors.lastName = `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less`;
     }
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    } else if (formData.email.trim().length > EMAIL_MAX_LENGTH) {
+      newErrors.email = `Email must be ${EMAIL_MAX_LENGTH} characters or less`;
     }
 
     if (!formData.subject.trim()) {
       newErrors.subject = 'Subject is required';
+    } else if (formData.subject.trim().length > SUBJECT_MAX_LENGTH) {
+      newErrors.subject = `Subject must be ${SUBJECT_MAX_LENGTH} characters or less`;
     }
 
     if (!formData.message.trim()) {
       newErrors.message = 'Message is required';
     } else if (formData.message.trim().length < 10) {
       newErrors.message = 'Message must be at least 10 characters long';
+    } else if (formData.message.trim().length > MESSAGE_MAX_LENGTH) {
+      newErrors.message = `Message must be ${MESSAGE_MAX_LENGTH} characters or less`;
     }
 
     if (!turnstileToken) {
@@ -282,9 +319,24 @@ export default function ContactForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Apply character limits
+    let processedValue = value;
+    if (name === 'firstName' && value.length > FIRST_NAME_MAX_LENGTH) {
+      processedValue = value.slice(0, FIRST_NAME_MAX_LENGTH);
+    } else if (name === 'lastName' && value.length > LAST_NAME_MAX_LENGTH) {
+      processedValue = value.slice(0, LAST_NAME_MAX_LENGTH);
+    } else if (name === 'email' && value.length > EMAIL_MAX_LENGTH) {
+      processedValue = value.slice(0, EMAIL_MAX_LENGTH);
+    } else if (name === 'subject' && value.length > SUBJECT_MAX_LENGTH) {
+      processedValue = value.slice(0, SUBJECT_MAX_LENGTH);
+    } else if (name === 'message' && value.length > MESSAGE_MAX_LENGTH) {
+      processedValue = value.slice(0, MESSAGE_MAX_LENGTH);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
 
     // Clear error when user starts typing
@@ -308,6 +360,21 @@ export default function ContactForm() {
       ...prev,
       relatedApp: value
     }));
+  };
+
+  const clearForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      subject: '',
+      message: '',
+      languagePreference: 'English',
+      relatedApp: ''
+    });
+    setErrors({});
+    setTurnstileToken('');
+    setTurnstileError('');
   };
 
   const handleTurnstileVerify = useCallback((token: string) => {
@@ -405,41 +472,48 @@ export default function ContactForm() {
 
   return (
     <div className="bg-white rounded-3xl p-8 shadow-sm">
-      <h2 className="text-2xl font-semibold mb-8">Send us a Message</h2>
-      
-      {submitStatus === 'success' && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center">
-            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-green-800 font-medium">Message Sent Successfully!</h3>
-              <p className="text-green-700 text-sm">We'll get back to you as soon as possible.</p>
-            </div>
+      {submitStatus === 'success' ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
           </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Message Sent Successfully!</h2>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            Thank you for contacting us. We've received your message and will get back to you as soon as possible.
+          </p>
+          <button
+            type="button"
+            onClick={clearForm}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Send Another Message
+          </button>
         </div>
-      )}
-
-      {submitStatus === 'error' && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center">
-            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center mr-3">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-red-800 font-medium">Submission Failed</h3>
-              <p className="text-red-700 text-sm">{errorMessage}</p>
-            </div>
+      ) : submitStatus === 'error' ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
           </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Submission Failed</h2>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            {errorMessage}
+          </p>
+          <button
+            type="button"
+            onClick={() => setSubmitStatus('idle')}
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      ) : (
+        <>
+          <h2 className="text-2xl font-semibold mb-8">Send us a Message</h2>
+          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -452,6 +526,7 @@ export default function ContactForm() {
               value={formData.firstName}
               onChange={handleInputChange}
               required
+              maxLength={FIRST_NAME_MAX_LENGTH}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                 errors.firstName ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -476,6 +551,7 @@ export default function ContactForm() {
               value={formData.lastName}
               onChange={handleInputChange}
               required
+              maxLength={LAST_NAME_MAX_LENGTH}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                 errors.lastName ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -502,6 +578,7 @@ export default function ContactForm() {
               value={formData.email}
               onChange={handleInputChange}
               required
+              maxLength={EMAIL_MAX_LENGTH}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                 errors.email ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -552,17 +629,29 @@ export default function ContactForm() {
             value={formData.subject}
             onChange={handleInputChange}
             required
+            maxLength={SUBJECT_MAX_LENGTH}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
               errors.subject ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="What is this regarding?"
             aria-describedby={errors.subject ? 'subject-error' : undefined}
           />
-          {errors.subject && (
-            <p id="subject-error" className="mt-1 text-sm text-red-600">
-              {errors.subject}
+          <div className="flex justify-between items-center mt-1">
+            {errors.subject && (
+              <p id="subject-error" className="text-sm text-red-600">
+                {errors.subject}
+              </p>
+            )}
+            <p className={`text-sm ml-auto ${
+              formData.subject.length > SUBJECT_MAX_LENGTH * 0.9 
+                ? 'text-orange-600' 
+                : formData.subject.length > SUBJECT_MAX_LENGTH * 0.8 
+                ? 'text-yellow-600' 
+                : 'text-gray-500'
+            }`}>
+              {formData.subject.length}/{SUBJECT_MAX_LENGTH}
             </p>
-          )}
+          </div>
         </div>
 
         <div>
@@ -595,17 +684,29 @@ export default function ContactForm() {
             onChange={handleInputChange}
             required
             rows={6}
+            maxLength={MESSAGE_MAX_LENGTH}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
               errors.message ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Tell us more about your inquiry..."
             aria-describedby={errors.message ? 'message-error' : undefined}
           />
-          {errors.message && (
-            <p id="message-error" className="mt-1 text-sm text-red-600">
-              {errors.message}
+          <div className="flex justify-between items-center mt-1">
+            {errors.message && (
+              <p id="message-error" className="text-sm text-red-600">
+                {errors.message}
+              </p>
+            )}
+            <p className={`text-sm ml-auto ${
+              formData.message.length > MESSAGE_MAX_LENGTH * 0.9 
+                ? 'text-orange-600' 
+                : formData.message.length > MESSAGE_MAX_LENGTH * 0.8 
+                ? 'text-yellow-600' 
+                : 'text-gray-500'
+            }`}>
+              {formData.message.length}/{MESSAGE_MAX_LENGTH}
             </p>
-          )}
+          </div>
         </div>
 
         {/* Turnstile Security Verification */}
@@ -631,28 +732,42 @@ export default function ContactForm() {
         </div>
 
         <div className="flex items-center justify-between pt-4">
-          <p className="text-sm text-gray-600">
-            * Required fields
-          </p>
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            onClick={clearForm}
+            className="text-sm text-gray-600 hover:text-gray-800 inline-flex items-center transition-colors"
           >
-            {isSubmitting ? (
-              <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Sending...
-              </div>
-            ) : (
-              'Send Message'
-            )}
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Clear form
           </button>
+          <div className="flex items-center space-x-4">
+            <p className="text-sm text-gray-600">
+              * Required fields
+            </p>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Sending...
+                </div>
+              ) : (
+                'Send Message'
+              )}
+            </button>
+          </div>
         </div>
       </form>
+        </>
+      )}
     </div>
   );
 } 

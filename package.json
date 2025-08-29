@@ -17,6 +17,7 @@
     "@types/negotiator": "^0.6.3",
     "@types/nodemailer": "^6.4.17",
     "@types/recharts": "^1.8.29",
+    "@vercel/blob": "^1.1.1",
     "airtable": "^0.12.2",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",

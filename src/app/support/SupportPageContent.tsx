@@ -10,70 +10,10 @@ import {
   PhoneIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
 import GradientHeading from '@/components/ui/GradientHeading';
-import AirtableFormLoader from '@/components/ui/AirtableFormLoader';
-
-// Airtable form configuration
-const AIRTABLE_FORM_BASE_URL = 'https://airtable.com/embed/appLCRokCHruMDfuB/pagFEHyIO9FvMYWaM/form';
+import SupportForm from '@/components/ui/SupportForm';
 
 export default function SupportPageContent() {
-  const searchParams = useSearchParams();
-  
-  // Construct the Airtable form URL with prefill parameters
-  const airtableFormUrl = useMemo(() => {
-    let url = AIRTABLE_FORM_BASE_URL;
-    const params = [];
-    
-    // Handle language parameter
-    const language = searchParams?.get('language');
-    if (language) {
-      params.push(`prefill_Language+Preference=${encodeURIComponent(language)}`);
-    }
-    
-    // Handle app parameter
-    const app = searchParams?.get('app');
-    if (app) {
-      params.push(`prefill_Application%28s%29=${encodeURIComponent(app)}`);
-    }
-    
-    // Handle first name parameter
-    const firstName = searchParams?.get('firstName');
-    if (firstName) {
-      params.push(`prefill_First+Name=${encodeURIComponent(firstName)}`);
-    }
-    
-    // Handle last name parameter
-    const lastName = searchParams?.get('lastName');
-    if (lastName) {
-      params.push(`prefill_Last+Name=${encodeURIComponent(lastName)}`);
-    }
-    
-    // Handle email parameter
-    const email = searchParams?.get('email');
-    if (email) {
-      params.push(`prefill_Email=${encodeURIComponent(email)}`);
-    }
-    
-    // Handle phone parameter
-    const phone = searchParams?.get('phone');
-    if (phone) {
-      params.push(`prefill_Phone=${encodeURIComponent(phone)}`);
-    }
-    
-    // Add parameters to URL if any exist
-    if (params.length > 0) {
-      url += '?' + params.join('&');
-    }
-    
-    // Debug logging
-    console.log('Original URL params:', { language, app, firstName, lastName, email, phone });
-    console.log('Constructed Airtable URL:', url);
-    
-    return url;
-  }, [searchParams]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <GradientHeading
@@ -133,13 +73,7 @@ export default function SupportPageContent() {
 
         {/* Support Form Section - Full Width */}
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <AirtableFormLoader
-              src={airtableFormUrl}
-              height="1600px"
-              title="Support Form"
-            />
-          </div>
+          <SupportForm />
         </div>
       </div>
     </div>

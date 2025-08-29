@@ -4,6 +4,13 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 
+// Character limits (must match client-side limits)
+const FIRST_NAME_MAX_LENGTH = 50;
+const LAST_NAME_MAX_LENGTH = 50;
+const EMAIL_MAX_LENGTH = 100;
+const SUBJECT_MAX_LENGTH = 100;
+const MESSAGE_MAX_LENGTH = 2000;
+
 // Get Turnstile secret key based on environment
 const getTurnstileSecretKey = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -31,6 +38,49 @@ export async function POST(request: Request) {
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate character limits
+    if (firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (lastName.trim().length > LAST_NAME_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (email.trim().length > EMAIL_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Email must be ${EMAIL_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (subject.trim().length > SUBJECT_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Subject must be ${SUBJECT_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (message.trim().length > MESSAGE_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Message must be ${MESSAGE_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (message.trim().length < 10) {
+      return NextResponse.json(
+        { error: 'Message must be at least 10 characters long' },
         { status: 400 }
       );
     }
