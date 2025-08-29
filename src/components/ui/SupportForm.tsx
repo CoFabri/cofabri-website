@@ -912,7 +912,7 @@ export default function SupportForm() {
               </button>
               {selectedApps.length > 0 && (
                 <div className="space-y-2">
-                  {selectedApps.map(appId => {
+                  {selectedApps.map((appId: string) => {
                     const app = apps.find(a => a.id === appId);
                     return app ? (
                       <div key={appId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

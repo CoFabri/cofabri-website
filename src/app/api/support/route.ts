@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const turnstileToken = formData.get('turnstileToken') as string;
     
     // Parse applications array
-    const applicationsArray = applications ? JSON.parse(applications) : [];
+    const applicationsArray: string[] = applications ? JSON.parse(applications) : [];
     
     // Convert app IDs to app names for the support base
     let applicationNames: string[] = [];
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         if (appsResponse.ok) {
           const apps = await appsResponse.json();
           applicationNames = applicationsArray
-            .map(appId => {
+            .map((appId: string) => {
               const app = apps.find((a: any) => a.id === appId);
               return app ? app.name : appId; // Fallback to ID if app not found
             })
