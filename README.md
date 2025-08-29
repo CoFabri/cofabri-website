@@ -19,6 +19,7 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 - 📢 Status page for system monitoring
 - 🎯 App showcase with launch management
 - 👥 Author profiles with social integration
+- 📄 Legal documents management with filtering
 - 🎨 Customizable UI components
 - 🔄 Dynamic content updates
 
@@ -316,6 +317,15 @@ cofabri/
 - Status (Scheduled, In Progress, Completed)
 - Countdown Enabled
 - Social Media Announcements
+
+#### Contracts & Legal Docs
+- Document Name
+- Document Type (T&C, Policy, Privacy Policy, etc.)
+- Status (Active, Draft, Archived)
+- Effective Date (optional)
+- Expiration/Renewal... (optional)
+- Attachment (optional - can be URL or file attachment)
+- Associated App (optional - linked to Apps table)
 
 ### Preview System
 

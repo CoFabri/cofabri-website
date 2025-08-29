@@ -112,6 +112,7 @@ export interface App {
   description: string;
   url?: string;
   screenshot?: string;
+  faviconUrl?: string;
   status: 'Live' | 'Beta' | 'Alpha' | 'In Development' | 'Coming Soon';
   category?: string;
   feature1?: string;
@@ -177,6 +178,21 @@ export interface Testimonial {
   createdAt: string;
   apps: string[];
   featured: boolean;
+}
+
+export interface LegalDocument {
+  id: string;
+  title: string;
+  description?: string;
+  documentType: string;
+  status: 'Active' | 'Draft' | 'Archived';
+  version: string;
+  lastUpdated: string;
+  documentUrl?: string;
+  associatedApp?: string;
+  category?: string;
+  isPublic: boolean;
+  tags?: string[];
 }
 
 // Updated API functions to use server-side fetch
@@ -442,6 +458,7 @@ export async function getApps(): Promise<App[]> {
       Description: string;
       URL?: string;
       'Featured Image URL'?: string | readonly { url: string }[];
+      'Favicon URL'?: string;
       'Application Status': App['status'];
       Category?: string;
       'Feature 1'?: string;
@@ -487,6 +504,18 @@ export async function getApps(): Promise<App[]> {
         screenshot = '/images/placeholder.jpg';
       }
 
+      // Handle favicon URL
+      let faviconUrl: string | undefined;
+      const faviconField = record.fields['Favicon URL'];
+      if (faviconField) {
+        try {
+          new URL(faviconField);
+          faviconUrl = faviconField;
+        } catch (e) {
+          console.warn(`Invalid favicon URL for app ${record.fields.Name}:`, faviconField);
+        }
+      }
+
       // Validate app URL
       let appUrl = record.fields.URL;
       try {
@@ -507,6 +536,7 @@ export async function getApps(): Promise<App[]> {
         description: record.fields.Description,
         url: appUrl,
         screenshot,
+        faviconUrl,
         status: record.fields['Application Status'],
         category: record.fields.Category,
         feature1: record.fields['Feature 1'],
@@ -817,5 +847,176 @@ export async function getTestimonials(randomCount?: number): Promise<Testimonial
   } catch (error) {
     console.error('Error fetching testimonials:', error);
     return [];
+  }
+}
+
+export async function getLegalDocuments(): Promise<LegalDocument[]> {
+  try {
+    const records = await fetchFromAirtable<{
+      'Document Name': string;
+      'Document Type': string;
+      'Status': 'Active' | 'Draft' | 'Archived';
+      'Effective Date'?: string;
+      'Expiration/Renewal...'?: string;
+      'Attachment'?: string | readonly { url: string }[];
+      'Associated App'?: string[] | string;
+      'Version'?: string | number;
+      'Last Updated'?: string;
+    }>('Contracts & Legal Docs', {
+      filterByFormula: '{Status} = "Active"',
+      sort: [{ field: 'Effective Date', direction: 'desc' }]
+    });
+
+    // Get all apps to resolve app names
+    const apps = await getApps();
+    const appMap = new Map(apps.map(app => [app.id, app.name]));
+
+    return records.map(record => {
+      // Handle attachment field - could be string URL or attachment array
+      let documentUrl: string | undefined;
+      const attachmentField = record.fields['Attachment'];
+      if (attachmentField) {
+        if (typeof attachmentField === 'string') {
+          documentUrl = attachmentField;
+        } else if (Array.isArray(attachmentField) && attachmentField.length > 0 && attachmentField[0].url) {
+          documentUrl = attachmentField[0].url;
+        }
+      }
+
+      // Resolve associated app names
+      let associatedApp: string | undefined;
+      const associatedAppField = record.fields['Associated App'];
+      
+      // Try different field name variations
+      const appField = associatedAppField || (record.fields as any)['App'] || (record.fields as any)['Application'];
+      
+      if (appField) {
+        let associatedAppIds: string[] = [];
+        if (Array.isArray(appField)) {
+          associatedAppIds = appField;
+        } else if (typeof appField === 'string') {
+          associatedAppIds = [appField];
+        }
+        
+              if (associatedAppIds.length > 0) {
+        const appName = appMap.get(associatedAppIds[0]);
+        if (appName) {
+          associatedApp = appName;
+        }
+      }
+         }
+     
+     // Fallback: Extract app name from document title
+     if (!associatedApp) {
+       const title = record.fields['Document Name'];
+       if (title.includes('CertiFi Central')) {
+         associatedApp = 'CertiFi Central';
+       } else if (title.includes('RePrisma')) {
+         associatedApp = 'RePrisma';
+       } else if (title.includes('Ayden')) {
+         associatedApp = 'Ayden';
+       } else if (title.includes('CoFabri')) {
+         associatedApp = 'CoFabri';
+       }
+     }
+
+      return {
+        id: record.id,
+        title: record.fields['Document Name'],
+        description: undefined, // Not available in the table
+        documentType: record.fields['Document Type'],
+        status: record.fields['Status'],
+        version: String(record.fields['Version'] || '1.0'),
+        lastUpdated: record.fields['Last Updated'] || record.fields['Effective Date'] || new Date().toISOString(),
+        documentUrl: documentUrl,
+        associatedApp: associatedApp,
+        category: undefined, // Not available in the table
+        isPublic: true, // Assuming all active documents are public
+        tags: [], // Not available in the table
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching legal documents:', error);
+    return [];
+  }
+}
+
+export async function getLegalDocument(id: string): Promise<LegalDocument | null> {
+  try {
+    const records = await fetchFromAirtable<{
+      'Document Name': string;
+      'Document Type': string;
+      'Status': 'Active' | 'Draft' | 'Archived';
+      'Effective Date'?: string;
+      'Expiration/Renewal...'?: string;
+      'Attachment'?: string | readonly { url: string }[];
+      'Associated App'?: string[] | string;
+      'Version'?: string | number;
+      'Last Updated'?: string;
+    }>('Contracts & Legal Docs', {
+      filterByFormula: `AND(RECORD_ID() = '${id}', {Status} = "Active")`
+    });
+
+    if (records.length === 0) {
+      return null;
+    }
+
+    const record = records[0];
+    
+    // Get all apps to resolve app names
+    const apps = await getApps();
+    const appMap = new Map(apps.map(app => [app.id, app.name]));
+    
+    // Handle attachment field - could be string URL or attachment array
+    let documentUrl: string | undefined;
+    const attachmentField = record.fields['Attachment'];
+    if (attachmentField) {
+      if (typeof attachmentField === 'string') {
+        documentUrl = attachmentField;
+      } else if (Array.isArray(attachmentField) && attachmentField.length > 0 && attachmentField[0].url) {
+        documentUrl = attachmentField[0].url;
+      }
+    }
+
+    // Resolve associated app names
+    let associatedApp: string | undefined;
+    const associatedAppField = record.fields['Associated App'];
+    
+    // Try different field name variations
+    const appField = associatedAppField || (record.fields as any)['App'] || (record.fields as any)['Application'];
+    
+    if (appField) {
+      let associatedAppIds: string[] = [];
+      if (Array.isArray(appField)) {
+        associatedAppIds = appField;
+      } else if (typeof appField === 'string') {
+        associatedAppIds = [appField];
+      }
+      
+      if (associatedAppIds.length > 0) {
+        const appName = appMap.get(associatedAppIds[0]);
+        if (appName) {
+          associatedApp = appName;
+        }
+      }
+    }
+
+    return {
+      id: record.id,
+      title: record.fields['Document Name'],
+      description: undefined, // Not available in the table
+      documentType: record.fields['Document Type'],
+      status: record.fields['Status'],
+      version: String(record.fields['Version'] || '1.0'),
+      lastUpdated: record.fields['Last Updated'] || record.fields['Effective Date'] || new Date().toISOString(),
+      documentUrl: documentUrl,
+      associatedApp: associatedApp,
+      category: undefined, // Not available in the table
+      isPublic: true, // Assuming all active documents are public
+      tags: [], // Not available in the table
+    };
+  } catch (error) {
+    console.error('Error fetching legal document:', error);
+    return null;
   }
 } 
