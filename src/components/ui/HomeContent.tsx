@@ -14,6 +14,7 @@ import LiveChat from '@/components/ui/LiveChat';
 export default function HomeContent() {
   const searchParams = useSearchParams();
   const [showCacheCleared, setShowCacheCleared] = useState(false);
+  const [appsLoaded, setAppsLoaded] = useState(false);
 
   useEffect(() => {
     if (searchParams?.get('cache-cleared') === 'true') {
@@ -21,6 +22,22 @@ export default function HomeContent() {
       setTimeout(() => setShowCacheCleared(false), 5000);
     }
   }, [searchParams]);
+
+  // Handle anchor links after apps are loaded
+  useEffect(() => {
+    if (appsLoaded && typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash === '#about') {
+        // Small delay to ensure DOM is fully rendered
+        setTimeout(() => {
+          const element = document.getElementById('about');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }
+    }
+  }, [appsLoaded]);
 
   return (
     <main>
@@ -30,7 +47,7 @@ export default function HomeContent() {
         </div>
       )}
       <Hero />
-      <HomepageApps />
+      <HomepageApps onAppsLoaded={() => setAppsLoaded(true)} />
       <About />
       <Testimonials />
       <CompactRoadmap />

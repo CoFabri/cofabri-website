@@ -27,7 +27,23 @@ const Navbar = () => {
   const isActive = (href: string) => {
     if (!pathname) return false;
     if (href === '/') return pathname === href;
+    if (href.includes('#')) {
+      // For anchor links, check if we're on the homepage
+      return pathname === '/';
+    }
     return pathname.startsWith(href);
+  };
+
+  // Function to handle anchor links
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    if (href.includes('#')) {
+      e.preventDefault();
+      const id = href.split('#')[1];
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   };
 
   useEffect(() => {
@@ -68,6 +84,7 @@ const Navbar = () => {
             <Link
               key={item.name}
               href={item.href}
+              onClick={(e) => handleNavClick(item.href, e)}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                 isActive(item.href)
                   ? 'text-blue-600 bg-blue-50'
@@ -113,12 +130,15 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={(e) => {
+                    handleNavClick(item.href, e);
+                    setIsOpen(false);
+                  }}
                   className={`block px-4 py-2 rounded-lg text-base font-medium ${
                     isActive(item.href)
                       ? 'text-blue-600 bg-blue-50'
                       : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
-                  onClick={() => setIsOpen(false)}
                 >
                   {item.name}
                 </Link>

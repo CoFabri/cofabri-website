@@ -6,7 +6,11 @@ import { App } from '@/lib/airtable';
 import confetti from 'canvas-confetti';
 import AppPreviewCard from './AppPreviewCard';
 
-export default function HomepageApps() {
+interface HomepageAppsProps {
+  onAppsLoaded?: () => void;
+}
+
+export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
   const [apps, setApps] = useState<App[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +35,9 @@ export default function HomepageApps() {
         setError(err instanceof Error ? err.message : 'Failed to fetch apps');
       } finally {
         setIsLoading(false);
+        if (onAppsLoaded) {
+          onAppsLoaded();
+        }
       }
     }
 
