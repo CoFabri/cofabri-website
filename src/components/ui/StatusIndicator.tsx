@@ -7,7 +7,7 @@ import { SystemStatus } from '@/lib/airtable';
 const getSeverityColor = (status: SystemStatus | null) => {
   if (!status) return 'bg-green-500';
   
-  // First check public status
+  // Use the same color logic as the status page
   switch (status.publicStatus) {
     case 'Investigating':
       return 'bg-red-500';
@@ -65,10 +65,27 @@ export default function StatusIndicator() {
 
   if (isLoading) return null;
 
-  const hasActiveIssues = statuses.some(status => status.publicStatus !== 'Resolved');
-  const dotColor = hasActiveIssues ? 'bg-red-500' : 'bg-green-500';
+  // Find the most severe active status to determine the color
+  const activeStatuses = statuses.filter(status => status.publicStatus !== 'Resolved');
+  const hasActiveIssues = activeStatuses.length > 0;
+  
+  // Get the most severe status for color (priority: Investigating > Identified > Monitoring)
+  const getStatusPriority = (status: string) => {
+    switch (status) {
+      case 'Investigating': return 3;
+      case 'Identified': return 2;
+      case 'Monitoring': return 1;
+      default: return 0;
+    }
+  };
+  
+  const mostSevereStatus = activeStatuses.reduce((prev, current) => {
+    return getStatusPriority(current.publicStatus) > getStatusPriority(prev.publicStatus) ? current : prev;
+  }, activeStatuses[0]);
+  
+  const dotColor = hasActiveIssues ? getSeverityColor(mostSevereStatus) : 'bg-green-500';
   const message = hasActiveIssues 
-    ? getStatusMessage(statuses.find(s => s.publicStatus !== 'Resolved') || null)
+    ? getStatusMessage(mostSevereStatus || null)
     : 'All systems operational';
 
   return (
