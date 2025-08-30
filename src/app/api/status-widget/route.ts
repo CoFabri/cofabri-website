@@ -27,13 +27,13 @@ export async function GET(request: Request) {
     
     // Get most severe status for color
     const getStatusPriority = (status: string) => {
-      const priorities = { 'Investigating': 3, 'Identified': 2, 'Monitoring': 1, 'Resolved': 0 };
+      const priorities: Record<string, number> = { 'Investigating': 3, 'Identified': 2, 'Monitoring': 1, 'Resolved': 0 };
       return priorities[status] || 0;
     };
     
-    const activeStatuses = statuses.filter(s => s.publicStatus !== 'Resolved');
+    const activeStatuses = statuses.filter((s: any) => s.publicStatus !== 'Resolved');
     const mostSevere = activeStatuses.length > 0 
-      ? activeStatuses.reduce((prev, curr) => 
+      ? activeStatuses.reduce((prev: any, curr: any) => 
           getStatusPriority(curr.publicStatus) > getStatusPriority(prev.publicStatus) ? curr : prev
         )
       : null;
