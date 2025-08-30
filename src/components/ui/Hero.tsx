@@ -7,7 +7,7 @@ import AnimatedGradient from './AnimatedGradient';
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen md:min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden pt-16 pb-20">
       {/* Background Elements */}
       <AnimatedGradient />
       <div className="absolute inset-0 z-0">
@@ -45,7 +45,7 @@ const Hero = () => {
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+      <div className="absolute bottom-16 md:bottom-10 left-1/2 transform -translate-x-1/2">
         <div className="w-10 h-10 border-2 border-indigo-200 rounded-full animate-float" />
       </div>
     </section>
