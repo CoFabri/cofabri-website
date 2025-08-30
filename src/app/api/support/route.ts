@@ -55,7 +55,7 @@ export async function POST(request: Request) {
               const app = apps.find((a: any) => a.id === appId);
               return app ? app.name : appId; // Fallback to ID if app not found
             })
-            .filter(name => name);
+            .filter((name: string) => name);
         }
       } catch (error) {
         console.error('Failed to fetch app names:', error);
