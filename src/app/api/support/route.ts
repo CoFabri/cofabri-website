@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         if (appsResponse.ok) {
           const apps = await appsResponse.json();
           applicationNames = applicationsArray
-            .map(appId => {
+            .map((appId: string) => {
               const app = apps.find((a: any) => a.id === appId);
               return app ? app.name : appId; // Fallback to ID if app not found
             })
