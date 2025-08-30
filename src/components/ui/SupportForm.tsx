@@ -372,18 +372,19 @@ export default function SupportForm() {
           })
           .filter(id => id) as string[];
         
-
-        
-        if (validAppIds.length > 0 && JSON.stringify(validAppIds) !== JSON.stringify(selectedApps)) {
+        // Only set the apps if we haven't already set them from URL parameters
+        // This prevents overriding user selections
+        if (validAppIds.length > 0 && !urlAppsInitialized) {
           setSelectedApps(validAppIds);
           setFormData(prev => ({
             ...prev,
             applications: validAppIds
           }));
+          setUrlAppsInitialized(true);
         }
       }
     }
-  }, [isLoadingApps, apps, searchParams, selectedApps]);
+  }, [isLoadingApps, apps, searchParams, urlAppsInitialized]);
 
   // Pre-fill form with URL parameters
   useEffect(() => {
@@ -554,6 +555,10 @@ export default function SupportForm() {
       
       return newSelection;
     });
+    
+    // Mark that user has manually changed the selection
+    // This prevents URL parameters from overriding user selections
+    setUrlAppsInitialized(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -661,6 +666,7 @@ export default function SupportForm() {
         setErrors({});
         setTurnstileToken('');
         setTurnstileError('');
+        setUrlAppsInitialized(false);
       } else {
         const errorData = await response.json();
         setSubmitStatus('error');
@@ -693,6 +699,7 @@ export default function SupportForm() {
     setTurnstileToken('');
     setTurnstileError('');
     setSubmitStatus('idle');
+    setUrlAppsInitialized(false);
   };
 
   // Get Turnstile site key based on environment
@@ -703,7 +710,10 @@ export default function SupportForm() {
     if (process.env.NODE_ENV === 'development') {
       return '1x00000000000000000000AA';
     }
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    
+    // Hardcoded production site key (replace with your actual site key)
+    const hardcodedSiteKey = '0x4AAAAAAABkMYinukE68Nch'; // Replace this with your actual site key
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || hardcodedSiteKey;
     console.log('SupportForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
     return siteKey;
   };
@@ -770,6 +780,12 @@ export default function SupportForm() {
             </p>
             <p className="text-sm text-yellow-800 mt-2">
               <strong>Raw Value:</strong> "{process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || 'undefined'}"
+            </p>
+            <p className="text-sm text-yellow-800">
+              <strong>Hardcoded Fallback:</strong> "0x4AAAAAAABkMYinukE68Nch"
+            </p>
+            <p className="text-sm text-yellow-800">
+              <strong>Final Site Key:</strong> "{getTurnstileSiteKey()}"
             </p>
             <p className="text-sm text-yellow-800">
               <strong>All NEXT_PUBLIC vars:</strong> {Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_')).join(', ')}

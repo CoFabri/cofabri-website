@@ -466,7 +466,10 @@ export default function ContactForm() {
       // Use Cloudflare's test keys for development
       return '1x00000000000000000000AA';
     }
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    
+    // Hardcoded production site key (replace with your actual site key)
+    const hardcodedSiteKey = '0x4AAAAAAABkMYinukE68Nch'; // Replace this with your actual site key
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || hardcodedSiteKey;
     console.log('ContactForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
     return siteKey;
   };
@@ -533,6 +536,12 @@ export default function ContactForm() {
               <strong>Debug Info:</strong> NODE_ENV: {process.env.NODE_ENV}, 
               TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
               (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
+            </p>
+            <p className="text-sm text-yellow-800 mt-2">
+              <strong>Hardcoded Fallback:</strong> "0x4AAAAAAABkMYinukE68Nch"
+            </p>
+            <p className="text-sm text-yellow-800">
+              <strong>Final Site Key:</strong> "{getTurnstileSiteKey()}"
             </p>
           </div>
           
