@@ -7,7 +7,7 @@
 
 ## Embeddable Widget Options
 
-### Option 1: JavaScript Widget (Recommended)
+### Option 1: General Status Widget (All Systems)
 Add this script to any webpage:
 
 ```html
@@ -16,10 +16,24 @@ Add this script to any webpage:
 
 The widget automatically appears with a dot indicator and "System Status" text.
 
-### Option 2: Iframe Widget
-Embed this iframe anywhere:
+### Option 2: App-Specific Status Widget (Recommended for Individual Apps)
+Add this script to individual app pages:
 
 ```html
+<!-- Auto-detect app from URL -->
+<script src="https://cofabri.com/app-status-widget.js"></script>
+
+<!-- Or specify app manually -->
+<script src="https://cofabri.com/app-status-widget.js" data-app="myapp"></script>
+```
+
+This widget only shows issues affecting that specific app or the CoFabri API.
+
+### Option 3: Iframe Widgets
+Embed these iframes anywhere:
+
+```html
+<!-- General status -->
 <iframe 
   src="https://cofabri.com/api/status-widget" 
   width="200" 
@@ -27,9 +41,18 @@ Embed this iframe anywhere:
   frameborder="0"
   scrolling="no">
 </iframe>
+
+<!-- App-specific status -->
+<iframe 
+  src="https://cofabri.com/api/status/myapp" 
+  width="200" 
+  height="40" 
+  frameborder="0"
+  scrolling="no">
+</iframe>
 ```
 
-### Option 3: Custom Implementation
+### Option 4: Custom Implementation
 ```javascript
 // Fetch status and update indicator
 async function updateStatusIndicator() {
