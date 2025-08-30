@@ -58,7 +58,6 @@ const loadTurnstileScript = (): Promise<void> => {
     
     script.onerror = () => {
       scriptLoadingPromise = null;
-      console.error('Turnstile: Failed to load script from https://challenges.cloudflare.com/turnstile/v0/api.js');
       reject(new Error('Failed to load Turnstile script'));
     };
     
@@ -90,17 +89,11 @@ export default function Turnstile({
       try {
         // Check if site key is valid
         if (!siteKey || siteKey.trim() === '') {
-          console.warn('Turnstile: Empty or invalid site key provided');
           setHasError(true);
           setIsLoading(false);
           // Call onVerify with a dummy token to allow form submission
           onVerify('development-mode');
           return;
-        }
-
-        // Log site key for debugging (only in development)
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Turnstile: Using site key:', siteKey.substring(0, 10) + '...');
         }
 
         // Load script if not already loaded

@@ -459,14 +459,7 @@ export default function ContactForm() {
     }
     
     // Use environment variable for production
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    
-    if (!siteKey) {
-      console.warn('NEXT_PUBLIC_TURNSTILE_SITE_KEY not set in production. Using fallback key.');
-      return '0x4AAAAAAABkMYinukE68Nch';
-    }
-    
-    return siteKey;
+    return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   };
 
   // Prepare app options for the custom dropdown
@@ -728,16 +721,22 @@ export default function ContactForm() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Security Verification *
           </label>
-          <Turnstile
-            key="contact-form-turnstile"
-            siteKey={getTurnstileSiteKey()}
-            onVerify={handleTurnstileVerify}
-            onError={handleTurnstileError}
-            onExpire={handleTurnstileExpire}
-            theme="light"
-            size="normal"
-            className="flex justify-start"
-          />
+          {getTurnstileSiteKey() ? (
+            <Turnstile
+              key="contact-form-turnstile"
+              siteKey={getTurnstileSiteKey()!}
+              onVerify={handleTurnstileVerify}
+              onError={handleTurnstileError}
+              onExpire={handleTurnstileExpire}
+              theme="light"
+              size="normal"
+              className="flex justify-start"
+            />
+          ) : (
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+              Security verification is not configured. Please contact the administrator.
+            </div>
+          )}
           {(errors.turnstile || turnstileError) && (
             <p className="mt-1 text-sm text-red-600">
               {errors.turnstile || turnstileError}

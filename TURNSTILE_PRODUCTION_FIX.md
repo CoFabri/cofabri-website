@@ -32,13 +32,15 @@ const getTurnstileSiteKey = () => {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   
   if (!siteKey) {
-    console.warn('NEXT_PUBLIC_TURNSTILE_SITE_KEY not set in production. Using fallback key.');
-    return '0x4AAAAAAABkMYinukE68Nch';
+    console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY not set in production. Turnstile will not work.');
+    return undefined;
   }
   
   return siteKey;
 };
 ```
+
+**Note**: The hardcoded fallback has been completely removed. If the environment variable is not set, the function returns `undefined` and the forms will display a clear error message instead of using an invalid key.
 
 ### 2. **Poor Error Handling and Debugging**
 **Problem**: The Turnstile component lacked proper error logging and debugging information for production issues.
@@ -131,7 +133,8 @@ Ensure your production domain is properly configured in the Turnstile widget set
 
 ## Security Notes
 
-- The fallback key `0x4AAAAAAABkMYinukE68Nch` should be replaced with your actual production key
+- ~~The fallback key `0x4AAAAAAABkMYinukE68Nch` should be replaced with your actual production key~~ **Hardcoded fallbacks have been completely removed**
 - Never commit real Turnstile keys to version control
 - Always use environment variables for sensitive configuration
 - Regularly rotate your Turnstile keys for security
+- Forms will now fail gracefully with clear error messages if environment variables are not configured
