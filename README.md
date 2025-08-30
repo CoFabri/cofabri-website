@@ -156,6 +156,14 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    # Preview Password
    PREVIEW_PASSWORD=your_preview_password
 
+   # Cloudflare Turnstile (for spam protection)
+   NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key_here
+   TURNSTILE_SECRET_KEY=your_turnstile_secret_key_here
+
+   # Support Form Airtable Configuration
+   AIRTABLE_SUPPORT_PERSONAL_ACCESS_TOKEN=your_support_airtable_token
+   AIRTABLE_SUPPORT_BASE_ID=your_support_base_id
+   AIRTABLE_SUPPORT_TABLE_NAME=Ticket Submissions
 
    ```
 

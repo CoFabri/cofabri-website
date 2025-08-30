@@ -215,18 +215,22 @@ export default function ContactForm() {
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
 
+  // Debug environment variables on mount
+  useEffect(() => {
+    console.log('ContactForm mounted - Environment check:');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY length:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length);
+  }, []);
+
   // Fetch available apps
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        // Use absolute URL to ensure it works in production
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
-        const response = await fetch(`${baseUrl}/api/apps`);
+        const response = await fetch('/api/apps');
         if (response.ok) {
           const appsData = await response.json();
           setApps(appsData);
-        } else {
-          console.error('Failed to fetch apps:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -245,15 +249,10 @@ export default function ContactForm() {
       const urlApp = searchParams?.get('app') || '';
       
       if (urlApp) {
-        console.log('URL app parameter:', urlApp);
-        console.log('Available apps:', apps.map(app => ({ id: app.id, name: app.name })));
-        
         // Find app by name (case-insensitive)
         const foundApp = apps.find(app => 
           app.name.toLowerCase() === urlApp.toLowerCase()
         );
-        
-        console.log(`Looking for app "${urlApp}":`, foundApp ? `Found: ${foundApp.name} (${foundApp.id})` : 'Not found');
         
         if (foundApp) {
           setFormData(prev => ({
@@ -460,11 +459,16 @@ export default function ContactForm() {
 
   // Get Turnstile site key based on environment
   const getTurnstileSiteKey = () => {
+    console.log('ContactForm - NODE_ENV:', process.env.NODE_ENV);
+    console.log('ContactForm - NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    
     if (process.env.NODE_ENV === 'development') {
       // Use Cloudflare's test keys for development
       return '1x00000000000000000000AA';
     }
-    return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    console.log('ContactForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
+    return siteKey;
   };
 
   // Prepare app options for the custom dropdown
@@ -522,6 +526,16 @@ export default function ContactForm() {
       ) : (
         <>
           <h2 className="text-2xl font-semibold mb-8">Send us a Message</h2>
+          
+          {/* Debug info - remove after fixing */}
+          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <strong>Debug Info:</strong> NODE_ENV: {process.env.NODE_ENV}, 
+              TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
+              (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
+            </p>
+          </div>
+          
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>

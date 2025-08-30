@@ -58,6 +58,20 @@ TURNSTILE_SECRET_KEY=your_secret_key_here
 ### 6. Deploy
 Make sure to add these environment variables to your production environment as well.
 
+## Production Deployment
+
+### Vercel Deployment
+If you're deploying to Vercel, add these environment variables in your Vercel dashboard:
+
+1. Go to your project in Vercel
+2. Navigate to **Settings** > **Environment Variables**
+3. Add the following variables:
+   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = your site key
+   - `TURNSTILE_SECRET_KEY` = your secret key
+
+### Other Platforms
+For other deployment platforms, add the environment variables according to their documentation.
+
 ## How It Works
 
 1. **Frontend**: The Turnstile widget loads on the contact form
@@ -82,6 +96,7 @@ Make sure to add these environment variables to your production environment as w
 - Check that `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set correctly (production only)
 - Ensure your domain is properly configured in Cloudflare
 - Check browser console for JavaScript errors
+- **Common Issue**: Empty site key - make sure the environment variable is set in production
 
 ### Verification Failing
 - Verify `TURNSTILE_SECRET_KEY` is set correctly (production only)
@@ -92,10 +107,19 @@ Make sure to add these environment variables to your production environment as w
 - Ensure environment variables are set in production
 - Check that your production domain is added to the Turnstile widget
 - Verify DNS settings are correct
+- **Critical**: Make sure both `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` are set
 
 ### Multiple Widgets Appearing
 - The component includes protection against multiple renders
 - If you still see multiple widgets, check for React Strict Mode or component re-renders
+
+### Error: "Invalid input for parameter 'sitekey', got ''"
+This error occurs when the `NEXT_PUBLIC_TURNSTILE_SITE_KEY` environment variable is not set in production.
+
+**Solution:**
+1. Add the environment variable to your production environment
+2. Redeploy your application
+3. The component will now show a fallback message if the key is still missing
 
 ## Security Notes
 
@@ -108,3 +132,7 @@ Make sure to add these environment variables to your production environment as w
 ## Support
 
 For Turnstile-specific issues, refer to the [Cloudflare Turnstile documentation](https://developers.cloudflare.com/turnstile/).
+
+## Emergency Fallback
+
+If Turnstile is not configured properly in production, the forms will show a fallback message and allow submission with a development token. This ensures the forms remain functional while you fix the configuration.

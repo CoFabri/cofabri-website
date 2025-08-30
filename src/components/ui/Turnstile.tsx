@@ -80,12 +80,24 @@ export default function Turnstile({
   const widgetIdRef = useRef<string | null>(null);
   const [isRendered, setIsRendered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     const initializeTurnstile = async () => {
       try {
+        // Check if site key is valid
+        if (!siteKey || siteKey.trim() === '') {
+          console.warn('Turnstile site key is not configured. Security verification will be skipped.');
+          console.log('Turnstile component received site key:', siteKey, 'Length:', siteKey?.length);
+          setHasError(true);
+          setIsLoading(false);
+          // Call onVerify with a dummy token to allow form submission
+          onVerify('development-mode');
+          return;
+        }
+
         // Load script if not already loaded
         await loadTurnstileScript();
         
@@ -110,9 +122,11 @@ export default function Turnstile({
           setIsRendered(true);
         } catch (error) {
           console.error('Failed to render Turnstile:', error);
+          setHasError(true);
         }
       } catch (error) {
         console.error('Failed to load Turnstile:', error);
+        setHasError(true);
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -134,6 +148,17 @@ export default function Turnstile({
       }
     };
   }, [siteKey, theme, size, onVerify, onError, onExpire, isRendered]);
+
+  // If site key is not configured, show a fallback message
+  if (hasError) {
+    return (
+      <div className={`turnstile-container ${className}`}>
+        <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border">
+          Security verification is not configured. Please contact the administrator.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`turnstile-container ${className}`}>

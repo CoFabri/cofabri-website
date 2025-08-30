@@ -141,6 +141,106 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
 }
 
 // Simple dropdown component for text-only options (no images)
+// Multi-select dropdown component
+function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, disabled = false }: {
+  options: { value: string; label: string; image?: string }[];
+  selectedValues: string[];
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOptions = options.filter(option => selectedValues.includes(option.value));
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        }`}
+      >
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
+          {selectedOptions.length > 0 ? (
+            <div className="flex items-center space-x-2 min-w-0">
+              {selectedOptions.slice(0, 2).map((option) => (
+                <div key={option.value} className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                  {option.image && (
+                    <img 
+                      src={option.image} 
+                      alt={option.label}
+                      className="w-4 h-4 rounded object-contain"
+                    />
+                  )}
+                  <span className="truncate">{option.label}</span>
+                </div>
+              ))}
+              {selectedOptions.length > 2 && (
+                <span className="text-gray-500 text-sm">
+                  +{selectedOptions.length - 2} more
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-gray-500">{placeholder}</span>
+          )}
+        </div>
+        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {options.map((option) => (
+            <label
+              key={option.value}
+              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedValues.includes(option.value)}
+                onChange={() => onChange(option.value)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              {option.image ? (
+                <img 
+                  src={option.image} 
+                  alt={option.label}
+                  className="w-6 h-6 rounded object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+              <span className="text-gray-900">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SimpleDropdown({ options, value, onChange, placeholder, disabled = false }: {
   options: { value: string; label: string }[];
   value: string;
@@ -225,20 +325,24 @@ export default function SupportForm() {
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
-  const [showAppModal, setShowAppModal] = useState(false);
+  const [urlAppsInitialized, setUrlAppsInitialized] = useState(false);
+
+  // Debug environment variables on mount
+  useEffect(() => {
+    console.log('SupportForm mounted - Environment check:');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY length:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length);
+  }, []);
 
   // Fetch available apps
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        // Use absolute URL to ensure it works in production
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
-        const response = await fetch(`${baseUrl}/api/apps`);
+        const response = await fetch('/api/apps');
         if (response.ok) {
           const appsData = await response.json();
           setApps(appsData);
-        } else {
-          console.error('Failed to fetch apps:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -258,21 +362,17 @@ export default function SupportForm() {
       const appNames = urlApp ? urlApp.split(',').map(name => name.trim()).filter(name => name) : [];
       
       if (appNames.length > 0) {
-        console.log('URL app parameter:', urlApp);
-        console.log('Available apps:', apps.map(app => ({ id: app.id, name: app.name })));
-        
         // Find apps by name (case-insensitive)
         const validAppIds = appNames
           .map(appName => {
             const foundApp = apps.find(app => 
               app.name.toLowerCase() === appName.toLowerCase()
             );
-            console.log(`Looking for app "${appName}":`, foundApp ? `Found: ${foundApp.name} (${foundApp.id})` : 'Not found');
             return foundApp?.id;
           })
           .filter(id => id) as string[];
         
-        console.log('Valid app IDs found:', validAppIds);
+
         
         if (validAppIds.length > 0 && JSON.stringify(validAppIds) !== JSON.stringify(selectedApps)) {
           setSelectedApps(validAppIds);
@@ -284,31 +384,6 @@ export default function SupportForm() {
       }
     }
   }, [isLoadingApps, apps, searchParams, selectedApps]);
-
-  // Retry mechanism for URL parameters if apps fail to load initially
-  useEffect(() => {
-    if (!isLoadingApps && apps.length === 0 && searchParams?.get('app')) {
-      console.log('Apps failed to load but URL has app parameter, retrying...');
-      // Retry fetching apps after a delay
-      const timer = setTimeout(() => {
-        const fetchApps = async () => {
-          try {
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
-            const response = await fetch(`${baseUrl}/api/apps`);
-            if (response.ok) {
-              const appsData = await response.json();
-              setApps(appsData);
-            }
-          } catch (error) {
-            console.error('Retry failed to fetch apps:', error);
-          }
-        };
-        fetchApps();
-      }, 2000); // Retry after 2 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isLoadingApps, apps.length, searchParams]);
 
   // Pre-fill form with URL parameters
   useEffect(() => {
@@ -617,16 +692,20 @@ export default function SupportForm() {
     setErrors({});
     setTurnstileToken('');
     setTurnstileError('');
-    setShowAppModal(false);
     setSubmitStatus('idle');
   };
 
   // Get Turnstile site key based on environment
   const getTurnstileSiteKey = () => {
+    console.log('SupportForm - NODE_ENV:', process.env.NODE_ENV);
+    console.log('SupportForm - NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+    
     if (process.env.NODE_ENV === 'development') {
       return '1x00000000000000000000AA';
     }
-    return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+    console.log('SupportForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
+    return siteKey;
   };
 
   // Prepare app options for the custom dropdown
@@ -681,6 +760,16 @@ export default function SupportForm() {
       ) : (
         <>
           <h2 className="text-2xl font-semibold mb-8">Submit a Support Ticket</h2>
+          
+          {/* Debug info - remove after fixing */}
+          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              <strong>Debug Info:</strong> NODE_ENV: {process.env.NODE_ENV}, 
+              TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
+              (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
+            </p>
+          </div>
+          
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Contact Information Section */}
         <div className="space-y-6">
@@ -902,43 +991,20 @@ export default function SupportForm() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Application(s)
             </label>
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setShowAppModal(true)}
-                className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                + Add application
-              </button>
-              {selectedApps.length > 0 && (
-                <div className="space-y-2">
-                  {selectedApps.map((appId: string) => {
-                    const app = apps.find(a => a.id === appId);
-                    return app ? (
-                      <div key={appId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          {app.faviconUrl && (
-                            <img 
-                              src={app.faviconUrl} 
-                              alt={app.name}
-                              className="w-6 h-6 rounded object-contain"
-                            />
-                          )}
-                          <span className="text-sm font-medium">{app.name}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleAppSelection(appId)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              )}
-            </div>
+            <MultiSelectDropdown
+              options={appOptions}
+              selectedValues={selectedApps}
+              onChange={handleAppSelection}
+              placeholder="Select applications..."
+              disabled={isLoadingApps}
+            />
+            {selectedApps.length > 0 && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-600">
+                  Selected: {selectedApps.length} application{selectedApps.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -1160,62 +1226,7 @@ export default function SupportForm() {
         </>
       )}
 
-      {/* Application Selection Modal */}
-      {showAppModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Select Applications</h3>
-              <button
-                type="button"
-                onClick={() => setShowAppModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {appOptions.map((app) => (
-                <label key={app.value} className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedApps.includes(app.value)}
-                    onChange={() => handleAppSelection(app.value)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <div className="flex items-center space-x-3 ml-3">
-                    {app.image ? (
-                      <img 
-                        src={app.image} 
-                        alt={app.label}
-                        className="w-6 h-6 rounded object-contain"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                    <span className="text-sm font-medium">{app.label}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowAppModal(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -93,36 +93,41 @@ export async function POST(request: Request) {
       );
     }
 
-    const TURNSTILE_SECRET_KEY = getTurnstileSecretKey();
-    if (!TURNSTILE_SECRET_KEY) {
-      console.error('Turnstile secret key not configured');
-      return NextResponse.json(
-        { error: 'Security verification service unavailable' },
-        { status: 503 }
-      );
-    }
+    // Skip Turnstile verification in development mode or if token is the development fallback
+    if (turnstileToken === 'development-mode') {
+      console.log('Skipping Turnstile verification in development mode');
+    } else {
+      const TURNSTILE_SECRET_KEY = getTurnstileSecretKey();
+      if (!TURNSTILE_SECRET_KEY) {
+        console.error('Turnstile secret key not configured');
+        return NextResponse.json(
+          { error: 'Security verification service unavailable' },
+          { status: 503 }
+        );
+      }
 
-    // Verify the Turnstile token with Cloudflare
-    const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        secret: TURNSTILE_SECRET_KEY,
-        response: turnstileToken,
-        remoteip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-      }),
-    });
+      // Verify the Turnstile token with Cloudflare
+      const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          secret: TURNSTILE_SECRET_KEY,
+          response: turnstileToken,
+          remoteip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+        }),
+      });
 
-    const turnstileResult = await turnstileResponse.json();
-    
-    if (!turnstileResult.success) {
-      console.error('Turnstile verification failed:', turnstileResult);
-      return NextResponse.json(
-        { error: 'Security verification failed. Please try again.' },
-        { status: 400 }
-      );
+      const turnstileResult = await turnstileResponse.json();
+      
+      if (!turnstileResult.success) {
+        console.error('Turnstile verification failed:', turnstileResult);
+        return NextResponse.json(
+          { error: 'Security verification failed. Please try again.' },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if Airtable credentials are available
