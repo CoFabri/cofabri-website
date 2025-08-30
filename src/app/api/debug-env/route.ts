@@ -6,7 +6,9 @@ export async function GET() {
     turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET',
     turnstileSiteKeyLength: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0,
     turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY ? 'SET' : 'NOT SET',
+    turnstileSecretKeyLength: process.env.TURNSTILE_SECRET_KEY?.length || 0,
     allNextPublicVars: Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_')),
+    allSecretVars: Object.keys(process.env).filter(key => key.includes('TURNSTILE') && !key.startsWith('NEXT_PUBLIC_')),
     timestamp: new Date().toISOString()
   });
 }
