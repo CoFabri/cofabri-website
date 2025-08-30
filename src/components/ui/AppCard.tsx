@@ -109,14 +109,16 @@ export default function AppCard({ app }: AppCardProps) {
               </li>
             )}
           </ul>
-          <Link
-            href={app.url ? (app.url.startsWith('http') ? app.url : `https://${app.url}`) : '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-          >
-            Visit App
-          </Link>
+          {app.url && (
+            <Link
+              href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            >
+              Visit App
+            </Link>
+          )}
         </div>
       </div>
     </div>

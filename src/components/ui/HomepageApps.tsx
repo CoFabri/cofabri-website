@@ -138,9 +138,9 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
           </p>
         </div>
 
-        <div className={`grid gap-8 max-w-6xl mx-auto ${
+        <div className={`grid gap-8 mx-auto ${
           apps.length === 1 
-            ? 'grid-cols-1 max-w-xl' 
+            ? 'grid-cols-1' 
             : apps.length === 2 
               ? 'grid-cols-1 md:grid-cols-2' 
               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'

@@ -121,14 +121,16 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
           )}
 
           {/* Action Button */}
-          <Link
-            href={app.url ? (app.url.startsWith('http') ? app.url : `https://${app.url}`) : '#'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
-          >
-            Visit App
-          </Link>
+          {app.url && (
+            <Link
+              href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+            >
+              Visit App
+            </Link>
+          )}
         </div>
       </div>
     </div>

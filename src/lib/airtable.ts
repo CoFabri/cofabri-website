@@ -109,7 +109,7 @@ export interface KnowledgeBaseArticle {
 export interface App {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   url?: string;
   screenshot?: string;
   faviconUrl?: string;
@@ -523,7 +523,11 @@ export async function getApps(): Promise<App[]> {
           appUrl = `https://${appUrl}`;
         }
         if (appUrl) {
-          new URL(appUrl);
+          const url = new URL(appUrl);
+          // Check if the URL has a valid hostname (not just protocol)
+          if (!url.hostname || url.hostname === '') {
+            throw new Error('Invalid hostname');
+          }
         }
       } catch (e) {
         console.warn(`Invalid app URL for ${record.fields.Name}:`, appUrl);
@@ -533,7 +537,7 @@ export async function getApps(): Promise<App[]> {
       return {
         id: record.id,
         name: record.fields.Name,
-        description: record.fields.Description,
+        description: record.fields.Description || 'No description available',
         url: appUrl,
         screenshot,
         faviconUrl,

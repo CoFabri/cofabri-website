@@ -3,13 +3,18 @@
 import { useState } from 'react';
 
 interface ExpandableTextProps {
-  text: string;
+  text?: string;
   maxLength?: number;
   className?: string;
 }
 
 export default function ExpandableText({ text, maxLength = 150, className = '' }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Handle undefined/null text
+  if (!text) {
+    return <p className={className}>No description available</p>;
+  }
   
   const shouldTruncate = text.length > maxLength;
   const displayText = isExpanded ? text : text.slice(0, maxLength) + (shouldTruncate ? '...' : '');

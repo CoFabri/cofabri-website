@@ -64,15 +64,17 @@ export default function FeaturedApp() {
                 {featuredApp.name}
               </h2>
               <p className="text-lg text-gray-600 mb-6">
-                {featuredApp.description}
+                {featuredApp.description || 'No description available'}
               </p>
-              <Link
-                href={featuredApp.url || '#'}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition-colors duration-200"
-              >
-                <RocketLaunchIcon className="h-5 w-5" />
-                Learn More
-              </Link>
+              {featuredApp.url && (
+                <Link
+                  href={featuredApp.url}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition-colors duration-200"
+                >
+                  <RocketLaunchIcon className="h-5 w-5" />
+                  Learn More
+                </Link>
+              )}
             </div>
             <div className="w-full md:w-1/2">
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">

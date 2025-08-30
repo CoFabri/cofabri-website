@@ -63,9 +63,8 @@ export default function Apps() {
 
   // Determine max width based on number of apps
   const getMaxWidth = () => {
-    if (apps.length === 1) return 'max-w-2xl';
-    if (apps.length === 2) return 'max-w-4xl';
-    return 'max-w-6xl';
+    // Remove max-width constraints to match FeaturedApp width
+    return '';
   };
 
   return (
