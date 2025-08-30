@@ -768,6 +768,12 @@ export default function SupportForm() {
               TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
               (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
             </p>
+            <p className="text-sm text-yellow-800 mt-2">
+              <strong>Raw Value:</strong> "{process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || 'undefined'}"
+            </p>
+            <p className="text-sm text-yellow-800">
+              <strong>All NEXT_PUBLIC vars:</strong> {Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_')).join(', ')}
+            </p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
