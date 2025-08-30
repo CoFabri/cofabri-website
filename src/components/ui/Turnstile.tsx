@@ -58,6 +58,7 @@ const loadTurnstileScript = (): Promise<void> => {
     
     script.onerror = () => {
       scriptLoadingPromise = null;
+      console.error('Turnstile: Failed to load script from https://challenges.cloudflare.com/turnstile/v0/api.js');
       reject(new Error('Failed to load Turnstile script'));
     };
     
@@ -89,13 +90,17 @@ export default function Turnstile({
       try {
         // Check if site key is valid
         if (!siteKey || siteKey.trim() === '') {
-          console.warn('Turnstile site key is not configured. Security verification will be skipped.');
-          console.log('Turnstile component received site key:', siteKey, 'Length:', siteKey?.length);
+          console.warn('Turnstile: Empty or invalid site key provided');
           setHasError(true);
           setIsLoading(false);
           // Call onVerify with a dummy token to allow form submission
           onVerify('development-mode');
           return;
+        }
+
+        // Log site key for debugging (only in development)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Turnstile: Using site key:', siteKey.substring(0, 10) + '...');
         }
 
         // Load script if not already loaded
@@ -121,11 +126,9 @@ export default function Turnstile({
           widgetIdRef.current = window.turnstile.render(containerRef.current, options);
           setIsRendered(true);
         } catch (error) {
-          console.error('Failed to render Turnstile:', error);
           setHasError(true);
         }
       } catch (error) {
-        console.error('Failed to load Turnstile:', error);
         setHasError(true);
       } finally {
         if (mounted) {
@@ -143,7 +146,7 @@ export default function Turnstile({
         try {
           window.turnstile.reset(widgetIdRef.current);
         } catch (error) {
-          console.error('Failed to reset Turnstile:', error);
+          // Silently handle reset errors
         }
       }
     };

@@ -215,13 +215,7 @@ export default function ContactForm() {
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
 
-  // Debug environment variables on mount
-  useEffect(() => {
-    console.log('ContactForm mounted - Environment check:');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY length:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length);
-  }, []);
+
 
   // Fetch available apps
   useEffect(() => {
@@ -459,18 +453,19 @@ export default function ContactForm() {
 
   // Get Turnstile site key based on environment
   const getTurnstileSiteKey = () => {
-    console.log('ContactForm - NODE_ENV:', process.env.NODE_ENV);
-    console.log('ContactForm - NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    
     if (process.env.NODE_ENV === 'development') {
       // Use Cloudflare's test keys for development
       return '1x00000000000000000000AA';
     }
     
-    // Hardcoded production site key (replace with your actual site key)
-    const hardcodedSiteKey = '0x4AAAAAAABkMYinukE68Nch'; // Replace this with your actual site key
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || hardcodedSiteKey;
-    console.log('ContactForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
+    // Use environment variable for production
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    
+    if (!siteKey) {
+      console.warn('NEXT_PUBLIC_TURNSTILE_SITE_KEY not set in production. Using fallback key.');
+      return '0x4AAAAAAABkMYinukE68Nch';
+    }
+    
     return siteKey;
   };
 
@@ -530,20 +525,7 @@ export default function ContactForm() {
         <>
           <h2 className="text-2xl font-semibold mb-8">Send us a Message</h2>
           
-          {/* Debug info - remove after fixing */}
-          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Debug Info:</strong> NODE_ENV: {process.env.NODE_ENV}, 
-              TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
-              (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
-            </p>
-            <p className="text-sm text-yellow-800 mt-2">
-              <strong>Hardcoded Fallback:</strong> "0x4AAAAAAABkMYinukE68Nch"
-            </p>
-            <p className="text-sm text-yellow-800">
-              <strong>Final Site Key:</strong> "{getTurnstileSiteKey()}"
-            </p>
-          </div>
+
           
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

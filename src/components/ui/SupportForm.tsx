@@ -327,13 +327,7 @@ export default function SupportForm() {
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
   const [urlAppsInitialized, setUrlAppsInitialized] = useState(false);
 
-  // Debug environment variables on mount
-  useEffect(() => {
-    console.log('SupportForm mounted - Environment check:');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    console.log('NEXT_PUBLIC_TURNSTILE_SITE_KEY length:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length);
-  }, []);
+
 
   // Fetch available apps
   useEffect(() => {
@@ -704,17 +698,18 @@ export default function SupportForm() {
 
   // Get Turnstile site key based on environment
   const getTurnstileSiteKey = () => {
-    console.log('SupportForm - NODE_ENV:', process.env.NODE_ENV);
-    console.log('SupportForm - NEXT_PUBLIC_TURNSTILE_SITE_KEY:', process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
-    
     if (process.env.NODE_ENV === 'development') {
       return '1x00000000000000000000AA';
     }
     
-    // Hardcoded production site key (replace with your actual site key)
-    const hardcodedSiteKey = '0x4AAAAAAABkMYinukE68Nch'; // Replace this with your actual site key
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || hardcodedSiteKey;
-    console.log('SupportForm - Turnstile site key:', siteKey ? 'SET' : 'NOT SET', 'Length:', siteKey.length);
+    // Use environment variable for production
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    
+    if (!siteKey) {
+      console.warn('NEXT_PUBLIC_TURNSTILE_SITE_KEY not set in production. Using fallback key.');
+      return '0x4AAAAAAABkMYinukE68Nch';
+    }
+    
     return siteKey;
   };
 
@@ -771,26 +766,7 @@ export default function SupportForm() {
         <>
           <h2 className="text-2xl font-semibold mb-8">Submit a Support Ticket</h2>
           
-          {/* Debug info - remove after fixing */}
-          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              <strong>Debug Info:</strong> NODE_ENV: {process.env.NODE_ENV}, 
-              TURNSTILE_KEY: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'SET' : 'NOT SET'} 
-              (Length: {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.length || 0})
-            </p>
-            <p className="text-sm text-yellow-800 mt-2">
-              <strong>Raw Value:</strong> "{process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || 'undefined'}"
-            </p>
-            <p className="text-sm text-yellow-800">
-              <strong>Hardcoded Fallback:</strong> "0x4AAAAAAABkMYinukE68Nch"
-            </p>
-            <p className="text-sm text-yellow-800">
-              <strong>Final Site Key:</strong> "{getTurnstileSiteKey()}"
-            </p>
-            <p className="text-sm text-yellow-800">
-              <strong>All NEXT_PUBLIC vars:</strong> {Object.keys(process.env).filter(key => key.startsWith('NEXT_PUBLIC_')).join(', ')}
-            </p>
-          </div>
+
           
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Contact Information Section */}
