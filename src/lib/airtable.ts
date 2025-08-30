@@ -113,7 +113,7 @@ export interface App {
   url?: string;
   screenshot?: string;
   faviconUrl?: string;
-  status: 'Live' | 'Beta' | 'Alpha' | 'In Development' | 'Coming Soon';
+  status: 'Live' | 'Beta' | 'Alpha' | 'Active' | 'In Development' | 'Coming Soon';
   category?: string;
   feature1?: string;
   feature2?: string;

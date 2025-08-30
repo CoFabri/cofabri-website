@@ -263,22 +263,24 @@ function SignupPageContent() {
                   </div>
 
                   {/* Testimonials */}
-                  <div className="mt-12">
-                    <h3 className="text-2xl font-bold text-white mb-6">What People Are Saying</h3>
-                    <div className="space-y-6">
-                      {displayedTestimonials.map((testimonial, index) => (
-                        <div 
-                          key={index} 
-                          className="bg-white/10 backdrop-blur-sm rounded-xl p-6 transform transition-all duration-500 hover:scale-105 hover:bg-white/15 relative"
-                        >
-                          <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">"</div>
-                          <div className="flex-1">
-                            <p className="text-white/90 leading-relaxed italic text-lg">"{testimonial.Statement}"</p>
+                  {displayedTestimonials.length > 0 && (
+                    <div className="mt-12">
+                      <h3 className="text-2xl font-bold text-white mb-6">What People Are Saying</h3>
+                      <div className="space-y-6">
+                        {displayedTestimonials.map((testimonial, index) => (
+                          <div 
+                            key={index} 
+                            className="bg-white/10 backdrop-blur-sm rounded-xl p-6 transform transition-all duration-500 hover:scale-105 hover:bg-white/15 relative"
+                          >
+                            <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">"</div>
+                            <div className="flex-1">
+                              <p className="text-white/90 leading-relaxed italic text-lg">"{testimonial.Statement}"</p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -302,34 +304,7 @@ function SignupPageContent() {
                         <p className="text-gray-600">Fill out the form below to secure your spot on our waitlist. We'll notify you as soon as we're ready to launch.</p>
                       </div>
 
-                      {/* Beta Spots Counter */}
-                      {appData && (
-                        <div className="mb-8">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <UserGroupIcon className="w-5 h-5 text-blue-600" />
-                              <span className="text-sm font-medium text-gray-700">Beta Spots</span>
-                            </div>
-                            <span className="text-sm font-medium text-gray-700">
-                              {appData.betaSpotsFilled} / {appData.betaSpotsTotal} filled
-                            </span>
-                          </div>
-                          <div className="h-2 bg-gray-200 rounded-full">
-                            <div 
-                              className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                              style={{ 
-                                width: `${(appData.betaSpotsFilled / appData.betaSpotsTotal) * 100}%`,
-                              }}
-                            />
-                          </div>
-                          {appData.betaSpotsTotal - appData.betaSpotsFilled <= 5 && (
-                            <p className="mt-2 text-sm text-red-600 font-medium flex items-center gap-1">
-                              <span>Hurry!</span>
-                              <span>Only {appData.betaSpotsTotal - appData.betaSpotsFilled} spots left</span>
-                            </p>
-                          )}
-                        </div>
-                      )}
+
 
                       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -63,9 +63,9 @@ export async function GET(
       throw new Error('Invalid app data response');
     }
     
-    // Fetch testimonials
+    // Fetch approved testimonials only
     const testimonialsResponse = await fetchFromAirtable(
-      `Beta Statements?filterByFormula={App Record ID}='${params.id}'&fields[]=ID&fields[]=Statement`
+      `Beta Statements?filterByFormula=AND({App Record ID}='${params.id}',{Status}='Approved')&fields[]=ID&fields[]=Statement`
     );
     
     const testimonials = testimonialsResponse.records?.map((record: any) => ({

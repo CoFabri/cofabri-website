@@ -59,6 +59,7 @@ export default function AppCard({ app }: AppCardProps) {
             <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 app.status === 'Live' ? 'bg-green-100 text-green-800' :
+                app.status === 'Active' ? 'bg-green-100 text-green-800' :
                 app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
                 app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
                 'bg-gray-100 text-gray-800'
@@ -109,7 +110,14 @@ export default function AppCard({ app }: AppCardProps) {
               </li>
             )}
           </ul>
-          {app.url && (
+          {app.status === 'In Development' ? (
+            <Link
+              href={`/signup?appId=${app.id}`}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+            >
+              Join Waitlist
+            </Link>
+          ) : app.url ? (
             <Link
               href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
               target="_blank"
@@ -118,7 +126,7 @@ export default function AppCard({ app }: AppCardProps) {
             >
               Visit App
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
