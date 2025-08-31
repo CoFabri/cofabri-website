@@ -153,13 +153,12 @@ export async function GET(request: Request) {
             }
         }
         ` : ''}
-        /* Tooltip styles - exact same as navigation header */
+        /* Tooltip styles - overlay outside iframe boundaries */
         .status-tooltip {
-            position: absolute;
-            bottom: 100%;
+            position: fixed;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 0.5rem;
+            bottom: 2rem;
             padding: 0.5rem 0.75rem;
             background-color: #111827;
             color: white;
@@ -173,7 +172,8 @@ export async function GET(request: Request) {
             transition: all 0.2s;
             overflow: hidden;
             text-overflow: ellipsis;
-            z-index: 1000;
+            z-index: 999999;
+            pointer-events: none;
         }
         .status-widget:hover .status-tooltip {
             opacity: 1;
@@ -251,15 +251,57 @@ export async function GET(request: Request) {
             }
         }
         
+        // Function to position tooltip relative to iframe
+        function setupTooltipPositioning() {
+            const widget = document.querySelector('.status-widget');
+            const tooltip = document.querySelector('.status-tooltip');
+            
+            if (!widget || !tooltip) return;
+            
+            widget.addEventListener('mouseenter', function() {
+                try {
+                    // Get iframe position relative to viewport
+                    const iframe = window.frameElement;
+                    if (iframe) {
+                        const iframeRect = iframe.getBoundingClientRect();
+                        const iframeParent = iframe.offsetParent;
+                        
+                        if (iframeParent) {
+                            const parentRect = iframeParent.getBoundingClientRect();
+                            
+                            // Calculate tooltip position above the iframe
+                            const tooltipLeft = iframeRect.left + (iframeRect.width / 2);
+                            const tooltipBottom = iframeRect.top + 10; // 10px above iframe
+                            
+                            tooltip.style.left = tooltipLeft + 'px';
+                            tooltip.style.bottom = 'auto';
+                            tooltip.style.top = (tooltipBottom - tooltip.offsetHeight) + 'px';
+                            tooltip.style.transform = 'translateX(-50%)';
+                        }
+                    }
+                } catch (error) {
+                    // Fallback to default positioning
+                    console.log('Could not calculate tooltip position, using defaults');
+                }
+            });
+        }
+        
         // Try to inherit styles when page loads
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', inheritParentStyles);
+            document.addEventListener('DOMContentLoaded', function() {
+                inheritParentStyles();
+                setupTooltipPositioning();
+            });
         } else {
             inheritParentStyles();
+            setupTooltipPositioning();
         }
         
         // Also try after a short delay to ensure parent is fully loaded
-        setTimeout(inheritParentStyles, 100);
+        setTimeout(function() {
+            inheritParentStyles();
+            setupTooltipPositioning();
+        }, 100);
         
         // Auto-refresh every 5 minutes
         setTimeout(() => {
