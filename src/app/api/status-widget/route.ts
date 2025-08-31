@@ -70,6 +70,7 @@ export async function GET(request: Request) {
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: transparent;
+            overflow: hidden;
         }
         .status-widget {
             display: inline-flex;
@@ -79,12 +80,12 @@ export async function GET(request: Request) {
             background: transparent;
             border: none;
             transition: opacity 0.2s ease;
-            /* Inherit font properties from parent */
-            font-family: inherit;
-            font-size: inherit;
-            font-weight: inherit;
-            color: inherit;
-            line-height: inherit;
+            /* Default styles that will be overridden by JavaScript */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #374151;
+            line-height: 1.4;
         }
         .status-widget:hover {
             opacity: 0.8;
@@ -112,6 +113,53 @@ export async function GET(request: Request) {
         <span class="status-text">${statusText}</span>
     </a>
     <script>
+        // Function to inherit styles from parent page
+        function inheritParentStyles() {
+            try {
+                // Try to access parent window styles
+                if (window.parent && window.parent !== window) {
+                    const parentDoc = window.parent.document;
+                    const parentBody = parentDoc.body;
+                    
+                    if (parentBody) {
+                        const computedStyle = window.parent.getComputedStyle(parentBody);
+                        const widget = document.querySelector('.status-widget');
+                        
+                        if (widget) {
+                            // Inherit font properties
+                            widget.style.fontFamily = computedStyle.fontFamily;
+                            widget.style.fontSize = computedStyle.fontSize;
+                            widget.style.fontWeight = computedStyle.fontWeight;
+                            widget.style.color = computedStyle.color;
+                            widget.style.lineHeight = computedStyle.lineHeight;
+                            
+                            // Adjust dot size based on font size
+                            const fontSize = parseFloat(computedStyle.fontSize);
+                            const dotSize = Math.max(6, Math.min(12, fontSize * 0.4));
+                            const dot = document.querySelector('.status-dot');
+                            if (dot) {
+                                dot.style.width = dotSize + 'px';
+                                dot.style.height = dotSize + 'px';
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                // Cross-origin restrictions or other errors - use default styles
+                console.log('Could not inherit parent styles, using defaults');
+            }
+        }
+        
+        // Try to inherit styles when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inheritParentStyles);
+        } else {
+            inheritParentStyles();
+        }
+        
+        // Also try after a short delay to ensure parent is fully loaded
+        setTimeout(inheritParentStyles, 100);
+        
         // Auto-refresh every 5 minutes
         setTimeout(() => {
             window.location.reload();
@@ -138,7 +186,7 @@ export async function GET(request: Request) {
     <meta charset="utf-8">
     <title>CoFabri System Status</title>
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: transparent; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: transparent; overflow: hidden; }
         .status-widget {
             display: inline-flex;
             align-items: center;
@@ -164,6 +212,40 @@ export async function GET(request: Request) {
         <div class="status-dot"></div>
         <span>System Status</span>
     </a>
+    <script>
+        // Same inheritance logic for error state
+        function inheritParentStyles() {
+            try {
+                if (window.parent && window.parent !== window) {
+                    const parentDoc = window.parent.document;
+                    const parentBody = parentDoc.body;
+                    
+                    if (parentBody) {
+                        const computedStyle = window.parent.getComputedStyle(parentBody);
+                        const widget = document.querySelector('.status-widget');
+                        
+                        if (widget) {
+                            widget.style.fontFamily = computedStyle.fontFamily;
+                            widget.style.fontSize = computedStyle.fontSize;
+                            widget.style.fontWeight = computedStyle.fontWeight;
+                            widget.style.color = computedStyle.color;
+                            widget.style.lineHeight = computedStyle.lineHeight;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Could not inherit parent styles, using defaults');
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inheritParentStyles);
+        } else {
+            inheritParentStyles();
+        }
+        
+        setTimeout(inheritParentStyles, 100);
+    </script>
 </body>
 </html>`;
     
