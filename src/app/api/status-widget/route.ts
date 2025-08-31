@@ -54,7 +54,28 @@ export async function GET(request: Request) {
     
     // Determine if we should show pulsing animation
     const shouldPulse = activeStatuses.length > 0;
-    const widgetClass = shouldPulse ? 'status-widget loading' : 'status-widget';
+    
+    // Get status message logic (same as navigation header)
+    const getStatusMessage = (status: any) => {
+      if (!status) return 'All systems operational';
+      
+      switch (status.publicStatus) {
+        case 'Investigating':
+          return status.message ? `Investigating: ${status.message}` : 'Investigating';
+        case 'Identified':
+          return status.message ? `Issue Identified: ${status.message}` : 'Issue Identified';
+        case 'Monitoring':
+          return status.message ? `Monitoring Resolution: ${status.message}` : 'Monitoring Resolution';
+        case 'Resolved':
+          return status.message ? `Resolved: ${status.message}` : 'Resolved';
+        default:
+          return status.message || status.publicStatus || 'All systems operational';
+      }
+    };
+    
+    const message = shouldPulse 
+      ? getStatusMessage(mostSevere)
+      : 'All systems operational';
     
     const html = `
 <!DOCTYPE html>
@@ -79,6 +100,7 @@ export async function GET(request: Request) {
             background: transparent;
             border: none;
             transition: opacity 0.2s ease;
+            position: relative;
             /* Default styles that will be overridden by JavaScript */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
@@ -107,6 +129,7 @@ export async function GET(request: Request) {
             max-width: 16px;
             max-height: 16px;
         }
+        ${shouldPulse ? `
         .status-dot-ping {
             position: absolute;
             top: 0;
@@ -129,13 +152,60 @@ export async function GET(request: Request) {
                 opacity: 0;
             }
         }
+        ` : ''}
+        /* Tooltip styles - exact same as navigation header */
+        .status-tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background-color: #111827;
+            color: white;
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+            white-space: normal;
+            max-width: 12rem;
+            width: max-content;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 1000;
+        }
+        .status-widget:hover .status-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        .status-tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 0.375rem;
+            border: 4px solid transparent;
+            border-bottom-color: #111827;
+        }
+        .status-tooltip-text {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
         <div class="status-dot-container">
-            ${shouldPulse ? '<div class="status-dot-ping"></div>' : ''}
             <div class="status-dot"></div>
+            ${shouldPulse ? '<div class="status-dot-ping"></div>' : ''}
+        </div>
+        
+        <!-- Tooltip - exact same as navigation header -->
+        <div class="status-tooltip">
+            <span class="status-tooltip-text">${message}</span>
         </div>
     </a>
     <script>
