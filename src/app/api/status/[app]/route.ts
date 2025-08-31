@@ -196,10 +196,10 @@ export async function GET(
         /* Tooltip styles - exact same as navigation header */
         .status-tooltip {
             position: absolute;
-            top: 100%;
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
             padding: 0.5rem 0.75rem;
             background-color: #111827;
             color: white;
@@ -222,12 +222,12 @@ export async function GET(
         .status-tooltip::before {
             content: '';
             position: absolute;
-            bottom: 100%;
+            top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 0.375rem;
+            margin-top: 0.375rem;
             border: 4px solid transparent;
-            border-bottom-color: #111827;
+            border-top-color: #111827;
         }
         .status-tooltip-text {
             display: block;
