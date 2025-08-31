@@ -14,7 +14,7 @@ Add this script to any webpage:
 <script src="https://cofabri.com/status-widget.js"></script>
 ```
 
-The widget automatically appears with a dot indicator and "System Status" text.
+The widget automatically appears with a colored dot indicator that shows system status.
 
 ### Option 2: App-Specific Status Widget (Recommended for Individual Apps)
 Add this script to individual app pages:
@@ -29,34 +29,35 @@ Add this script to individual app pages:
 
 This widget only shows issues affecting that specific app or the CoFabri API.
 
-### Option 3: Iframe Widgets (Enhanced Font Inheritance)
-Embed these iframes anywhere. **NEW**: The iframe now automatically inherits font styles from the parent page!
+### Option 3: Iframe Widgets (Dot-Only Design)
+Embed these iframes anywhere. Clean, minimal design with just a pulsing status dot!
 
 ```html
-<!-- General status -->
+<!-- General status - dot only -->
 <iframe 
   src="https://cofabri.com/api/status-widget" 
-  width="200" 
-  height="40" 
+  width="24" 
+  height="24" 
   frameborder="0"
   scrolling="no">
 </iframe>
 
-<!-- App-specific status -->
+<!-- App-specific status - dot only -->
 <iframe 
   src="https://cofabri.com/api/status/myapp" 
-  width="200" 
-  height="40" 
+  width="24" 
+  height="24" 
   frameborder="0"
   scrolling="no">
 </iframe>
 ```
 
-**Font Inheritance Features:**
-- Automatically detects and applies parent page's font family, size, weight, and color
-- Adjusts dot size proportionally to font size
-- Gracefully falls back to default styles if cross-origin restrictions prevent inheritance
-- Works with any website's typography system
+**Features:**
+- **Minimal Design**: Just a colored dot that indicates system status
+- **Automatic Font Inheritance**: Dot size scales with parent page's font size
+- **Status Colors**: Green (operational), Red (investigating), Orange (identified), Blue (monitoring)
+- **Clickable**: Click the dot to open the full status page
+- **Responsive**: Adapts to any container size
 
 ### Option 4: Custom Implementation
 ```javascript
@@ -104,17 +105,18 @@ For better control over the widget appearance, you can use CSS to style the ifra
   line-height: inherit;
   
   /* Optional: Add custom styling */
-  border-radius: 4px;
-  padding: 8px;
+  border-radius: 50%;
+  padding: 4px;
   background: rgba(255, 255, 255, 0.1);
+  display: inline-block;
 }
 </style>
 
 <div class="status-widget-container">
   <iframe 
     src="https://cofabri.com/api/status-widget" 
-    width="200" 
-    height="40" 
+    width="24" 
+    height="24" 
     frameborder="0"
     scrolling="no">
   </iframe>
@@ -141,3 +143,20 @@ The iframe widgets now use JavaScript to automatically inherit typography from t
 5. **Performance**: Minimal impact on page load time
 
 This ensures the status widget seamlessly integrates with any website's design system.
+
+## Recommended Sizes
+
+For the dot-only widgets, we recommend these sizes:
+- **Small**: 16x16px - Minimal footprint
+- **Standard**: 24x24px - Good visibility
+- **Large**: 32x32px - High visibility
+- **Custom**: Any size - The dot will scale proportionally
+
+## Widget Comparison
+
+| Widget Type | Text | Dot Only | Auto-refresh | Font Inheritance |
+|-------------|------|----------|--------------|------------------|
+| JavaScript (General) | ❌ | ✅ | ✅ | ✅ |
+| JavaScript (App-specific) | ❌ | ✅ | ✅ | ✅ |
+| Iframe (General) | ❌ | ✅ | ✅ | ✅ |
+| Iframe (App-specific) | ❌ | ✅ | ✅ | ✅ |

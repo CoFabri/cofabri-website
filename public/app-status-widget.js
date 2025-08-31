@@ -48,7 +48,7 @@
       .cofabri-app-status-widget {
         display: inline-flex;
         align-items: center;
-        gap: 0.5em;
+        justify-content: center;
         text-decoration: none;
         background: transparent;
         border: none;
@@ -60,6 +60,8 @@
         font-weight: inherit;
         color: inherit;
         line-height: inherit;
+        width: 100%;
+        height: 100%;
       }
       
       .cofabri-app-status-widget:hover {
@@ -72,14 +74,10 @@
         border-radius: 50%;
         flex-shrink: 0;
         /* Scale dot size relative to font size */
-        min-width: 6px;
-        min-height: 6px;
-        max-width: 12px;
-        max-height: 12px;
-      }
-      
-      .cofabri-app-status-text {
-        white-space: nowrap;
+        min-width: 8px;
+        min-height: 8px;
+        max-width: 16px;
+        max-height: 16px;
       }
       
       .cofabri-app-status-widget.loading .cofabri-app-status-dot {
@@ -174,11 +172,9 @@
   // Update widget
   async function updateWidget(widget, appSlug) {
     const dot = widget.querySelector('.cofabri-app-status-dot');
-    const text = widget.querySelector('.cofabri-app-status-text');
     
     // Show loading state
     widget.classList.add('loading');
-    text.textContent = 'System Status';
     
     const allStatuses = await fetchStatus();
     
@@ -188,27 +184,15 @@
     if (allStatuses === null) {
       // Error state
       dot.style.backgroundColor = '#9ca3af';
-      text.textContent = 'System Status';
       return;
     }
     
     // Filter statuses for this app
     const relevantStatuses = filterStatusesForApp(allStatuses, appSlug);
     
-    // Update color and text
+    // Update color
     const color = getStatusColor(relevantStatuses);
     dot.style.backgroundColor = color;
-    
-    if (!relevantStatuses || relevantStatuses.length === 0) {
-      text.textContent = 'System Status';
-    } else {
-      const mostSevere = getMostSevereStatus(relevantStatuses);
-      if (mostSevere) {
-        text.textContent = `System Status - ${mostSevere.publicStatus}`;
-      } else {
-        text.textContent = 'System Status';
-      }
-    }
   }
 
   // Create widget element
@@ -221,7 +205,6 @@
     
     widget.innerHTML = `
       <div class="cofabri-app-status-dot"></div>
-      <span class="cofabri-app-status-text">System Status</span>
     `;
     
     return widget;

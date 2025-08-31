@@ -51,11 +51,10 @@ export async function GET(request: Request) {
     };
     
     const statusColor = getStatusColor();
-    const statusText = !statuses || statuses.length === 0 
-      ? 'System Status' 
-      : mostSevere 
-        ? `System Status - ${mostSevere.publicStatus}`
-        : 'System Status';
+    
+    // Determine if we should show pulsing animation
+    const shouldPulse = activeStatuses.length > 0;
+    const widgetClass = shouldPulse ? 'status-widget loading' : 'status-widget';
     
     const html = `
 <!DOCTYPE html>
@@ -75,7 +74,7 @@ export async function GET(request: Request) {
         .status-widget {
             display: inline-flex;
             align-items: center;
-            gap: 0.5em;
+            justify-content: center;
             text-decoration: none;
             background: transparent;
             border: none;
@@ -86,9 +85,15 @@ export async function GET(request: Request) {
             font-weight: 400;
             color: #374151;
             line-height: 1.4;
+            width: 100%;
+            height: 100%;
         }
         .status-widget:hover {
             opacity: 0.8;
+        }
+        .status-dot-container {
+            position: relative;
+            display: inline-block;
         }
         .status-dot {
             width: 0.5em;
@@ -97,20 +102,41 @@ export async function GET(request: Request) {
             background-color: ${statusColor};
             flex-shrink: 0;
             /* Scale dot size relative to font size */
-            min-width: 6px;
-            min-height: 6px;
-            max-width: 12px;
-            max-height: 12px;
+            min-width: 8px;
+            min-height: 8px;
+            max-width: 16px;
+            max-height: 16px;
         }
-        .status-text {
-            white-space: nowrap;
+        .status-dot-ping {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0.5em;
+            height: 0.5em;
+            border-radius: 50%;
+            background-color: ${statusColor};
+            opacity: 0.75;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+            /* Scale dot size relative to font size */
+            min-width: 8px;
+            min-height: 8px;
+            max-width: 16px;
+            max-height: 16px;
+        }
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
-        <div class="status-dot"></div>
-        <span class="status-text">${statusText}</span>
+        <div class="status-dot-container">
+            ${shouldPulse ? '<div class="status-dot-ping"></div>' : ''}
+            <div class="status-dot"></div>
+        </div>
     </a>
     <script>
         // Function to inherit styles from parent page
@@ -135,11 +161,16 @@ export async function GET(request: Request) {
                             
                             // Adjust dot size based on font size
                             const fontSize = parseFloat(computedStyle.fontSize);
-                            const dotSize = Math.max(6, Math.min(12, fontSize * 0.4));
+                            const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
                             const dot = document.querySelector('.status-dot');
+                            const pingDot = document.querySelector('.status-dot-ping');
                             if (dot) {
                                 dot.style.width = dotSize + 'px';
                                 dot.style.height = dotSize + 'px';
+                            }
+                            if (pingDot) {
+                                pingDot.style.width = dotSize + 'px';
+                                pingDot.style.height = dotSize + 'px';
                             }
                         }
                     }
@@ -190,14 +221,20 @@ export async function GET(request: Request) {
         .status-widget {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            justify-content: center;
+            padding: 8px;
             font-size: 14px;
             font-weight: 500;
             color: #374151;
             background: transparent;
             border: none;
             text-decoration: none;
+            width: 100%;
+            height: 100%;
+        }
+        .status-dot-container {
+            position: relative;
+            display: inline-block;
         }
         .status-dot {
             width: 8px;
@@ -205,12 +242,31 @@ export async function GET(request: Request) {
             border-radius: 50%;
             background-color: #9ca3af;
         }
+        .status-dot-ping {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #9ca3af;
+            opacity: 0.75;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
-        <div class="status-dot"></div>
-        <span>System Status</span>
+        <div class="status-dot-container">
+            <div class="status-dot-ping"></div>
+            <div class="status-dot"></div>
+        </div>
     </a>
     <script>
         // Same inheritance logic for error state
@@ -230,6 +286,20 @@ export async function GET(request: Request) {
                             widget.style.fontWeight = computedStyle.fontWeight;
                             widget.style.color = computedStyle.color;
                             widget.style.lineHeight = computedStyle.lineHeight;
+                            
+                            // Adjust dot size based on font size
+                            const fontSize = parseFloat(computedStyle.fontSize);
+                            const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
+                            const dot = document.querySelector('.status-dot');
+                            const pingDot = document.querySelector('.status-dot-ping');
+                            if (dot) {
+                                dot.style.width = dotSize + 'px';
+                                dot.style.height = dotSize + 'px';
+                            }
+                            if (pingDot) {
+                                pingDot.style.width = dotSize + 'px';
+                                pingDot.style.height = dotSize + 'px';
+                            }
                         }
                     }
                 }

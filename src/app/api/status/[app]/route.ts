@@ -77,11 +77,6 @@ export async function GET(
     };
     
     const statusColor = getStatusColor();
-    const statusText = !relevantStatuses || relevantStatuses.length === 0 
-      ? 'System Status' 
-      : mostSevere 
-        ? `System Status - ${mostSevere.publicStatus}`
-        : 'System Status';
     
     const html = `
 <!DOCTYPE html>
@@ -101,7 +96,7 @@ export async function GET(
         .status-widget {
             display: inline-flex;
             align-items: center;
-            gap: 0.5em;
+            justify-content: center;
             text-decoration: none;
             background: transparent;
             border: none;
@@ -112,6 +107,8 @@ export async function GET(
             font-weight: 400;
             color: #374151;
             line-height: 1.4;
+            width: 100%;
+            height: 100%;
         }
         .status-widget:hover {
             opacity: 0.8;
@@ -123,20 +120,23 @@ export async function GET(
             background-color: ${statusColor};
             flex-shrink: 0;
             /* Scale dot size relative to font size */
-            min-width: 6px;
-            min-height: 6px;
-            max-width: 12px;
-            max-height: 12px;
+            min-width: 8px;
+            min-height: 8px;
+            max-width: 16px;
+            max-height: 16px;
         }
-        .status-text {
-            white-space: nowrap;
+        .status-widget.loading .status-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
         <div class="status-dot"></div>
-        <span class="status-text">${statusText}</span>
     </a>
     <script>
         // Function to inherit styles from parent page
@@ -161,7 +161,7 @@ export async function GET(
                             
                             // Adjust dot size based on font size
                             const fontSize = parseFloat(computedStyle.fontSize);
-                            const dotSize = Math.max(6, Math.min(12, fontSize * 0.4));
+                            const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
                             const dot = document.querySelector('.status-dot');
                             if (dot) {
                                 dot.style.width = dotSize + 'px';
@@ -216,14 +216,16 @@ export async function GET(
         .status-widget {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            justify-content: center;
+            padding: 8px;
             font-size: 14px;
             font-weight: 500;
             color: #374151;
             background: transparent;
             border: none;
             text-decoration: none;
+            width: 100%;
+            height: 100%;
         }
         .status-dot {
             width: 8px;
@@ -236,7 +238,6 @@ export async function GET(
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
         <div class="status-dot"></div>
-        <span>System Status</span>
     </a>
     <script>
         // Same inheritance logic for error state

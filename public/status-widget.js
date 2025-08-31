@@ -24,7 +24,7 @@
       .cofabri-status-widget {
         display: inline-flex;
         align-items: center;
-        gap: 0.5em;
+        justify-content: center;
         text-decoration: none;
         background: transparent;
         border: none;
@@ -36,6 +36,8 @@
         font-weight: inherit;
         color: inherit;
         line-height: inherit;
+        width: 100%;
+        height: 100%;
       }
       
       .cofabri-status-widget:hover {
@@ -48,14 +50,10 @@
         border-radius: 50%;
         flex-shrink: 0;
         /* Scale dot size relative to font size */
-        min-width: 6px;
-        min-height: 6px;
-        max-width: 12px;
-        max-height: 12px;
-      }
-      
-      .cofabri-status-text {
-        white-space: nowrap;
+        min-width: 8px;
+        min-height: 8px;
+        max-width: 16px;
+        max-height: 16px;
       }
       
       .cofabri-status-widget.loading .cofabri-status-dot {
@@ -126,11 +124,9 @@
   // Update widget
   async function updateWidget(widget) {
     const dot = widget.querySelector('.cofabri-status-dot');
-    const text = widget.querySelector('.cofabri-status-text');
     
     // Show loading state
     widget.classList.add('loading');
-    text.textContent = 'System Status';
     
     const statuses = await fetchStatus();
     
@@ -140,24 +136,12 @@
     if (statuses === null) {
       // Error state
       dot.style.backgroundColor = '#9ca3af';
-      text.textContent = 'System Status';
       return;
     }
     
-    // Update color and text
+    // Update color
     const color = getStatusColor(statuses);
     dot.style.backgroundColor = color;
-    
-    if (!statuses || statuses.length === 0) {
-      text.textContent = 'System Status';
-    } else {
-      const mostSevere = getMostSevereStatus(statuses);
-      if (mostSevere) {
-        text.textContent = `System Status - ${mostSevere.publicStatus}`;
-      } else {
-        text.textContent = 'System Status';
-      }
-    }
   }
 
   // Create widget element
@@ -170,7 +154,6 @@
     
     widget.innerHTML = `
       <div class="cofabri-status-dot"></div>
-      <span class="cofabri-status-text">System Status</span>
     `;
     
     return widget;
