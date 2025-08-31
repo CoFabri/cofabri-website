@@ -164,50 +164,50 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         {/* Status Grid */}
-        <div className="grid gap-6">
+        <div className="grid gap-8">
           {statuses.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center hover:shadow-xl transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-6">
+                <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">All Systems Operational</h2>
-              <p className="text-gray-600">There are no active issues at this time.</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">All Systems Operational</h2>
+              <p className="text-gray-600 text-lg">There are no active issues at this time.</p>
             </div>
           ) : (
             statuses.map((status) => (
-              <div key={`status-${status.ticketId || 'unknown'}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div key={`status-${status.ticketId || 'unknown'}`} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
                 {/* Status Header */}
-                <div className="border-b border-gray-200 p-6">
+                <div className="border-b border-gray-100 p-8">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-3 h-3 rounded-full ${getStatusColor(status)} ${status.publicStatus !== 'Resolved' ? 'animate-pulse' : ''}`} />
-                        <h2 className="text-xl font-semibold text-gray-900">{status.title || 'System Issue'}</h2>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-4 h-4 rounded-full ${getStatusColor(status)} ${status.publicStatus !== 'Resolved' ? 'animate-pulse' : ''}`} />
+                        <h2 className="text-2xl font-bold text-gray-900">{status.title || 'System Issue'}</h2>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(status.severity)}`}>
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getSeverityColor(status.severity)}`}>
                           {status.severity || 'Medium'}
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-gray-500 text-sm">
                           Created {formatDate(status['Created Date'])}
                         </span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-sm font-medium text-blue-600">
+                    <div className="text-right ml-6">
+                      <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                         Incident #{status.ticketId || 'Unknown'}
                       </span>
                       {status.application && (
-                        <div className="mt-2">
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 rounded-md">
+                        <div className="mt-3">
+                          <div className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-xl">
                             <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-sm font-medium text-blue-700">{status.application}</span>
+                            <span className="text-sm font-semibold text-blue-700">{status.application}</span>
                           </div>
                         </div>
                       )}
-                      <div className="text-sm text-gray-500 mt-2">
+                      <div className="text-sm text-gray-500 mt-3">
                         Last Updated: {formatTime(status['Updated At'])}
                       </div>
                     </div>
@@ -215,18 +215,18 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
                 </div>
 
                 {/* Status Content */}
-                <div className="p-6">
+                <div className="p-8">
                   <div className="prose max-w-none">
-                    <p className="text-gray-700 mb-4">{status.message || 'No message available'}</p>
+                    <p className="text-gray-700 text-lg leading-relaxed mb-6">{status.message || 'No message available'}</p>
                     
                     {status.affectedServices && status.affectedServices.length > 0 && (
-                      <div className="mb-4">
-                        <h3 className="text-sm font-medium text-gray-900 mb-2">Affected Services</h3>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Affected Services</h3>
+                        <div className="flex flex-wrap gap-3">
                           {status.affectedServices.map((service, index) => (
                             <span
                               key={service || index}
-                              className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                              className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200"
                             >
                               {service || 'Unknown Service'}
                             </span>
@@ -237,8 +237,8 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
 
                     {status.updates && (
                       <div>
-                        <h3 className="text-sm font-medium text-gray-900 mb-2">Updates</h3>
-                        <div className="text-gray-700 whitespace-pre-line">{status.updates}</div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Updates</h3>
+                        <div className="text-gray-700 text-base leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-xl border border-gray-100">{status.updates}</div>
                       </div>
                     )}
                   </div>
@@ -246,10 +246,13 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
 
                 {/* Status Footer */}
                 {status.publicStatus === 'Resolved' && (
-                  <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-500">
-                      {getStatusText(status)}
-                    </p>
+                  <div className="bg-green-50 px-8 py-6 border-t border-green-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500" />
+                      <p className="text-green-800 font-medium">
+                        {getStatusText(status)}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -258,13 +261,15 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
         </div>
 
         {/* Footer Note */}
-        <div className="mt-12 text-center text-sm text-gray-500">
-          <p>Page last updated: {formatDate(new Date(lastPageUpdate).toISOString())}</p>
-          {statuses.some(status => status.publicStatus !== 'Resolved') && (
-            <p className="mt-2">
-              Next update in <span className="font-medium text-blue-600">{formatCountdown(timeUntilRefresh)}</span>
-            </p>
-          )}
+        <div className="mt-16 text-center">
+          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+            <p className="text-gray-600 mb-2">Page last updated: {formatDate(new Date(lastPageUpdate).toISOString())}</p>
+            {statuses.some(status => status.publicStatus !== 'Resolved') && (
+              <p className="text-gray-600">
+                Next update in <span className="font-semibold text-blue-600">{formatCountdown(timeUntilRefresh)}</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
