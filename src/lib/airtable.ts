@@ -553,7 +553,13 @@ export async function getApps(): Promise<App[]> {
       };
     });
     
-    return apps;
+    // Filter out CoFabri API and CoFabri Website
+    const filteredApps = apps.filter(app => 
+      app.name !== 'CoFabri API' && 
+      app.name !== 'CoFabri Website'
+    );
+    
+    return filteredApps;
   } catch (error) {
     console.error('Error fetching apps from Airtable:', error);
     return [];
