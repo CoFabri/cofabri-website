@@ -153,46 +153,12 @@ export async function GET(request: Request) {
             }
         }
         ` : ''}
-        /* Tooltip styles - overlay outside iframe boundaries */
-        .status-tooltip {
-            position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 2rem;
-            padding: 0.5rem 0.75rem;
-            background-color: #111827;
-            color: white;
-            font-size: 0.875rem;
-            border-radius: 0.5rem;
-            white-space: normal;
-            max-width: 12rem;
-            width: max-content;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            z-index: 999999;
-            pointer-events: none;
+        .status-widget.loading .status-dot {
+            animation: pulse 2s infinite;
         }
-        .status-widget:hover .status-tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-        .status-tooltip::before {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 0.375rem;
-            border: 4px solid transparent;
-            border-top-color: #111827;
-        }
-        .status-tooltip-text {
-            display: block;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -201,11 +167,6 @@ export async function GET(request: Request) {
         <div class="status-dot-container">
             <div class="status-dot"></div>
             ${shouldPulse ? '<div class="status-dot-ping"></div>' : ''}
-        </div>
-        
-        <!-- Tooltip - exact same as navigation header -->
-        <div class="status-tooltip">
-            <span class="status-tooltip-text">${message}</span>
         </div>
     </a>
     <script>
@@ -251,57 +212,15 @@ export async function GET(request: Request) {
             }
         }
         
-        // Function to position tooltip relative to iframe
-        function setupTooltipPositioning() {
-            const widget = document.querySelector('.status-widget');
-            const tooltip = document.querySelector('.status-tooltip');
-            
-            if (!widget || !tooltip) return;
-            
-            widget.addEventListener('mouseenter', function() {
-                try {
-                    // Get iframe position relative to viewport
-                    const iframe = window.frameElement;
-                    if (iframe) {
-                        const iframeRect = iframe.getBoundingClientRect();
-                        const iframeParent = iframe.offsetParent;
-                        
-                        if (iframeParent) {
-                            const parentRect = iframeParent.getBoundingClientRect();
-                            
-                            // Calculate tooltip position above the iframe
-                            const tooltipLeft = iframeRect.left + (iframeRect.width / 2);
-                            const tooltipBottom = iframeRect.top + 10; // 10px above iframe
-                            
-                            tooltip.style.left = tooltipLeft + 'px';
-                            tooltip.style.bottom = 'auto';
-                            tooltip.style.top = (tooltipBottom - tooltip.offsetHeight) + 'px';
-                            tooltip.style.transform = 'translateX(-50%)';
-                        }
-                    }
-                } catch (error) {
-                    // Fallback to default positioning
-                    console.log('Could not calculate tooltip position, using defaults');
-                }
-            });
-        }
-        
         // Try to inherit styles when page loads
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                inheritParentStyles();
-                setupTooltipPositioning();
-            });
+            document.addEventListener('DOMContentLoaded', inheritParentStyles);
         } else {
             inheritParentStyles();
-            setupTooltipPositioning();
         }
         
         // Also try after a short delay to ensure parent is fully loaded
-        setTimeout(function() {
-            inheritParentStyles();
-            setupTooltipPositioning();
-        }, 100);
+        setTimeout(inheritParentStyles, 100);
         
         // Auto-refresh every 5 minutes
         setTimeout(() => {
