@@ -617,19 +617,54 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
       sort: [{ field: 'Created Date', direction: 'desc' }]
     });
 
-    return records.map(record => ({
-      ticketId: record.fields['Ticket ID'],
-      title: record.fields.Title,
-      publicStatus: record.fields['Public Status'],
-      severity: record.fields.Severity,
-      message: record.fields.Message,
-      'Created Date': record.fields['Created Date'],
-      'Updated At': record.fields['Updated At'],
-      'Resolved Date': record.fields['Resolved Date'],
-      affectedServices: record.fields['Affected Services'],
-      application: record.fields.Application,
-      updates: record.fields.Updates,
-    }));
+    return records.map(record => {
+      // Generate a fallback ticket ID if missing
+      const ticketId = record.fields['Ticket ID'] || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Generate a fallback title if missing
+      const title = record.fields.Title || `System Issue - ${record.fields['Public Status'] || 'Unknown Status'}`;
+      
+      // Use default status if missing
+      const publicStatus = record.fields['Public Status'] || 'Monitoring';
+      
+      // Use default severity if missing
+      const severity = record.fields.Severity || 'Medium';
+      
+      // Generate a fallback message if missing
+      const message = record.fields.Message || `We are currently ${publicStatus.toLowerCase()} a system issue. Our team is working to resolve this as quickly as possible.`;
+      
+      // Use current date if created date is missing
+      const createdDate = record.fields['Created Date'] || new Date().toISOString();
+      
+      // Use current date if updated date is missing
+      const updatedAt = record.fields['Updated At'] || new Date().toISOString();
+      
+      // Use empty string for resolved date if missing (will be populated when resolved)
+      const resolvedDate = record.fields['Resolved Date'] || '';
+      
+      // Use empty array if affected services is missing
+      const affectedServices = record.fields['Affected Services'] || [];
+      
+      // Use generic application name if missing
+      const application = record.fields.Application || 'CoFabri System';
+      
+      // Use generic update message if missing
+      const updates = record.fields.Updates || `Our team is actively ${publicStatus.toLowerCase()} this issue. We will provide updates as more information becomes available.`;
+
+      return {
+        ticketId,
+        title,
+        publicStatus,
+        severity,
+        message,
+        'Created Date': createdDate,
+        'Updated At': updatedAt,
+        'Resolved Date': resolvedDate,
+        affectedServices,
+        application,
+        updates,
+      };
+    });
   } catch (error) {
     console.error('Error fetching system status:', error);
     return [];

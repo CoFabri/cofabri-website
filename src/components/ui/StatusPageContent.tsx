@@ -26,7 +26,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         console.error('Invalid date:', dateString);
-        return '';
+        return 'Date unavailable';
       }
       return date.toLocaleString('en-US', {
         month: 'numeric',
@@ -39,7 +39,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
       });
     } catch (e) {
       console.error('Invalid date:', dateString);
-      return '';
+      return 'Date unavailable';
     }
   };
 
@@ -49,7 +49,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         console.error('Invalid date:', dateString);
-        return '';
+        return 'Time unavailable';
       }
       return date.toLocaleString('en-US', {
         hour: 'numeric',
@@ -60,7 +60,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
       });
     } catch (e) {
       console.error('Invalid date:', dateString);
-      return '';
+      return 'Time unavailable';
     }
   };
 
@@ -175,18 +175,18 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
             </div>
           ) : (
             statuses.map((status) => (
-              <div key={`status-${status.ticketId}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div key={`status-${status.ticketId || 'unknown'}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {/* Status Header */}
                 <div className="border-b border-gray-200 p-6">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`w-3 h-3 rounded-full ${getStatusColor(status)} ${status.publicStatus !== 'Resolved' ? 'animate-pulse' : ''}`} />
-                        <h2 className="text-xl font-semibold text-gray-900">{status.title}</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">{status.title || 'System Issue'}</h2>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(status.severity)}`}>
-                          {status.severity}
+                          {status.severity || 'Medium'}
                         </span>
                         <span className="text-sm text-gray-500">
                           Created {formatDate(status['Created Date'])}
@@ -195,7 +195,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-medium text-blue-600">
-                        Incident #{status.ticketId}
+                        Incident #{status.ticketId || 'Unknown'}
                       </span>
                       {status.application && (
                         <div className="mt-2">
@@ -217,18 +217,18 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
                 {/* Status Content */}
                 <div className="p-6">
                   <div className="prose max-w-none">
-                    <p className="text-gray-700 mb-4">{status.message}</p>
+                    <p className="text-gray-700 mb-4">{status.message || 'No message available'}</p>
                     
                     {status.affectedServices && status.affectedServices.length > 0 && (
                       <div className="mb-4">
                         <h3 className="text-sm font-medium text-gray-900 mb-2">Affected Services</h3>
                         <div className="flex flex-wrap gap-2">
-                          {status.affectedServices.map((service) => (
+                          {status.affectedServices.map((service, index) => (
                             <span
-                              key={service}
+                              key={service || index}
                               className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                             >
-                              {service}
+                              {service || 'Unknown Service'}
                             </span>
                           ))}
                         </div>
