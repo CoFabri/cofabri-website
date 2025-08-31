@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { firstName, lastName, email } = await request.json();
 
     const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
     const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -47,10 +47,11 @@ export async function POST(request: Request) {
           records: [
             {
               fields: {
-                fld2lIQ2bxa9XONbo: email, // Email
-                fldF9buToXQ3Jmv7B: 'Active', // Select
-                fldGHBLOzKwG7WpDI: 'Website', // Source
-                fldS71fyXoPbulnA0: 'Unverified', // Email Verification
+                'Email': email,
+                'First Name': firstName,
+                'Last Name': lastName,
+                'Source': 'Website',
+                'Email Verification': 'Unverified'
               }
             }
           ]

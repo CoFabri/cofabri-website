@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, CheckCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import Cookies from 'js-cookie';
 
 interface NewsletterSignupProps {
@@ -15,6 +15,8 @@ export default function NewsletterSignup({
   title = 'Subscribe to our newsletter',
   description = 'Get weekly updates on the latest articles and insights.'
 }: NewsletterSignupProps) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -42,7 +44,7 @@ export default function NewsletterSignup({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ firstName, lastName, email }),
       });
 
       const data = await response.json();
@@ -68,7 +70,9 @@ export default function NewsletterSignup({
         <div className="flex flex-col items-center bg-white/20 border border-green-400 rounded-2xl p-8 max-w-md mx-auto shadow-lg">
           <CheckCircleIcon className="h-12 w-12 text-green-400 mb-3" />
           <h3 className="text-xl font-bold text-white mb-2">You're Subscribed!</h3>
-          <p className="text-blue-100 mb-1 text-center">Thank you for subscribing to our newsletter.</p>
+          <p className="text-blue-100 mb-1 text-center">
+            {firstName ? `Thank you for subscribing, ${firstName}!` : 'Thank you for subscribing to our newsletter.'}
+          </p>
           <p className="text-blue-100 text-center">Updates will be sent to <span className="font-semibold text-white">{email}</span>.</p>
         </div>
       </div>
@@ -82,6 +86,30 @@ export default function NewsletterSignup({
         <p className="text-blue-100">{description}</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="First Name"
+              required
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+            />
+          </div>
+          <div className="relative">
+            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Last Name"
+              required
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+            />
+          </div>
+        </div>
         <div className="relative">
           <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
           <input
