@@ -242,7 +242,6 @@ export async function GET(
             <div class="status-dot"></div>
             ${hasActiveIssues ? `<div class="status-dot-ping"></div>` : ''}
         </div>
-        <span class="sr-only">System Status</span>
         
         <!-- Tooltip - exact same as navigation header -->
         <div class="status-tooltip">
