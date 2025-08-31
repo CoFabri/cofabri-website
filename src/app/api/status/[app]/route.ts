@@ -125,6 +125,9 @@ export async function GET(
         .status-widget:hover {
             opacity: 0.8;
         }
+        .status-dot-container {
+            position: relative;
+        }
         .status-dot {
             width: 0.5em;
             height: 0.5em;
@@ -138,8 +141,20 @@ export async function GET(
             max-height: 16px;
         }
         ${hasActiveIssues ? `
-        .status-dot {
+        .status-dot-ping {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0.5em;
+            height: 0.5em;
+            border-radius: 50%;
+            background-color: ${statusColor};
+            opacity: 0.75;
             animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+            min-width: 8px;
+            min-height: 8px;
+            max-width: 16px;
+            max-height: 16px;
         }
         @keyframes ping {
             75%, 100% {
@@ -159,7 +174,10 @@ export async function GET(
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
-        <div class="status-dot"></div>
+        <div class="status-dot-container">
+            <div class="status-dot"></div>
+            ${hasActiveIssues ? `<div class="status-dot-ping"></div>` : ''}
+        </div>
     </a>
     <script>
         // Function to inherit styles from parent page
@@ -189,6 +207,12 @@ export async function GET(
                             if (dot) {
                                 dot.style.width = dotSize + 'px';
                                 dot.style.height = dotSize + 'px';
+                            }
+                            // Also adjust ping dot size if it exists
+                            const pingDot = document.querySelector('.status-dot-ping');
+                            if (pingDot) {
+                                pingDot.style.width = dotSize + 'px';
+                                pingDot.style.height = dotSize + 'px';
                             }
                         }
                     }
