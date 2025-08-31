@@ -79,7 +79,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-1">
+        <div className="hidden lg:flex items-center space-x-1">
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -97,7 +97,7 @@ const Navbar = () => {
         </div>
 
         {/* CTA Button and Status Indicator */}
-        <div className="hidden md:flex items-center ml-8">
+        <div className="hidden lg:flex items-center ml-8">
           <StatusIndicator />
           <Link
             href="/apps"
@@ -108,7 +108,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Status Indicator and Menu Button */}
-        <div className="flex items-center md:hidden gap-2">
+        <div className="flex items-center lg:hidden gap-2">
           <StatusIndicator />
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -124,7 +124,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 md:hidden">
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 lg:hidden">
             <div className="container mx-auto px-4 py-2">
               {navigation.map((item) => (
                 <Link
