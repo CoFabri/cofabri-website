@@ -648,8 +648,8 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
       // Use generic application name if missing
       const application = record.fields.Application || 'CoFabri System';
       
-      // Use generic update message if missing
-      const updates = record.fields.Updates || `Our team is actively ${publicStatus.toLowerCase()} this issue. We will provide updates as more information becomes available.`;
+      // Use empty string for updates if missing (no demo content)
+      const updates = record.fields.Updates || '';
 
       return {
         ticketId,
