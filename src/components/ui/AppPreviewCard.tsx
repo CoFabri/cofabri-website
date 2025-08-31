@@ -2,7 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { App } from '@/lib/airtable';
 import { StarIcon } from '@heroicons/react/20/solid';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import ExpandableText from './ExpandableText';
+import SparkleButton from './SparkleButton';
 
 interface AppPreviewCardProps {
   app: App;
@@ -123,12 +125,12 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
 
           {/* Action Button */}
           {app.status === 'In Development' ? (
-            <Link
+            <SparkleButton
               href={`/signup?appId=${app.id}`}
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-orange-600 hover:bg-orange-700 transition-colors shadow-sm hover:shadow-md"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
             >
               Join Waitlist
-            </Link>
+            </SparkleButton>
           ) : app.url ? (
             <Link
               href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
@@ -137,6 +139,7 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
               className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
             >
               Visit App
+              <ArrowTopRightOnSquareIcon className="ml-2 w-4 h-4" />
             </Link>
           ) : null}
         </div>

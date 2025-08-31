@@ -7,6 +7,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SparklesIcon, RocketLaunchIcon, StarIcon, HeartIcon, CheckCircleIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import AnimatedGradient from '@/components/ui/AnimatedGradient';
+import SparkleButton from '@/components/ui/SparkleButton';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -421,13 +422,13 @@ function SignupPageContent() {
                             If approved, your statement will appear on this waitlist page
                           </p>
                         </div>
-                        <button
+                        <SparkleButton
                           type="submit"
                           disabled={isSubmitting || !interestLevel}
                           className="w-full bg-indigo-600 text-white rounded-lg py-3 px-6 font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? 'Submitting...' : 'Join Waitlist'}
-                        </button>
+                        </SparkleButton>
                       </form>
                     </div>
                   )}

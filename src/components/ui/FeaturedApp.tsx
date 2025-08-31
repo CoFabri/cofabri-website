@@ -60,6 +60,20 @@ export default function FeaturedApp() {
                 <SparklesIcon className="h-5 w-5 text-indigo-500" />
                 <span className="text-sm font-medium text-indigo-500">Featured App</span>
               </div>
+              
+              {/* Mobile Image - shown between badge and title */}
+              <div className="md:hidden mb-6">
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+                  {featuredApp.screenshot && (
+                    <img
+                      src={featuredApp.screenshot}
+                      alt={featuredApp.name}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+              </div>
+              
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {featuredApp.name}
               </h2>
@@ -76,7 +90,9 @@ export default function FeaturedApp() {
                 </Link>
               )}
             </div>
-            <div className="w-full md:w-1/2">
+            
+            {/* Desktop Image - shown on the right side */}
+            <div className="hidden md:block w-full md:w-1/2">
               <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
                 {featuredApp.screenshot && (
                   <img

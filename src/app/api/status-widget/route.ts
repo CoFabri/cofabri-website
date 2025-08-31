@@ -222,13 +222,15 @@ export async function GET(request: Request) {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
+            text-decoration: none;
             background: transparent;
             border: none;
-            text-decoration: none;
+            transition: opacity 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #374151;
+            line-height: 1.4;
             width: 100%;
             height: 100%;
         }

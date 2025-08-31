@@ -2,7 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { App } from '@/lib/airtable';
 import { StarIcon } from '@heroicons/react/20/solid';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import ExpandableText from './ExpandableText';
+import SparkleButton from './SparkleButton';
 
 interface AppCardProps {
   app: App;
@@ -111,12 +113,12 @@ export default function AppCard({ app }: AppCardProps) {
             )}
           </ul>
           {app.status === 'In Development' ? (
-            <Link
+            <SparkleButton
               href={`/signup?appId=${app.id}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               Join Waitlist
-            </Link>
+            </SparkleButton>
           ) : app.url ? (
             <Link
               href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
@@ -125,6 +127,7 @@ export default function AppCard({ app }: AppCardProps) {
               className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               Visit App
+              <ArrowTopRightOnSquareIcon className="ml-2 w-4 h-4" />
             </Link>
           ) : null}
         </div>
