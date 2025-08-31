@@ -19,10 +19,10 @@ export async function GET(
     
     // Check if we have valid cached data
     if (statusCache && (now - cacheTimestamp) < CACHE_DURATION) {
-      console.log(`Serving app status from cache for: ${appSlug}`);
+      // console.log(`Serving app status from cache for: ${appSlug}`);
     } else {
       // Fetch fresh data from Airtable
-      console.log(`Fetching fresh status for app: ${appSlug}`);
+      // console.log(`Fetching fresh status for app: ${appSlug}`);
       statusCache = await getSystemStatus();
       cacheTimestamp = now;
     }
@@ -37,15 +37,24 @@ export async function GET(
       }
       
       // Include issues affecting this specific app
-      if (status.application && status.application.toLowerCase() === appSlug.toLowerCase()) {
-        return true;
+      if (status.application) {
+        // Normalize both strings for comparison
+        const normalizedAppName = status.application.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        if (normalizedAppName === normalizedSlug) {
+          return true;
+        }
       }
       
       // Include issues where this app is in the affected services
       if (status.affectedServices && Array.isArray(status.affectedServices)) {
-        return status.affectedServices.some((service: string) => 
-          service.toLowerCase().includes(appSlug.toLowerCase())
-        );
+        const hasMatch = status.affectedServices.some((service: string) => {
+          const normalizedService = service.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return normalizedService.includes(normalizedSlug);
+        });
+        return hasMatch;
       }
       
       return false;
