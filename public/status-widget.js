@@ -24,18 +24,18 @@
       .cofabri-status-widget {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
-        font-weight: 500;
+        gap: 0.5em;
         text-decoration: none;
-        color: #374151;
         background: transparent;
         border: none;
         cursor: pointer;
         transition: opacity 0.2s ease;
-        text-decoration: none;
+        /* Inherit font properties from parent */
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+        line-height: inherit;
       }
       
       .cofabri-status-widget:hover {
@@ -43,10 +43,15 @@
       }
       
       .cofabri-status-dot {
-        width: 8px;
-        height: 8px;
+        width: 0.5em;
+        height: 0.5em;
         border-radius: 50%;
         flex-shrink: 0;
+        /* Scale dot size relative to font size */
+        min-width: 6px;
+        min-height: 6px;
+        max-width: 12px;
+        max-height: 12px;
       }
       
       .cofabri-status-text {

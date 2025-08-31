@@ -74,25 +74,32 @@ export async function GET(request: Request) {
         .status-widget {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
+            gap: 0.5em;
+            text-decoration: none;
             background: transparent;
             border: none;
-            text-decoration: none;
             transition: opacity 0.2s ease;
+            /* Inherit font properties from parent */
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            line-height: inherit;
         }
         .status-widget:hover {
             opacity: 0.8;
         }
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 0.5em;
+            height: 0.5em;
             border-radius: 50%;
             background-color: ${statusColor};
             flex-shrink: 0;
+            /* Scale dot size relative to font size */
+            min-width: 6px;
+            min-height: 6px;
+            max-width: 12px;
+            max-height: 12px;
         }
         .status-text {
             white-space: nowrap;
