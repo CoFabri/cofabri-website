@@ -87,6 +87,9 @@ export async function GET(
     
     const statusColor = getStatusColor();
     
+    // Determine if there are active issues for pulsing animation
+    const hasActiveIssues = activeStatuses.length > 0;
+    
     const html = `
 <!DOCTYPE html>
 <html>
@@ -134,6 +137,17 @@ export async function GET(
             max-width: 16px;
             max-height: 16px;
         }
+        ${hasActiveIssues ? `
+        .status-dot {
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        ` : ''}
         .status-widget.loading .status-dot {
             animation: pulse 2s infinite;
         }
