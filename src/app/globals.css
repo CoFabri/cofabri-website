@@ -101,6 +101,215 @@
     box-shadow: var(--neon-glow);
   }
 
+  /* Touch-Friendly Button Classes */
+  .touch-button {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    @apply transition-all duration-200 ease-out;
+    @apply active:scale-95 active:opacity-80;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply select-none;
+    /* Prevent text selection on touch */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .touch-button-primary {
+    @apply touch-button;
+    @apply bg-blue-600 text-white font-medium rounded-lg;
+    @apply hover:bg-blue-700 active:bg-blue-800;
+    @apply shadow-sm hover:shadow-md;
+  }
+
+  .touch-button-secondary {
+    @apply touch-button;
+    @apply bg-gray-100 text-gray-700 font-medium rounded-lg;
+    @apply hover:bg-gray-200 active:bg-gray-300;
+    @apply border border-gray-300;
+  }
+
+  .touch-button-ghost {
+    @apply touch-button;
+    @apply text-gray-600 hover:text-gray-900;
+    @apply hover:bg-gray-100 active:bg-gray-200;
+    @apply rounded-lg;
+  }
+
+  .touch-button-icon {
+    @apply touch-button;
+    @apply p-3 rounded-lg;
+    @apply text-gray-600 hover:text-gray-900;
+    @apply hover:bg-gray-100 active:bg-gray-200;
+    @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
+  }
+
+  /* Touch-Friendly Link Classes */
+  .touch-link {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+    @apply transition-all duration-200 ease-out;
+    @apply active:scale-95 active:opacity-80;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply select-none;
+    /* Prevent text selection on touch */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .touch-link-nav {
+    @apply touch-link;
+    @apply px-4 py-2 rounded-lg text-sm font-medium;
+    @apply transition-colors duration-200;
+  }
+
+  .touch-link-footer {
+    @apply touch-link;
+    @apply px-5 py-2 text-base;
+    @apply transition-colors duration-200;
+  }
+
+  /* Touch-Friendly Spacing */
+  .touch-spacing {
+    @apply space-y-3;
+  }
+
+  .touch-spacing-horizontal {
+    @apply space-x-3;
+  }
+
+  .touch-spacing-compact {
+    @apply space-y-2;
+  }
+
+  .touch-spacing-horizontal-compact {
+    @apply space-x-2;
+  }
+
+  /* Touch Feedback Animations */
+  .touch-feedback {
+    @apply transition-all duration-150 ease-out;
+    @apply active:scale-95 active:opacity-80;
+    @apply active:transform active:translate-y-px;
+  }
+
+  .touch-feedback-subtle {
+    @apply transition-all duration-100 ease-out;
+    @apply active:scale-[0.98] active:opacity-90;
+  }
+
+  .touch-feedback-strong {
+    @apply transition-all duration-200 ease-out;
+    @apply active:scale-90 active:opacity-70;
+    @apply active:transform active:translate-y-0.5;
+  }
+
+  /* Haptic Feedback Support */
+  .haptic-feedback {
+    /* iOS haptic feedback */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Touch Target Minimum Sizes */
+  .touch-target-min {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-large {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  .touch-target-extra-large {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  /* High Contrast Touch Targets */
+  .touch-contrast-high {
+    @apply bg-blue-600 text-white;
+    @apply hover:bg-blue-700 active:bg-blue-800;
+    @apply shadow-lg;
+  }
+
+  .touch-contrast-medium {
+    @apply bg-gray-200 text-gray-900;
+    @apply hover:bg-gray-300 active:bg-gray-400;
+    @apply border border-gray-400;
+  }
+
+  /* Touch Active State */
+  .touch-active {
+    @apply scale-95 opacity-80;
+    @apply transform translate-y-px;
+    @apply transition-all duration-75 ease-out;
+  }
+
+  .touch-active-subtle {
+    @apply scale-[0.98] opacity-90;
+    @apply transition-all duration-50 ease-out;
+  }
+
+  .touch-active-strong {
+    @apply scale-90 opacity-70;
+    @apply transform translate-y-0.5;
+    @apply transition-all duration-100 ease-out;
+  }
+
+  /* Touch Target Focus States */
+  .touch-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply focus:scale-105 focus:shadow-lg;
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .touch-focus-subtle {
+    @apply focus:outline-none focus:ring-1 focus:ring-blue-400 focus:ring-offset-1;
+    @apply focus:scale-[1.02];
+    @apply transition-all duration-150 ease-out;
+  }
+
+  /* Touch Target Disabled States */
+  .touch-disabled {
+    @apply opacity-50 cursor-not-allowed;
+    @apply pointer-events-none;
+    @apply select-none;
+  }
+
+  /* Touch Target Loading States */
+  .touch-loading {
+    @apply opacity-75 cursor-wait;
+    @apply pointer-events-none;
+    @apply select-none;
+  }
+
+  /* Touch Target Success States */
+  .touch-success {
+    @apply bg-green-600 text-white;
+    @apply hover:bg-green-700 active:bg-green-800;
+    @apply shadow-lg;
+  }
+
+  /* Touch Target Error States */
+  .touch-error {
+    @apply bg-red-600 text-white;
+    @apply hover:bg-red-700 active:bg-red-800;
+    @apply shadow-lg;
+  }
+
+  /* Touch Target Warning States */
+  .touch-warning {
+    @apply bg-yellow-600 text-white;
+    @apply hover:bg-yellow-700 active:bg-yellow-800;
+    @apply shadow-lg;
+  }
+
   /* Reusable Hover Animation Classes */
   .hover-card {
     @apply transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1;

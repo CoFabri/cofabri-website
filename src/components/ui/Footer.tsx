@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Logo from './Logo';
+import TouchLink from './TouchLink';
 
 const Footer = () => {
   const navigation = {
@@ -51,35 +52,42 @@ const Footer = () => {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
-        <nav className="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
+        <nav className="-mx-5 -my-2 flex flex-wrap justify-center touch-spacing-horizontal" aria-label="Footer">
           {navigation.main.map((item) => (
             <div key={item.name} className="px-5 py-2">
-              <Link
+              <TouchLink
                 href={item.href}
-                className="text-base text-gray-600 hover:text-indigo-600 transition-colors duration-200"
+                variant="footer"
+                size="medium"
+                className="text-gray-600 hover:text-indigo-600"
               >
                 {item.name}
-              </Link>
+              </TouchLink>
             </div>
           ))}
         </nav>
-        <div className="mt-8 flex justify-center space-x-6">
+        <div className="mt-8 flex justify-center touch-spacing-horizontal">
           {navigation.social.map((item) => (
-            <a
+            <TouchLink
               key={item.name}
               href={item.href}
-              className="text-gray-600 hover:text-indigo-600 transition-colors duration-200"
+              variant="icon"
+              size="medium"
+              external
+              className="text-gray-600 hover:text-indigo-600"
             >
               <span className="sr-only">{item.name}</span>
               <item.icon className="h-6 w-6" aria-hidden="true" />
-            </a>
+            </TouchLink>
           ))}
         </div>
         <div className="mt-8 flex justify-center">
-          <Logo size="footer" />
+          <div className="touch-target-min haptic-feedback">
+            <Logo size="footer" />
+          </div>
         </div>
         <p className="mt-8 text-center text-base text-gray-600">
-          &copy; {new Date().getFullYear()} CoFabri by <b><a href='https://mavenx.co'>Maven X LLC</a></b>. All rights reserved.
+          &copy; {new Date().getFullYear()} CoFabri by <b><TouchLink href='https://mavenx.co' variant="ghost" size="small" external className="hover:text-blue-600">Maven X LLC</TouchLink></b>. All rights reserved.
         </p>
       </div>
     </footer>

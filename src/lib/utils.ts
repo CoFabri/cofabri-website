@@ -5,6 +5,94 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Provides haptic feedback on touch devices
+ * @param type - The type of haptic feedback ('light', 'medium', 'heavy', 'success', 'warning', 'error')
+ */
+export function hapticFeedback(type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' = 'light') {
+  // Check if the device supports haptic feedback
+  if ('navigator' in window && 'vibrate' in navigator) {
+    const patterns = {
+      light: [10],
+      medium: [20],
+      heavy: [30],
+      success: [10, 50, 10],
+      warning: [20, 50, 20],
+      error: [30, 100, 30]
+    };
+    
+    navigator.vibrate(patterns[type]);
+  }
+  
+  // iOS haptic feedback using WebKit
+  if ('webkit' in window && 'messageHandlers' in (window as any).webkit) {
+    const webkit = (window as any).webkit;
+    if (webkit.messageHandlers.hapticFeedback) {
+      webkit.messageHandlers.hapticFeedback.postMessage({ type });
+    }
+  }
+}
+
+/**
+ * Checks if the device supports touch interactions
+ */
+export function isTouchDevice(): boolean {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+}
+
+/**
+ * Checks if the device is iOS
+ */
+export function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/**
+ * Checks if the device is Android
+ */
+export function isAndroid(): boolean {
+  return /Android/.test(navigator.userAgent);
+}
+
+/**
+ * Gets the device pixel ratio for high-DPI displays
+ */
+export function getDevicePixelRatio(): number {
+  return window.devicePixelRatio || 1;
+}
+
+/**
+ * Debounces a function call
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+/**
+ * Throttles a function call
+ */
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean;
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
 // Utility function to clear browser caches that might cause hydration issues
 export function clearHydrationCaches() {
   if (typeof window !== 'undefined') {
