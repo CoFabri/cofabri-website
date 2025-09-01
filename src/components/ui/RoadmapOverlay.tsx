@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import { useModalSwipe } from '@/hooks/useSwipeGestures';
 
 interface RoadmapOverlayProps {
   isOpen: boolean;
@@ -26,11 +25,6 @@ interface RoadmapOverlayProps {
 }
 
 export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOverlayProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // Use swipe gestures for modal dismissal
-  useModalSwipe(modalRef, onClose);
-
   if (!isOpen) return null;
 
   // Handle escape key
@@ -111,10 +105,8 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div 
-          ref={modalRef}
           className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
-          style={{ touchAction: 'pan-y' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
