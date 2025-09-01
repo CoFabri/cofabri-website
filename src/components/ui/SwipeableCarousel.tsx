@@ -30,6 +30,19 @@ const SwipeableCarousel: React.FC<SwipeableCarouselProps> = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const autoPlayRef = useRef<NodeJS.Timeout>();
 
+  // Navigation functions
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  };
+
+  const previousSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
   // Use swipe gestures for carousel navigation
   useCarouselSwipe(carouselRef, nextSlide, previousSlide);
 
@@ -51,7 +64,7 @@ const SwipeableCarousel: React.FC<SwipeableCarouselProps> = ({
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [autoPlay, autoPlayInterval, isAutoPlaying, currentIndex]);
+  }, [autoPlay, autoPlayInterval, isAutoPlaying, currentIndex, nextSlide]);
 
   // Pause auto-play on hover
   const handleMouseEnter = () => {
@@ -64,19 +77,6 @@ const SwipeableCarousel: React.FC<SwipeableCarouselProps> = ({
     if (autoPlay) {
       setIsAutoPlaying(true);
     }
-  };
-
-  // Navigation functions
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
-  };
-
-  const previousSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
   };
 
   // Handle keyboard navigation
@@ -121,7 +121,7 @@ const SwipeableCarousel: React.FC<SwipeableCarouselProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{
-              type: 'spring',
+              type: 'spring' as const,
               stiffness: 300,
               damping: 30,
             }}

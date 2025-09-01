@@ -35,6 +35,12 @@ export default function MarketingPopup({
   const [isVisible, setIsVisible] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  const handleClose = () => {
+    setIsVisible(false);
+    // Store dismissal time in localStorage
+    localStorage.setItem(DISMISSAL_KEY, Date.now().toString());
+  };
+
   // Use swipe gestures for popup dismissal
   useModalSwipe(popupRef, handleClose);
 
@@ -57,12 +63,6 @@ export default function MarketingPopup({
     return () => clearTimeout(timer);
   }, [delay, isEnabled]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    // Store dismissal time in localStorage
-    localStorage.setItem(DISMISSAL_KEY, Date.now().toString());
-  };
-
   const positionClasses = {
     'Center': 'fixed inset-0 flex items-center justify-center px-4 sm:px-6',
     'Bottom Right': 'fixed bottom-6 right-6',
@@ -80,7 +80,7 @@ export default function MarketingPopup({
       scale: 1,
       y: 0,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 300,
         damping: 30,
       },
