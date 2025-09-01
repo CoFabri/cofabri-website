@@ -25,18 +25,18 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
 
   return (
     <div className="group">
-      <div className={`bg-white rounded-2xl shadow-sm overflow-hidden border transition
+      <div className={`bg-white rounded-2xl shadow-sm overflow-hidden border transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1
         ${isLaunchingToday() 
-          ? 'border-blue-400 shadow-lg hover:shadow-xl hover:border-blue-500 animate-pulse' 
-          : 'border-gray-100 hover:shadow-md'}`}>
-        <div className="relative w-full h-auto">
+          ? 'border-blue-400 shadow-lg hover:shadow-2xl hover:border-blue-500 animate-pulse hover:animate-none' 
+          : 'border-gray-100 hover:shadow-xl hover:border-gray-200'}`}>
+        <div className="relative w-full h-auto overflow-hidden">
           {app.screenshot && (
             <Image
               src={app.screenshot}
               alt={app.name}
               width={1200}
               height={630}
-              className="object-cover w-full h-auto"
+              className="object-cover w-full h-auto transition-transform duration-500 ease-out group-hover:scale-105"
               onError={(e) => {
                 console.error(`Error loading image for ${app.name}:`, e);
                 // Fallback to placeholder
@@ -49,22 +49,22 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
         <div className="p-6">
           {/* Badges Section */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-              app.status === 'Live' ? 'bg-green-100 text-green-800' :
-              app.status === 'Active' ? 'bg-green-100 text-green-800' :
-              app.status === 'Beta' ? 'bg-blue-100 text-blue-800' :
-              app.status === 'Alpha' ? 'bg-purple-100 text-purple-800' :
-              'bg-gray-100 text-gray-800'
+            <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
+              app.status === 'Live' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+              app.status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+              app.status === 'Beta' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+              app.status === 'Alpha' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' :
+              'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}>
               {app.status}
             </span>
             {app.launchDate && (
-              <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+              <span className={`px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
                 isLaunchingToday()
-                  ? 'bg-blue-100 text-blue-800 animate-pulse'
+                  ? 'bg-blue-100 text-blue-800 animate-pulse hover:bg-blue-200'
                   : new Date(app.launchDate) > new Date() 
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800'
+                    ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                    : 'bg-green-100 text-green-800 hover:bg-green-200'
               }`}>
                 {isLaunchingToday()
                   ? '🚀 Launching Today! 🎉'
@@ -75,14 +75,14 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
               </span>
             )}
             {app.releaseDate && (
-              <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+              <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 transition-all duration-200">
                 Released {new Date(app.releaseDate).toLocaleDateString()}
               </span>
             )}
           </div>
 
           {/* App Name */}
-          <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition mb-4">
+          <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 mb-4">
             {app.name}
             {isLaunchingToday() && (
               <span className="ml-2 inline-flex items-center text-sm font-medium text-blue-600 animate-bounce">
@@ -102,20 +102,20 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Key Features</h3>
               <ul className="space-y-2.5">
                 {app.feature1 && (
-                  <li className="flex items-start text-gray-600">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0" />
+                  <li className="flex items-start text-gray-600 transition-colors duration-200 hover:text-gray-800">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0 transition-transform duration-200 group-hover:scale-125" />
                     <span>{app.feature1}</span>
                   </li>
                 )}
                 {app.feature2 && (
-                  <li className="flex items-start text-gray-600">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0" />
+                  <li className="flex items-start text-gray-600 transition-colors duration-200 hover:text-gray-800">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0 transition-transform duration-200 group-hover:scale-125" />
                     <span>{app.feature2}</span>
                   </li>
                 )}
                 {app.feature3 && (
-                  <li className="flex items-start text-gray-600">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0" />
+                  <li className="flex items-start text-gray-600 transition-colors duration-200 hover:text-gray-800">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 mr-3 flex-shrink-0 transition-transform duration-200 group-hover:scale-125" />
                     <span>{app.feature3}</span>
                   </li>
                 )}
@@ -127,7 +127,7 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
           {app.status === 'In Development' ? (
             <SparkleButton
               href={`/signup?appId=${app.id}`}
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
             >
               Join Waitlist
             </SparkleButton>
@@ -136,10 +136,10 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
               href={app.url.startsWith('http') ? app.url : `https://${app.url}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform shadow-sm"
             >
               Visit App
-              <ArrowTopRightOnSquareIcon className="ml-2 w-4 h-4" />
+              <ArrowTopRightOnSquareIcon className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" />
             </Link>
           ) : null}
         </div>

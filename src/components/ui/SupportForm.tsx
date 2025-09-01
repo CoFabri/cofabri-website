@@ -731,7 +731,7 @@ export default function SupportForm() {
           <button
             type="button"
             onClick={clearForm}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Submit Another Ticket
           </button>
@@ -750,7 +750,7 @@ export default function SupportForm() {
           <button
             type="button"
             onClick={() => setSubmitStatus('idle')}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Try Again
           </button>
@@ -779,9 +779,9 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={FIRST_NAME_MAX_LENGTH}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
-                }`}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
+                errors.firstName ? 'border-red-300' : 'border-gray-300'
+              }`}
                 placeholder="Enter your first name"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
               />
@@ -804,9 +804,9 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={LAST_NAME_MAX_LENGTH}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
-                }`}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
+                errors.lastName ? 'border-red-300' : 'border-gray-300'
+              }`}
                 placeholder="Enter your last name"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}
               />
@@ -923,9 +923,9 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={EMAIL_MAX_LENGTH}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
-                }`}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
+                errors.email ? 'border-red-300' : 'border-gray-300'
+              }`}
                 placeholder="Enter your email address"
                 aria-describedby={errors.email ? 'email-error' : undefined}
               />
@@ -948,9 +948,9 @@ export default function SupportForm() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
+                errors.phone ? 'border-red-300' : 'border-gray-300'
+              }`}
                   placeholder="(555) 555-5555"
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
                   maxLength={14}
@@ -1073,7 +1073,7 @@ export default function SupportForm() {
               required
               rows={6}
               maxLength={DESCRIPTION_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 resize-none ${
                 errors.description ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Please describe your issue or request..."
@@ -1204,7 +1204,7 @@ export default function SupportForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center">

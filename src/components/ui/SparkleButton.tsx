@@ -42,10 +42,6 @@ const SparkleButton: React.FC<SparkleButtonProps> = ({
     if (onClick) onClick();
   };
 
-  const handleMouseEnter = () => {
-    createSparkle();
-  };
-
   const buttonContent = (
     <div className="relative inline-flex items-center">
       {children}
@@ -74,7 +70,6 @@ const SparkleButton: React.FC<SparkleButtonProps> = ({
         href={href}
         className={className}
         onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
       >
         {buttonContent}
       </a>
@@ -86,7 +81,6 @@ const SparkleButton: React.FC<SparkleButtonProps> = ({
       type={type}
       className={className}
       onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
       disabled={disabled}
     >
       {buttonContent}

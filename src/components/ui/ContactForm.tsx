@@ -490,7 +490,7 @@ export default function ContactForm() {
           <button
             type="button"
             onClick={clearForm}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Send Another Message
           </button>
@@ -509,7 +509,7 @@ export default function ContactForm() {
           <button
             type="button"
             onClick={() => setSubmitStatus('idle')}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Try Again
           </button>
@@ -534,7 +534,7 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={FIRST_NAME_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
                 errors.firstName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Enter your first name"
@@ -559,7 +559,7 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={LAST_NAME_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
                 errors.lastName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Enter your last name"
@@ -586,7 +586,7 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={EMAIL_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
                 errors.email ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Enter your email address"
@@ -637,9 +637,9 @@ export default function ContactForm() {
             onChange={handleInputChange}
             required
             maxLength={SUBJECT_MAX_LENGTH}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-              errors.subject ? 'border-red-300' : 'border-gray-300'
-            }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
+                errors.subject ? 'border-red-300' : 'border-gray-300'
+              }`}
             placeholder="What is this regarding?"
             aria-describedby={errors.subject ? 'subject-error' : undefined}
           />
@@ -692,9 +692,9 @@ export default function ContactForm() {
             required
             rows={6}
             maxLength={MESSAGE_MAX_LENGTH}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
-              errors.message ? 'border-red-300' : 'border-gray-300'
-            }`}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 resize-none ${
+                errors.message ? 'border-red-300' : 'border-gray-300'
+              }`}
             placeholder="Tell us more about your inquiry..."
             aria-describedby={errors.message ? 'message-error' : undefined}
           />
@@ -762,7 +762,7 @@ export default function ContactForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <div className="flex items-center">

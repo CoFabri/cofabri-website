@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
 import SectionHeading from './SectionHeading';
+import TestimonialPreviewCard from './TestimonialPreviewCard';
 import { Testimonial, getTestimonials } from '@/lib/airtable';
 
 interface TestimonialsProps {
@@ -93,46 +94,18 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
-            <div
+            <TestimonialPreviewCard
               key={testimonial.id}
-              className="relative p-8 rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <div className="flex items-center mb-6">
-                <img
-                  src={testimonial.image && testimonial.image.trim() !== '' ? testimonial.image : '/images/placeholder.jpg'}
-                  alt={testimonial.name}
-                  className="w-14 h-14 rounded-full object-cover"
-                />
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {testimonial.name}
-                  </h3>
-                  <p className="text-gray-600">
-                    {testimonial.role}
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    {testimonial.company}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    className="h-5 w-5 text-yellow-400"
-                  />
-                ))}
-              </div>
-
-              <blockquote className="text-gray-600 italic">
-                "{testimonial.content}"
-              </blockquote>
-
-              <div className="absolute top-4 right-4 text-6xl font-serif text-indigo-100 select-none">
-                "
-              </div>
-            </div>
+              testimonial={{
+                id: testimonial.id,
+                name: testimonial.name,
+                role: testimonial.role,
+                company: testimonial.company,
+                content: testimonial.content,
+                rating: testimonial.rating,
+                image: testimonial.image
+              }}
+            />
           ))}
         </div>
       </div>

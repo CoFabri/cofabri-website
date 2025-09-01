@@ -101,6 +101,67 @@
     box-shadow: var(--neon-glow);
   }
 
+  /* Reusable Hover Animation Classes */
+  .hover-card {
+    @apply transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1;
+  }
+
+  .hover-card-elevated {
+    @apply transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .hover-card-super {
+    @apply transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1 hover:shadow-2xl;
+  }
+
+  .hover-button {
+    @apply transition-all duration-300 ease-out transform hover:scale-105 hover:shadow-lg;
+  }
+
+  .hover-button-subtle {
+    @apply transition-all duration-200 ease-out transform hover:scale-[1.02];
+  }
+
+  .hover-image {
+    @apply transition-transform duration-500 ease-out group-hover:scale-105;
+  }
+
+  .hover-image-avatar {
+    @apply transition-transform duration-300 ease-out group-hover:scale-110;
+  }
+
+  .hover-text-primary {
+    @apply transition-colors duration-300 group-hover:text-blue-600;
+  }
+
+  .hover-text-secondary {
+    @apply transition-colors duration-300 group-hover:text-gray-700;
+  }
+
+  .hover-badge {
+    @apply transition-all duration-200 hover:bg-opacity-80;
+  }
+
+  .hover-icon {
+    @apply transition-transform duration-200 hover:scale-110;
+  }
+
+  .hover-icon-arrow {
+    @apply transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1;
+  }
+
+  .hover-dot {
+    @apply transition-transform duration-200 group-hover:scale-125;
+  }
+
+  .hover-input {
+    @apply hover:border-gray-400 hover:shadow-sm transition-all duration-200;
+  }
+
+  .hover-dropdown {
+    @apply hover:border-gray-400 hover:shadow-sm transition-all duration-200;
+  }
+
   /* Markdown Content Styling */
   .markdown-content p {
     margin-bottom: 1.5rem;
