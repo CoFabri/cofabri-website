@@ -31,7 +31,7 @@ export function usePullToRefresh({
 
   const startY = useRef<number>(0);
   const currentY = useRef<number>(0);
-  const elementRef = useRef<HTMLElement | null>(null);
+  const elementRef = useRef<HTMLDivElement | null>(null);
   const isAtTop = useRef<boolean>(false);
 
   const updatePullDistance = useCallback((distance: number) => {
