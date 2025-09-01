@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -8,6 +8,8 @@ import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
 import TouchLink from './TouchLink';
 import TouchButton from './TouchButton';
+import MobileNavigation from './MobileNavigation';
+import { useMobileMenuSwipe } from '@/hooks/useSwipeGestures';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -24,6 +26,10 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const navbarRef = useRef<HTMLElement>(null);
+
+  // Use swipe gestures for mobile menu on the entire navbar
+  useMobileMenuSwipe(navbarRef, isOpen, () => setIsOpen(true), () => setIsOpen(false));
 
   // Function to check if a nav item is active
   const isActive = (href: string) => {
@@ -71,6 +77,7 @@ const Navbar = () => {
 
   return (
     <header
+      ref={navbarRef}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
@@ -112,7 +119,7 @@ const Navbar = () => {
           </TouchLink>
         </div>
 
-        {/* Mobile Status Indicator and Menu Button */}
+                {/* Mobile Status Indicator and Menu Button */}
         <div className="flex items-center lg:hidden touch-spacing-horizontal-compact">
           <StatusIndicator />
           <TouchButton
@@ -128,34 +135,15 @@ const Navbar = () => {
             )}
           </TouchButton>
         </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 lg:hidden">
-            <div className="container mx-auto px-4 py-2 touch-spacing">
-              {navigation.map((item) => (
-                <TouchLink
-                  key={item.name}
-                  href={item.href}
-                  variant="nav"
-                  size="large"
-                  onClick={(e) => {
-                    handleNavClick(item.href, e);
-                    setIsOpen(false);
-                  }}
-                  className={`block ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {item.name}
-                </TouchLink>
-              ))}
-            </div>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile Navigation with Swipe Support */}
+      <MobileNavigation
+        isOpen={isOpen}
+        onOpen={() => setIsOpen(true)}
+        onClose={() => setIsOpen(false)}
+        navigation={navigation}
+      />
     </header>
   );
 };

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { SystemStatus } from '@/lib/airtable';
 import AnimatedGradient from './AnimatedGradient';
-import PullToRefreshWrapper from './PullToRefreshWrapper';
 
 interface StatusPageContentProps {
   initialStatuses: SystemStatus[];
@@ -13,20 +12,6 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
   const [statuses, setStatuses] = useState(initialStatuses);
   const [timeUntilRefresh, setTimeUntilRefresh] = useState(300); // 5 minutes in seconds
   const [lastPageUpdate, setLastPageUpdate] = useState(Date.now());
-
-  const fetchStatuses = useCallback(async () => {
-    try {
-      const response = await fetch('/api/status');
-      if (!response.ok) {
-        throw new Error('Failed to fetch status');
-      }
-      const data = await response.json();
-      setStatuses(data);
-      setLastPageUpdate(Date.now());
-    } catch (error) {
-      console.error('Error fetching status:', error);
-    }
-  }, []);
 
   // Format countdown time
   const formatCountdown = (seconds: number) => {
@@ -80,6 +65,20 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
   };
 
   useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const response = await fetch('/api/status');
+        if (!response.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        const data = await response.json();
+        setStatuses(data);
+        setLastPageUpdate(Date.now());
+      } catch (error) {
+        console.error('Error fetching status:', error);
+      }
+    };
+
     const timer = setInterval(() => {
       setTimeUntilRefresh((prev) => {
         // Only continue countdown if there are active issues
@@ -96,7 +95,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [statuses, fetchStatuses]); // Add fetchStatuses to dependencies
+  }, []); // Remove statuses dependency to prevent infinite re-renders
 
   const getStatusColor = (status: SystemStatus) => {
     switch (status.publicStatus) {
@@ -143,7 +142,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
   };
 
   return (
-    <PullToRefreshWrapper onRefresh={fetchStatuses} className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative min-h-[320px] flex flex-col items-center justify-center pt-32 pb-24 overflow-hidden">
         <AnimatedGradient />
@@ -273,6 +272,6 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
           </div>
         </div>
       </div>
-    </PullToRefreshWrapper>
+    </div>
   );
 } 

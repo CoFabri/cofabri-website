@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useModalSwipe } from '@/hooks/useSwipeGestures';
 
 interface MarketingPopupProps {
   title: string;
@@ -32,6 +33,10 @@ export default function MarketingPopup({
   isEnabled = true,
 }: MarketingPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  // Use swipe gestures for popup dismissal
+  useModalSwipe(popupRef, handleClose);
 
   useEffect(() => {
     if (!isEnabled) return;
@@ -102,11 +107,13 @@ export default function MarketingPopup({
             onClick={handleClose}
           />
           <motion.div
+            ref={popupRef}
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={popupVariants}
             className={`z-50 ${positionClasses[position]}`}
+            style={{ touchAction: 'pan-y' }}
           >
             <div
               className="relative w-full max-w-lg rounded-2xl shadow-2xl border border-white/10"
