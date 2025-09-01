@@ -69,23 +69,23 @@ const Navbar = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center touch-target-min haptic-feedback">
           <Logo size="nav" noLink />
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center space-x-1">
+        <div className="hidden lg:flex items-center touch-spacing-horizontal">
           {navigation.map((item) => (
             <Link
               key={item.name}
               href={item.href}
               onClick={(e) => handleNavClick(item.href, e)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+              className={`touch-link-nav touch-feedback haptic-feedback ${
                 isActive(item.href)
                   ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
@@ -97,22 +97,22 @@ const Navbar = () => {
         </div>
 
         {/* CTA Button and Status Indicator */}
-        <div className="hidden lg:flex items-center ml-8">
+        <div className="hidden lg:flex items-center ml-8 touch-spacing-horizontal">
           <StatusIndicator />
           <Link
             href="/apps"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 ml-4 transition-colors duration-200"
+            className="touch-button-primary touch-feedback haptic-feedback px-4 py-2 ml-4"
           >
             Explore Apps
           </Link>
         </div>
 
         {/* Mobile Status Indicator and Menu Button */}
-        <div className="flex items-center lg:hidden gap-2">
+        <div className="flex items-center lg:hidden touch-spacing-horizontal-compact">
           <StatusIndicator />
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="touch-button-icon touch-feedback haptic-feedback text-gray-600 hover:text-gray-900"
           >
             {isOpen ? (
               <XMarkIcon className="h-6 w-6" />
@@ -124,8 +124,8 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 lg:hidden">
-            <div className="container mx-auto px-4 py-2">
+          <div className="absolute top-full left-0 right-0 bg-white/90 backdrop-blur-lg border-b border-white/20 shadow-lg lg:hidden">
+            <div className="container mx-auto px-4 py-2 touch-spacing">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -134,7 +134,7 @@ const Navbar = () => {
                     handleNavClick(item.href, e);
                     setIsOpen(false);
                   }}
-                  className={`block px-4 py-2 rounded-lg text-base font-medium ${
+                  className={`touch-link-nav touch-feedback haptic-feedback block ${
                     isActive(item.href)
                       ? 'text-blue-600 bg-blue-50'
                       : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
