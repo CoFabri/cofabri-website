@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 interface TouchLinkProps {
   href: string;
-  variant?: 'nav' | 'footer' | 'primary' | 'secondary' | 'ghost';
+  variant?: 'nav' | 'footer' | 'primary' | 'secondary' | 'ghost' | 'icon';
   size?: 'small' | 'medium' | 'large';
   feedback?: 'subtle' | 'normal' | 'strong';
   hapticType?: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
@@ -43,6 +43,7 @@ const TouchLink: React.FC<TouchLinkProps> = ({
     primary: 'touch-button-primary',
     secondary: 'touch-button-secondary',
     ghost: 'touch-button-ghost',
+    icon: 'touch-button-icon',
   };
 
   const sizeClasses = {
