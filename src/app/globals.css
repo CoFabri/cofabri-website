@@ -643,3 +643,47 @@
 main {
   min-height: 100vh;
 }
+
+/* Pull to refresh styles */
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+/* Prevent text selection during pull to refresh */
+.pull-to-refresh-active {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Smooth transitions for pull to refresh */
+.pull-to-refresh-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pull to refresh indicator animations */
+@keyframes pull-to-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pull-to-refresh-spin {
+  animation: pull-to-refresh-spin 1s linear infinite;
+}
+
+/* Pull to refresh progress indicator */
+.pull-to-refresh-progress {
+  transition: transform 0.2s ease-out;
+}
+
+/* Mobile-specific pull to refresh optimizations */
+@media (max-width: 768px) {
+  .pull-to-refresh-wrapper {
+    overscroll-behavior-y: contain;
+  }
+}

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import GradientHeading from '@/components/ui/GradientHeading';
+import PullToRefreshWrapper from '@/components/ui/PullToRefreshWrapper';
 import { KnowledgeBaseArticle } from '@/lib/airtable';
 
 export default function KnowledgeBaseContent() {
@@ -23,6 +24,48 @@ export default function KnowledgeBaseContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 6;
 
+  // Fetch articles function
+  const fetchArticles = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // Fetch real content from API
+      console.log('Fetching articles from API...');
+      const response = await fetch('/api/knowledge-base', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch knowledge base articles');
+      const articleData = await response.json() as KnowledgeBaseArticle[];
+      console.log('Received articles:', articleData);
+      
+      setArticles(articleData);
+      
+      // Extract unique categories
+      const uniqueCategories = Array.from(new Set(articleData.map(article => article.category)));
+      console.log('Unique categories:', uniqueCategories);
+      setCategories(uniqueCategories);
+      
+      // Extract unique tags
+      const allTags = articleData.flatMap(article => article.tags || []);
+      const uniqueTags = Array.from(new Set(allTags));
+      console.log('Unique tags:', uniqueTags);
+      setTags(uniqueTags);
+      
+      // Extract unique applications
+      const allApplications = articleData.flatMap(article => article.applications || []);
+      const uniqueApplications = Array.from(new Set(allApplications));
+      console.log('Unique applications:', uniqueApplications);
+      setApplications(uniqueApplications);
+    } catch (error) {
+      console.error('Error loading knowledge base articles:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Initialize from URL parameters
   useEffect(() => {
     if (!searchParams) return;
@@ -38,50 +81,10 @@ export default function KnowledgeBaseContent() {
     if (searchParam) setSearchQuery(searchParam);
   }, [searchParams]);
 
-  // Fetch articles
+  // Fetch articles on mount
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch real content from API
-        console.log('Fetching articles from API...');
-        const response = await fetch('/api/knowledge-base', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch knowledge base articles');
-        const articleData = await response.json() as KnowledgeBaseArticle[];
-        console.log('Received articles:', articleData);
-        
-        setArticles(articleData);
-        
-        // Extract unique categories
-        const uniqueCategories = Array.from(new Set(articleData.map(article => article.category)));
-        console.log('Unique categories:', uniqueCategories);
-        setCategories(uniqueCategories);
-        
-        // Extract unique tags
-        const allTags = articleData.flatMap(article => article.tags || []);
-        const uniqueTags = Array.from(new Set(allTags));
-        console.log('Unique tags:', uniqueTags);
-        setTags(uniqueTags);
-        
-        // Extract unique applications
-        const allApplications = articleData.flatMap(article => article.applications || []);
-        const uniqueApplications = Array.from(new Set(allApplications));
-        console.log('Unique applications:', uniqueApplications);
-        setApplications(uniqueApplications);
-      } catch (error) {
-        console.error('Error loading knowledge base articles:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    fetchData();
-  }, []);
+    fetchArticles();
+  }, [fetchArticles]);
 
   // Filter articles based on search, category, tags, and applications
   const filteredArticles = articles.filter(article => {
@@ -146,7 +149,7 @@ export default function KnowledgeBaseContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <PullToRefreshWrapper onRefresh={fetchArticles} className="min-h-screen">
       <GradientHeading
         title="Knowledge Base"
         subtitle="Find answers to common questions and learn how to use our products"
@@ -432,6 +435,6 @@ export default function KnowledgeBaseContent() {
           </>
         )}
       </div>
-    </div>
+    </PullToRefreshWrapper>
   );
 }

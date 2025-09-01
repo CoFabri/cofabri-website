@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { App } from '@/lib/airtable';
 import AppPreviewCard from './AppPreviewCard';
 import AppsCelebration from './AppsCelebration';
+import PullToRefreshWrapper from './PullToRefreshWrapper';
 
 const MAX_APPS = 6;
 
@@ -12,30 +13,32 @@ export default function Apps() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchApps() {
-      try {
-        const response = await fetch('/api/apps', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch apps');
-        const data = await response.json();
-        // Limit the number of apps to MAX_APPS
-        setApps(data.slice(0, MAX_APPS));
-      } catch (err) {
-        console.error('Error fetching apps:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch apps');
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchApps = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch('/api/apps', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch apps');
+      const data = await response.json();
+      // Limit the number of apps to MAX_APPS
+      setApps(data.slice(0, MAX_APPS));
+    } catch (err) {
+      console.error('Error fetching apps:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch apps');
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchApps();
   }, []);
+
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
 
   if (isLoading) {
     return (
@@ -68,7 +71,7 @@ export default function Apps() {
   };
 
   return (
-    <>
+    <PullToRefreshWrapper onRefresh={fetchApps}>
       <div className={`grid ${getGridCols()} gap-8 ${getMaxWidth()} mx-auto`}>
         {/* Airtable Apps */}
         {apps.map((app) => (
@@ -76,6 +79,6 @@ export default function Apps() {
         ))}
       </div>
       <AppsCelebration apps={apps} />
-    </>
+    </PullToRefreshWrapper>
   );
 } 
