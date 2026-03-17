@@ -5,11 +5,12 @@ import { getLegalDocument } from '@/lib/airtable';
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const document = await getLegalDocument(params.id);
+    const { id } = await params;
+    const document = await getLegalDocument(id);
     
     if (!document) {
       return NextResponse.json({ error: 'Legal document not found' }, { status: 404 });

@@ -1,15 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getKnowledgeBaseArticle } from '@/lib/airtable';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { slug: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const article = await getKnowledgeBaseArticle(params.slug);
+    const { slug } = await params;
+    const article = await getKnowledgeBaseArticle(slug);
     if (!article) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }

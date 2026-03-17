@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { fetchFromAirtable, AirtableRecord } from '@/lib/airtable';
+import { NextRequest, NextResponse } from 'next/server';
+import { fetchFromAirtable } from '@/lib/airtable';
 import { FieldSet } from 'airtable';
 
 // Force dynamic rendering for this route
@@ -18,14 +18,6 @@ const typeToTable: Record<string, string> = {
   'testimonial': 'Testimonials'
 };
 
-interface AuthorFields {
-  Name: string;
-  Role: string;
-  Bio: string;
-  Image?: { url: string }[];
-  'Social Links'?: string[];
-}
-
 // Define required fields for each content type
 const requiredFieldsMap = {
   kb: ['Title', 'Content', 'Slug', 'Category'],
@@ -43,11 +35,11 @@ const requiredFieldsMap = {
 };
 
 export async function GET(
-  request: Request,
-  { params }: { params: { type: string; id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ type: string; id: string }> }
 ) {
   try {
-    const { type, id } = params;
+    const { type, id } = await params;
     console.log('Fetching preview for:', { type, id });
     
     const tableName = typeToTable[type];

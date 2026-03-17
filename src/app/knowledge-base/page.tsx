@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
-import GradientHeading from '@/components/ui/GradientHeading';
 import KnowledgeBaseContent from './KnowledgeBaseContent';
 
 // Force dynamic rendering for this page

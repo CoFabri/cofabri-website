@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const features = await getRoadmapFeatures();
     

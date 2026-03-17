@@ -37,15 +37,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Define app categories
-const categories = [
-  { id: 'all', name: 'All Apps' },
-  { id: 'productivity', name: 'Productivity' },
-  { id: 'design', name: 'Design' },
-  { id: 'development', name: 'Development' },
-  { id: 'analytics', name: 'Analytics' }
-];
-
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-white">

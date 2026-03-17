@@ -21,7 +21,7 @@ interface BannerFields extends FieldSet {
   [key: string]: any; // Add index signature to satisfy FieldSet constraint
 }
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     console.log('Fetching banners from Airtable...');
     const records = await getAirtableRecords<BannerFields>('Sitewide Banners', {

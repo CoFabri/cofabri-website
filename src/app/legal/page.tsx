@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import { Metadata } from 'next';
 import LegalDocumentsContent from './LegalDocumentsContent';
 import { metadata } from './metadata';
 

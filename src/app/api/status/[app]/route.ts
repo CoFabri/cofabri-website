@@ -1,5 +1,5 @@
 import { getSystemStatus } from '@/lib/airtable';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -10,11 +10,12 @@ let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export async function GET(
-  request: Request,
-  { params }: { params: { app: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ app: string }> }
 ) {
   try {
-    const appSlug = params.app;
+    const resolvedParams = await params;
+    const appSlug = resolvedParams.app;
     const now = Date.now();
     
     // Check if we have valid cached data
@@ -273,14 +274,15 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error(`Error generating status widget for app ${params.app}:`, error);
+    const resolvedParams = await params;
+    console.error(`Error generating status widget for app ${resolvedParams.app}:`, error);
     
     const errorHtml = `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${params.app} System Status</title>
+    <title>${resolvedParams.app} System Status</title>
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: transparent; overflow: hidden; }
         .status-widget {

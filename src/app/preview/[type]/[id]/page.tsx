@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import AppPreviewCard from '@/components/ui/AppPreviewCard';
-import RoadmapPreviewCard from '@/components/ui/RoadmapPreviewCard';
 import TestimonialPreviewCard from '@/components/ui/TestimonialPreviewCard';
 import type { App } from '@/lib/airtable';
-import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, UserIcon, TagIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
 
@@ -56,7 +55,7 @@ interface Roadmap {
 export default function PreviewPage() {
   const params = useParams();
   const [content, setContent] = useState<PreviewContent | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seoPreview, setSeoPreview] = useState<SeoPreview | null>(null);
   const [isReadyToPost, setIsReadyToPost] = useState(false);

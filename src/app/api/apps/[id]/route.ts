@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -49,14 +49,15 @@ async function fetchFromAirtable(endpoint: string) {
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('Fetching app data for ID:', params.id);
+    const { id } = await params;
+    console.log('Fetching app data for ID:', id);
     
     // Fetch app data
-    const appResponse = await fetchFromAirtable(`Apps/${params.id}`);
+    const appResponse = await fetchFromAirtable(`Apps/${id}`);
     console.log('Raw app response:', appResponse);
     
     if (!appResponse || !appResponse.fields) {
@@ -65,7 +66,7 @@ export async function GET(
     
     // Fetch approved testimonials only
     const testimonialsResponse = await fetchFromAirtable(
-      `Beta Statements?filterByFormula=AND({App Record ID}='${params.id}',{Status}='Approved')&fields[]=ID&fields[]=Statement`
+      `Beta Statements?filterByFormula=AND({App Record ID}='${id}',{Status}='Approved')&fields[]=ID&fields[]=Statement`
     );
     
     const testimonials = testimonialsResponse.records?.map((record: any) => ({
