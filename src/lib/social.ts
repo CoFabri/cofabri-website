@@ -1,5 +1,4 @@
 import { TwitterApi } from 'twitter-api-v2';
-import { IgApiClient } from 'instagram-private-api';
 
 // Initialize API clients
 const twitterClient = new TwitterApi({
@@ -8,8 +7,6 @@ const twitterClient = new TwitterApi({
   accessToken: process.env.TWITTER_ACCESS_TOKEN!,
   accessSecret: process.env.TWITTER_ACCESS_SECRET!,
 });
-
-const ig = new IgApiClient();
 
 export async function getXPosts() {
   if (!process.env.TWITTER_API_KEY) {
@@ -32,34 +29,6 @@ export async function getXPosts() {
     }));
   } catch (error) {
     console.error('Error fetching X posts:', error);
-    return [];
-  }
-}
-
-export async function getInstagramPosts() {
-  if (!process.env.INSTAGRAM_USERNAME) {
-    console.warn('Instagram credentials not configured');
-    return [];
-  }
-
-  try {
-    ig.state.generateDevice(process.env.INSTAGRAM_USERNAME!);
-    await ig.simulate.preLoginFlow();
-    await ig.account.login(process.env.INSTAGRAM_USERNAME!, process.env.INSTAGRAM_PASSWORD!);
-
-    const userFeed = ig.feed.user(process.env.INSTAGRAM_USER_ID!);
-    const items = await userFeed.items();
-
-    return items.map((post) => ({
-      id: post.id,
-      content: post.caption?.text || '',
-      date: new Date(post.taken_at * 1000).toLocaleDateString(),
-      engagement: `${post.like_count} likes`,
-      imageUrl: post.image_versions2?.candidates[0]?.url || '',
-      url: `https://instagram.com/p/${post.code}`,
-    }));
-  } catch (error) {
-    console.error('Error fetching Instagram posts:', error);
     return [];
   }
 }

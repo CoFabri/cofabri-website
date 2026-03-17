@@ -931,39 +931,38 @@ export async function getLegalDocuments(): Promise<LegalDocument[]> {
       // Resolve associated app names
       let associatedApp: string | undefined;
       const associatedAppField = record.fields['Associated App'];
-      
-      // Try different field name variations
       const appField = associatedAppField || (record.fields as any)['App'] || (record.fields as any)['Application'];
-      
+
       if (appField) {
-        let associatedAppIds: string[] = [];
-        if (Array.isArray(appField)) {
-          associatedAppIds = appField;
-        } else if (typeof appField === 'string') {
-          associatedAppIds = [appField];
-        }
-        
-              if (associatedAppIds.length > 0) {
-        const appName = appMap.get(associatedAppIds[0]);
-        if (appName) {
-          associatedApp = appName;
+        const rawValues = Array.isArray(appField) ? appField : [appField];
+
+        for (const value of rawValues) {
+          if (typeof value === 'string') {
+            const mappedName = appMap.get(value);
+            if (mappedName) {
+              associatedApp = mappedName;
+              break;
+            } else if (!associatedApp) {
+              // Treat the raw string as an app name if it doesn't match an ID
+              associatedApp = value;
+            }
+          }
         }
       }
-         }
-     
-     // Fallback: Extract app name from document title
-     if (!associatedApp) {
-       const title = record.fields['Document Name'];
-       if (title.includes('CertiFi Central')) {
-         associatedApp = 'CertiFi Central';
-       } else if (title.includes('RePrisma')) {
-         associatedApp = 'RePrisma';
-       } else if (title.includes('Ayden')) {
-         associatedApp = 'Ayden';
-       } else if (title.includes('CoFabri')) {
-         associatedApp = 'CoFabri';
-       }
-     }
+
+      // Fallback: Extract app name from document title for known brands
+      if (!associatedApp) {
+        const title = record.fields['Document Name'];
+        if (title.includes('CertiFi Central')) {
+          associatedApp = 'CertiFi Central';
+        } else if (title.includes('RePrisma')) {
+          associatedApp = 'RePrisma';
+        } else if (title.includes('Ayden')) {
+          associatedApp = 'Ayden';
+        } else if (title.includes('CoFabri')) {
+          associatedApp = 'CoFabri';
+        }
+      }
 
       return {
         id: record.id,
@@ -1026,22 +1025,20 @@ export async function getLegalDocument(id: string): Promise<LegalDocument | null
     // Resolve associated app names
     let associatedApp: string | undefined;
     const associatedAppField = record.fields['Associated App'];
-    
-    // Try different field name variations
     const appField = associatedAppField || (record.fields as any)['App'] || (record.fields as any)['Application'];
-    
+
     if (appField) {
-      let associatedAppIds: string[] = [];
-      if (Array.isArray(appField)) {
-        associatedAppIds = appField;
-      } else if (typeof appField === 'string') {
-        associatedAppIds = [appField];
-      }
-      
-      if (associatedAppIds.length > 0) {
-        const appName = appMap.get(associatedAppIds[0]);
-        if (appName) {
-          associatedApp = appName;
+      const rawValues = Array.isArray(appField) ? appField : [appField];
+
+      for (const value of rawValues) {
+        if (typeof value === 'string') {
+          const mappedName = appMap.get(value);
+          if (mappedName) {
+            associatedApp = mappedName;
+            break;
+          } else if (!associatedApp) {
+            associatedApp = value;
+          }
         }
       }
     }
