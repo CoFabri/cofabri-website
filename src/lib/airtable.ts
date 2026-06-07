@@ -610,7 +610,7 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
     const records = await fetchFromAirtable<{
       'Ticket ID': string;
       Title: string;
-      'Public Status': 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved';
+      'Public Status': 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved' | 'Private';
       Severity: 'Critical' | 'High' | 'Medium' | 'Low';
       Message: string;
       'Created Date': string;
@@ -623,7 +623,7 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
       sort: [{ field: 'Created Date', direction: 'desc' }]
     });
 
-    return records.map(record => {
+    return records.filter(record => record.fields['Public Status'] !== 'Private').map(record => {
       // Generate a fallback ticket ID if missing
       const ticketId = record.fields['Ticket ID'] || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
