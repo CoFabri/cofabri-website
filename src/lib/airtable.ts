@@ -630,8 +630,8 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
       // Generate a fallback title if missing
       const title = record.fields.Title || `System Issue - ${record.fields['Public Status'] || 'Unknown Status'}`;
       
-      // Use default status if missing
-      const publicStatus = record.fields['Public Status'] || 'Monitoring';
+      // Use default status if missing ('Private' records are filtered before this point)
+      const publicStatus = (record.fields['Public Status'] || 'Monitoring') as SystemStatus['publicStatus'];
       
       // Use default severity if missing
       const severity = record.fields.Severity || 'Medium';
