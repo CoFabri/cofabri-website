@@ -107,3 +107,12 @@ Every element built in this phase (primitives, navbar, footer, section-heading, 
 
 - Homepage, apps, contact, knowledge-base, roadmaps, signup, support, status, legal page restyling.
 - Any copy/content changes.
+
+## Addendum: decisions confirmed after mockup review
+
+The Phase 1 mockup ([artifact](https://claude.ai/code/artifact/d4007811-28ad-4940-977b-b12be7329215)) surfaced a few decisions not fully specified above:
+
+- **Hero signature motion**: a small "connected nodes" diagram (a handful of nodes joined by lines that draw themselves in on load, root node breathing gently afterward) replaces a generic centered-hero layout — chosen over an "assembling app grid" and a "live product glimpse" concept after live side-by-side comparison. Hero layout is asymmetric (text left, diagram right, stacking on mobile), not centered.
+- **Icon usage**: icon + text paired everywhere — nav links, footer links, the stat row, and primary/secondary buttons all get a small icon alongside their label, to cut text density without removing any visible/crawlable text (kept deliberately compatible with the SEO decision below).
+- **Eyebrow labels**: kept. The small uppercase eyebrow tag above section headings stays as a structural device site-wide.
+- **SEO**: a technical SEO pass (meta descriptions, structured data/JSON-LD, heading hierarchy, alt text) is in scope for the later page-by-page phases, not Phase 1 itself (Phase 1 has no page content to optimize). Because icons are always paired with real visible text rather than replacing it, this stays compatible with that later SEO work.
