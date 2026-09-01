@@ -1,8 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --primary: #007bff;
@@ -59,6 +55,39 @@
   }
 }
 
+/* Touch-Friendly Button/Link base (defined as a @utility so it can be
+   composed with @apply from other component classes below, per the
+   Tailwind v4 custom-utility API). */
+@utility touch-button {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  @apply transition-all duration-200 ease-out;
+  @apply active:scale-95 active:opacity-80;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply select-none;
+  /* Prevent text selection on touch */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+@utility touch-link {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  @apply transition-all duration-200 ease-out;
+  @apply active:scale-95 active:opacity-80;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply select-none;
+  /* Prevent text selection on touch */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 @layer components {
   .gradient-bg {
     background: linear-gradient(to right, #f9fafb, #ffffff, #f9fafb);
@@ -69,15 +98,15 @@
   }
   
   .btn-primary {
-    @apply bg-[var(--accent)] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-200;
+    @apply bg-[var(--accent)] text-white px-6 py-2 rounded-lg hover:bg-[var(--accent)]/90 transition-all duration-200;
   }
-  
+
   .btn-secondary {
-    @apply bg-[var(--secondary)] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-200;
+    @apply bg-[var(--secondary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--secondary)]/90 transition-all duration-200;
   }
 
   .glass-card {
-    @apply backdrop-blur-lg bg-opacity-80 border border-opacity-20;
+    @apply backdrop-blur-lg border;
     background: var(--glass-bg);
     border-color: var(--glass-border);
     box-shadow: var(--neon-glow);
@@ -99,22 +128,6 @@
 
   .hover-glow:hover {
     box-shadow: var(--neon-glow);
-  }
-
-  /* Touch-Friendly Button Classes */
-  .touch-button {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-    @apply transition-all duration-200 ease-out;
-    @apply active:scale-95 active:opacity-80;
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-    @apply select-none;
-    /* Prevent text selection on touch */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 
   .touch-button-primary {
@@ -144,22 +157,6 @@
     @apply text-gray-600 hover:text-gray-900;
     @apply hover:bg-gray-100 active:bg-gray-200;
     @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
-  }
-
-  /* Touch-Friendly Link Classes */
-  .touch-link {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-    @apply transition-all duration-200 ease-out;
-    @apply active:scale-95 active:opacity-80;
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-    @apply select-none;
-    /* Prevent text selection on touch */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 
   .touch-link-nav {
@@ -348,7 +345,7 @@
   }
 
   .hover-badge {
-    @apply transition-all duration-200 hover:bg-opacity-80;
+    @apply transition-all duration-200;
   }
 
   .hover-icon {
@@ -617,7 +614,7 @@
 }
 
 .glass-card {
-  @apply backdrop-blur-lg bg-opacity-80 border border-opacity-20;
+  @apply backdrop-blur-lg border;
   background: var(--glass-bg);
   border-color: var(--glass-border);
   box-shadow: var(--neon-glow);
