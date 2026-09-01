@@ -4,3 +4,6 @@ node_modules
 /.next
 DYNAMIC_RENDERING_SETUP.md
 env.example
+
+# Git worktrees (subagent-driven-development)
+.worktrees/
