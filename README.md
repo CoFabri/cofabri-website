@@ -115,6 +115,10 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    Create a `.env.local` file in the root directory with the following variables:
 
    ```env
+   # cofabri-api (Supabase-backed content & forms API)
+   COFABRI_API_BASE_URL=your_cofabri_api_base_url_here
+   COFABRI_API_KEY=your_cofabri_api_key_here
+
    # Newsletter Webhook
    NEWSLETTER_WEBHOOK_URL=your_webhook_url_here
 

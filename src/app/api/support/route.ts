@@ -59,7 +59,12 @@ export async function POST(request: Request) {
     const applicationsArray = applications ? JSON.parse(applications) : [];
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !phone || !preferredContactMethod || !subject || !description) {
+    // Note: phone is intentionally not required here — cofabri-api's
+    // /web/forms/support endpoint has no column to persist it (a separate,
+    // cross-repo schema gap), so it would be misleading to block submission
+    // on a value that's silently discarded. The form still collects it (it
+    // may be useful in logs) but does not require it.
+    if (!firstName || !lastName || !email || !preferredContactMethod || !subject || !description) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }

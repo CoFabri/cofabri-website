@@ -2,6 +2,9 @@
 const COFABRI_API_BASE_URL = process.env.COFABRI_API_BASE_URL;
 
 async function apiFetch<T>(path: string): Promise<T> {
+  if (!COFABRI_API_BASE_URL) {
+    throw new Error('COFABRI_API_BASE_URL is not configured');
+  }
   const res = await fetch(`${COFABRI_API_BASE_URL}${path}`, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`cofabri-api error on ${path}: ${res.status} ${res.statusText}`);
@@ -122,13 +125,25 @@ interface KbArticleRow {
   related_topic_slugs?: string[];
 }
 
+// kb_article_category enum values from Supabase, mapped to display labels.
+const KB_CATEGORY_LABELS: Record<string, string> = {
+  how_to_guide: 'How-To Guide',
+  faq: 'FAQ',
+  troubleshooting: 'Troubleshooting',
+  release_notes: 'Release Notes',
+  best_practices: 'Best Practices',
+  other: 'Other',
+  internal_reference: 'Internal Reference',
+  brand_brief: 'Brand Brief',
+};
+
 function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
   return {
     id: row.id,
     title: row.article_title,
     content: row.article_content || '',
     excerpt: row.excerpt || undefined,
-    category: row.category,
+    category: KB_CATEGORY_LABELS[row.category] || row.category,
     slug: row.site_url_slug || row.id,
     author: row.author_name || '',
     readTime: row.read_time || 0,
@@ -204,12 +219,22 @@ interface RoadmapRow {
   app_id: string | null;
 }
 
+// Real values of the roadmap_item status enum in Supabase, mapped to the
+// Title Case labels the UI (filters, badges) expects.
+const ROADMAP_STATUS_MAP: Record<string, string> = {
+  planned: 'Planned',
+  in_progress: 'In Progress',
+  released: 'Released',
+  delayed: 'Delayed',
+  cancelled: 'Cancelled',
+};
+
 function mapRoadmapItem(row: RoadmapRow): RoadmapFeature {
   return {
     id: row.id,
     name: row.roadmap_item_name,
     description: row.description || '',
-    status: row.status,
+    status: ROADMAP_STATUS_MAP[row.status] || row.status,
     milestone: row.target_quarter || '',
     releaseType: '',
     releasedDate: row.target_date || undefined,
@@ -256,12 +281,23 @@ interface LegalDocRow {
   effective_date: string | null;
 }
 
+// kb_contract_document_type enum values from Supabase, mapped to display labels.
+const LEGAL_DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  contract: 'Contract',
+  t_c: 'Terms & Conditions',
+  privacy_policy: 'Privacy Policy',
+  nda: 'NDA',
+  license_agreement: 'License Agreement',
+  other: 'Other',
+  policy: 'Policy',
+};
+
 function mapLegalDocument(row: LegalDocRow): LegalDocument {
   return {
     id: row.id,
     title: row.title || row.document_name || 'Untitled Document',
     description: undefined,
-    documentType: row.document_type,
+    documentType: LEGAL_DOCUMENT_TYPE_LABELS[row.document_type] || row.document_type,
     status: row.status,
     version: String(row.version ?? '1.0'),
     lastUpdated: row.last_updated || row.effective_date || new Date().toISOString(),

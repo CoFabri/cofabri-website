@@ -188,7 +188,11 @@ function SignupPageContent() {
             </p>
 
             {/* Beta Spots Progress */}
-            {!isLoading && appData && (
+            {/* betaSpotsTotal/betaSpotsFilled have no backing field in cofabri-api's
+                content API and are always 0, so only render this panel once real
+                data is available (betaSpotsTotal > 0) — otherwise it shows false
+                "0 spots left" scarcity messaging. */}
+            {!isLoading && appData && appData.betaSpotsTotal > 0 && (
               <div className="max-w-md mx-auto bg-white rounded-2xl p-6 shadow-lg mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">

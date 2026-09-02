@@ -26,3 +26,6 @@ frontend:
           value: 'DENY'
         - key: 'X-XSS-Protection'
           value: '1; mode=block'
+  env:
+    COFABRI_API_BASE_URL: ${COFABRI_API_BASE_URL}
+    COFABRI_API_KEY: ${COFABRI_API_KEY}
