@@ -1,51 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Quiet Utility token system (see Dark Mode.dc.html / CoFabri Component Sheet.dc.html).
+ * Components must reference these semantic tokens, never a raw hex — that's the layer
+ * that can't flip when the theme changes.
+ */
 :root {
   --radius: 0.625rem;
-  --background: #FAFBFC;
-  --foreground: #14171A;
-  --card: #FFFFFF;
-  --card-foreground: #14171A;
-  --popover: #FFFFFF;
-  --popover-foreground: #14171A;
-  --primary: #007BFF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F3F5F7;
-  --secondary-foreground: #14171A;
-  --muted: #F3F5F7;
-  --muted-foreground: #5B6472;
-  --accent: #EAF3FF;
-  --accent-foreground: #007BFF;
-  --destructive: #D6482B;
-  --destructive-foreground: #FFFFFF;
-  --border: #E5E8EC;
-  --input: #E5E8EC;
-  --ring: #007BFF;
+
+  /* surfaces */
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #F7F8F9;
+  --surface-hover: #F2F4F6;
+
+  /* lines */
+  --hairline: #E9ECEF;
+  --border-strong: #D9DFE3;
+
+  /* ink */
+  --ink: #232E36;
+  --ink-body: #36454F;
+  --ink-muted: #5A6A75;
+  --ink-faint: #8494A0;
+  --ink-disabled: #B3BEC6;
+
+  /* accent */
+  --accent: #0B6BE6;
+  --accent-hover: #0857BE;
+  --on-accent: #FFFFFF;
+  --accent-tint: #EAF2FE;
+
+  /* status */
+  --success: #12A150;
+  --warning: #D98212;
+  --danger: #D92D20;
+  --on-danger: #FFFFFF;
+
+  /* shadcn-shaped aliases so existing components keep working unchanged */
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: var(--surface-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--ink-muted);
+  --accent-bg: var(--accent-tint);
+  --accent-foreground: var(--accent);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--on-danger);
+  --border: var(--hairline);
+  --input: var(--border-strong);
+  --ring: var(--accent);
 }
 
 .dark {
-  --background: #0B0D10;
-  --foreground: #F2F4F6;
-  --card: #14171C;
-  --card-foreground: #F2F4F6;
-  --popover: #14171C;
-  --popover-foreground: #F2F4F6;
-  --primary: #2B96FF;
-  --primary-foreground: #06111F;
-  --secondary: #111418;
-  --secondary-foreground: #F2F4F6;
-  --muted: #111418;
-  --muted-foreground: #97A0AC;
-  --accent: #12233A;
-  --accent-foreground: #2B96FF;
-  --destructive: #E97A62;
-  --destructive-foreground: #06111F;
-  --border: #262A31;
-  --input: #262A31;
-  --ring: #2B96FF;
+  /* surfaces */
+  --surface: #171D22;
+  --surface-raised: #1E262C;
+  --surface-sunken: #12171B;
+  --surface-hover: #232C33;
+
+  /* lines */
+  --hairline: #2B353D;
+  --border-strong: #3A464F;
+
+  /* ink */
+  --ink: #F1F4F6;
+  --ink-body: #C9D2D8;
+  --ink-muted: #9AA8B2;
+  --ink-faint: #71818C;
+  --ink-disabled: #55636D;
+
+  /* accent */
+  --accent: #5AA0F5;
+  --accent-hover: #83B8F8;
+  --on-accent: #0B1B2B;
+  --accent-tint: rgba(90, 160, 245, 0.14);
+
+  /* status */
+  --success: #3ECF7F;
+  --warning: #E9A33D;
+  --danger: #F27168;
+  --on-danger: #FFFFFF;
+
+  /* shadcn-shaped aliases */
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: var(--surface-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--ink-muted);
+  --accent-bg: var(--accent-tint);
+  --accent-foreground: var(--accent);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--on-danger);
+  --border: var(--hairline);
+  --input: var(--border-strong);
+  --ring: var(--accent);
 }
 
 @theme inline {
@@ -61,15 +127,37 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
+  --color-accent: var(--accent-bg);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Quiet Utility tokens, exposed as first-class utilities (bg-surface-raised,
+     text-ink-muted, bg-success/10 text-success, etc.) for new/updated components */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+  --color-hairline: var(--hairline);
+  --color-border-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-body: var(--ink-body);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-disabled: var(--ink-disabled);
+  --color-accent-solid: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
