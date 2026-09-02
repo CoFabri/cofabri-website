@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import React, { useEffect, useState } from 'react';
+import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -143,17 +143,17 @@ const DEMO_ROADMAP_FEATURES: RoadmapFeature[] = [
 export const getStatusColor = (status: string) => {
   switch (status) {
     case 'Released':
-      return 'bg-green-100 text-green-800';
+      return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
     case 'In Progress':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300';
     case 'Delayed':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300';
     case 'Planned':
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
     case 'Cancelled':
-      return 'bg-red-100 text-red-800';
+      return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
   }
 };
 
@@ -181,13 +181,13 @@ export const getStatusText = (status: string) => {
 export const getReleaseTypeColor = (type: string) => {
   switch (type) {
     case 'Major':
-      return 'bg-red-100 text-red-800';
+      return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
     case 'Minor':
-      return 'bg-green-100 text-green-800';
+      return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
     case 'Patch':
-      return 'bg-teal-100 text-teal-800';
+      return 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
   }
 };
 
@@ -211,76 +211,6 @@ export const compareMilestones = (a: string, b: string) => {
   }
   return milestoneA.quarter - milestoneB.quarter;
 };
-
-interface DropdownProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  placeholder: string;
-  className?: string;
-}
-
-function Dropdown({ value, onChange, options, placeholder, className = '' }: DropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedOption = options.find(opt => opt.value === value)?.label || placeholder;
-
-  return (
-    <div className={`relative z-[1000] ${className}`} ref={dropdownRef}>
-      <button
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 
-          text-gray-700 font-medium hover:border-blue-400 focus:border-blue-500 focus:ring-2 
-          focus:ring-blue-200 focus:outline-none transition-all duration-200 cursor-pointer
-          shadow-sm hover:shadow-md flex items-center justify-between"
-      >
-        <span className={value ? 'text-gray-700' : 'text-gray-500'}>{selectedOption}</span>
-        <ChevronDownIcon 
-          className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`}
-        />
-      </button>
-      
-      {isOpen && (
-        <div className="absolute z-[1001] w-full mt-1 bg-white rounded-xl shadow-lg border border-gray-200 
-          max-h-60 overflow-auto py-1">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-              className={`w-full px-4 py-2 text-left hover:bg-blue-50 hover:text-blue-700 
-                transition-colors duration-200 flex items-center justify-between
-                ${value === option.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
-            >
-              <span>{option.label}</span>
-              {value === option.value && (
-                <svg className="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface ProductRoadmapProps {
   selectedApp: string;
@@ -440,22 +370,22 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
   }, [selectedApp, selectedReleaseType, selectedStatus]);
 
   return (
-    <section className="bg-white">
+    <section className="bg-background">
       {/* Content Section */}
       <div className="container mx-auto px-4 py-12">
         {isLoading ? (
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : error ? (
-          <div className="text-center text-red-600">
+          <div className="text-center text-danger">
             <p>{error}</p>
           </div>
         ) : (
           <div className="space-y-12">
             {milestones.map((milestone) => (
               <div key={milestone.title} className="relative">
-                <div className="sticky top-0 z-[1] bg-white/95 backdrop-blur-sm py-4 mb-6">
+                <div className="sticky top-0 z-[1] bg-background/95 backdrop-blur-sm py-4 mb-6">
                   <h3 className="text-2xl font-bold text-foreground">
                     {milestone.title}
                   </h3>
@@ -471,9 +401,9 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                         {nonReleased.length > 0 && (
                           <div className="space-y-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <h4 className="text-lg font-semibold text-gray-700">Coming Soon</h4>
-                              <div className="flex-1 h-px bg-gray-200"></div>
+                              <div className="w-2 h-2 bg-primary rounded-full"></div>
+                              <h4 className="text-lg font-semibold text-foreground">Coming Soon</h4>
+                              <div className="flex-1 h-px bg-border"></div>
                             </div>
                             {groupFeaturesIntoRows(nonReleased).map((row, rowIndex) => (
                               <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
@@ -481,9 +411,9 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                   <div
                                     key={feature.id}
                                     id={`roadmap-feature-${feature.id}`}
-                                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
-                                    transition-all duration-300 border border-gray-100 relative flex flex-col
-                                    hover:border-blue-100 hover:shadow-blue-50/50"
+                                    className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg
+                                    transition-all duration-300 border border-border relative flex flex-col
+                                    hover:border-primary/30"
                                   >
                                     <div className="p-6">
                                       <div className="flex items-start gap-3 mb-4">
@@ -491,18 +421,18 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                           {getStatusIcon(feature.status)}
                                         </div>
                                         <div className="flex-grow">
-                                          <h4 className="text-lg font-semibold text-gray-900">
+                                          <h4 className="text-lg font-semibold text-foreground">
                                             {feature.name}
                                           </h4>
                                           {feature.application && (
                                             <div className="mt-1">
                                               {feature.applicationUrl ? (
-                                                <Link 
+                                                <Link
                                                   href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                                                  bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                                                  className="inline-flex items-center text-sm text-accent-foreground hover:text-accent-hover
+                                                  bg-accent hover:bg-accent/70 px-2.5 py-1 rounded-md transition-colors duration-200"
                                                 >
                                                   {feature.application}
                                                   <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -510,7 +440,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                   </svg>
                                                 </Link>
                                               ) : (
-                                                <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
+                                                <span className="inline-flex text-sm text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
                                                   {feature.application}
                                                 </span>
                                               )}
@@ -519,32 +449,32 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                         </div>
                                       </div>
 
-                                      <p className="text-gray-600 mb-4">
+                                      <p className="text-muted-foreground mb-4">
                                         {feature.description}
                                       </p>
 
                                       {feature.featuresAndChanges && (
-                                        <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
-                                          <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
-                                          <div className="text-sm text-gray-600 space-y-1.5">
+                                        <div className="mb-4 bg-muted/80 p-4 rounded-lg border border-border">
+                                          <h5 className="text-sm font-semibold text-foreground mb-2">Features & Changes</h5>
+                                          <div className="text-sm text-muted-foreground space-y-1.5">
                                             {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
                                               const trimmedItem = item.trim();
                                               if (!trimmedItem) return null;
-                                              
+
                                               // Check for indentation (sub-bullets)
                                               const originalIndentation = item.length - item.trimStart().length;
                                               const isSubBullet = originalIndentation > 0;
-                                              
+
                                               // Remove bullet points and clean up
                                               const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                                              
+
                                               return (
                                                 <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
-                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
-                                                  <span 
+                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-ink-faint' : 'text-primary'}`}>•</span>
+                                                  <span
                                                     className="flex-grow leading-relaxed"
-                                                    dangerouslySetInnerHTML={{ 
-                                                      __html: roadmapMarkdownToHtml(cleanedItem) 
+                                                    dangerouslySetInnerHTML={{
+                                                      __html: roadmapMarkdownToHtml(cleanedItem)
                                                     }}
                                                   />
                                                 </div>
@@ -557,7 +487,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                 setSelectedFeature(feature);
                                                 setIsOverlayOpen(true);
                                               }}
-                                              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                                              className="text-primary hover:text-accent-hover text-sm font-medium transition-colors duration-200 mt-3"
                                             >
                                               Read More
                                             </button>
@@ -566,13 +496,13 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                       )}
 
                                       {feature.releaseNotes && (
-                                        <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
-                                          <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-                                          <div className="text-sm text-blue-700">
-                                            <div 
+                                        <div className="mb-4 bg-accent/80 p-4 rounded-lg border border-accent">
+                                          <h5 className="text-sm font-semibold text-accent-foreground mb-2">Release Notes</h5>
+                                          <div className="text-sm text-accent-foreground">
+                                            <div
                                               className="line-clamp-3"
-                                              dangerouslySetInnerHTML={{ 
-                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
+                                              dangerouslySetInnerHTML={{
+                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes)
                                               }}
                                             />
                                             {feature.releaseNotes.length > 150 && (
@@ -581,7 +511,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                   setSelectedFeature(feature);
                                                   setIsOverlayOpen(true);
                                                 }}
-                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                                className="text-primary hover:text-accent-hover text-sm font-medium transition-colors duration-200 mt-2"
                                               >
                                                 Read More
                                               </button>
@@ -592,7 +522,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                     </div>
 
                                     <div className="mt-auto">
-                                      <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                                      <div className="p-4 border-t border-border bg-muted/50">
                                         <div className="flex flex-wrap items-center gap-2">
                                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
                                             {feature.releaseType}
@@ -614,9 +544,9 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                         {released.length > 0 && (
                           <div className="space-y-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <h4 className="text-lg font-semibold text-gray-700">Recently Released</h4>
-                              <div className="flex-1 h-px bg-gray-200"></div>
+                              <div className="w-2 h-2 bg-success rounded-full"></div>
+                              <h4 className="text-lg font-semibold text-foreground">Recently Released</h4>
+                              <div className="flex-1 h-px bg-border"></div>
                             </div>
                             {groupFeaturesIntoRows(released).map((row, rowIndex) => (
                               <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
@@ -624,9 +554,9 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                   <div
                                     key={feature.id}
                                     id={`roadmap-feature-${feature.id}`}
-                                    className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg 
-                                    transition-all duration-300 border border-green-200 relative flex flex-col
-                                    hover:border-green-300 hover:shadow-green-50/50"
+                                    className="bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-lg
+                                    transition-all duration-300 border border-success/30 relative flex flex-col
+                                    hover:border-success/50"
                                   >
                                     <div className="p-6">
                                       <div className="flex items-start gap-3 mb-4">
@@ -634,18 +564,18 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                           {getStatusIcon(feature.status)}
                                         </div>
                                         <div className="flex-grow">
-                                          <h4 className="text-lg font-semibold text-gray-900">
+                                          <h4 className="text-lg font-semibold text-foreground">
                                             {feature.name}
                                           </h4>
                                           {feature.application && (
                                             <div className="mt-1">
                                               {feature.applicationUrl ? (
-                                                <Link 
+                                                <Link
                                                   href={feature.applicationUrl.startsWith('http') ? feature.applicationUrl : `https://${feature.applicationUrl}`}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                                                  bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                                                  className="inline-flex items-center text-sm text-accent-foreground hover:text-accent-hover
+                                                  bg-accent hover:bg-accent/70 px-2.5 py-1 rounded-md transition-colors duration-200"
                                                 >
                                                   {feature.application}
                                                   <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -653,7 +583,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                   </svg>
                                                 </Link>
                                               ) : (
-                                                <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
+                                                <span className="inline-flex text-sm text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
                                                   {feature.application}
                                                 </span>
                                               )}
@@ -662,32 +592,32 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                         </div>
                                       </div>
 
-                                      <p className="text-gray-600 mb-4">
+                                      <p className="text-muted-foreground mb-4">
                                         {feature.description}
                                       </p>
 
                                       {feature.featuresAndChanges && (
-                                        <div className="mb-4 bg-gray-50/80 p-4 rounded-lg border border-gray-100">
-                                          <h5 className="text-sm font-semibold text-gray-900 mb-2">Features & Changes</h5>
-                                          <div className="text-sm text-gray-600 space-y-1.5">
+                                        <div className="mb-4 bg-muted/80 p-4 rounded-lg border border-border">
+                                          <h5 className="text-sm font-semibold text-foreground mb-2">Features & Changes</h5>
+                                          <div className="text-sm text-muted-foreground space-y-1.5">
                                             {feature.featuresAndChanges.split('\n').slice(0, 6).map((item: string, index: number) => {
                                               const trimmedItem = item.trim();
                                               if (!trimmedItem) return null;
-                                              
+
                                               // Check for indentation (sub-bullets)
                                               const originalIndentation = item.length - item.trimStart().length;
                                               const isSubBullet = originalIndentation > 0;
-                                              
+
                                               // Remove bullet points and clean up
                                               const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                                              
+
                                               return (
                                                 <div key={index} className={`flex items-start ${isSubBullet ? 'ml-4' : ''}`}>
-                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>•</span>
-                                                  <span 
+                                                  <span className={`mr-2 mt-[0.2rem] ${isSubBullet ? 'text-ink-faint' : 'text-primary'}`}>•</span>
+                                                  <span
                                                     className="flex-grow leading-relaxed"
-                                                    dangerouslySetInnerHTML={{ 
-                                                      __html: roadmapMarkdownToHtml(cleanedItem) 
+                                                    dangerouslySetInnerHTML={{
+                                                      __html: roadmapMarkdownToHtml(cleanedItem)
                                                     }}
                                                   />
                                                 </div>
@@ -700,7 +630,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                 setSelectedFeature(feature);
                                                 setIsOverlayOpen(true);
                                               }}
-                                              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-3"
+                                              className="text-primary hover:text-accent-hover text-sm font-medium transition-colors duration-200 mt-3"
                                             >
                                               Read More
                                             </button>
@@ -709,13 +639,13 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                       )}
 
                                       {feature.releaseNotes && (
-                                        <div className="mb-4 bg-blue-50/80 p-4 rounded-lg border border-blue-100">
-                                          <h5 className="text-sm font-semibold text-blue-900 mb-2">Release Notes</h5>
-                                          <div className="text-sm text-blue-700">
-                                            <div 
+                                        <div className="mb-4 bg-accent/80 p-4 rounded-lg border border-accent">
+                                          <h5 className="text-sm font-semibold text-accent-foreground mb-2">Release Notes</h5>
+                                          <div className="text-sm text-accent-foreground">
+                                            <div
                                               className="line-clamp-3"
-                                              dangerouslySetInnerHTML={{ 
-                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes) 
+                                              dangerouslySetInnerHTML={{
+                                                __html: releaseNotesMarkdownToHtml(feature.releaseNotes)
                                               }}
                                             />
                                             {feature.releaseNotes.length > 150 && (
@@ -724,7 +654,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                                   setSelectedFeature(feature);
                                                   setIsOverlayOpen(true);
                                                 }}
-                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200 mt-2"
+                                                className="text-primary hover:text-accent-hover text-sm font-medium transition-colors duration-200 mt-2"
                                               >
                                                 Read More
                                               </button>
@@ -735,7 +665,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                     </div>
 
                                     <div className="mt-auto">
-                                      <div className="p-4 border-t border-green-100 bg-green-50/50">
+                                      <div className="p-4 border-t border-success/20 bg-success/10">
                                         <div className="flex flex-wrap items-center gap-2">
                                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(feature.releaseType)}`}>
                                             {feature.releaseType}
@@ -747,8 +677,8 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
                                       </div>
 
                                       {feature.releasedDate && (
-                                        <div className="text-center py-3 px-4 bg-green-50 border-t border-green-100">
-                                          <div className="text-sm font-medium text-green-800">
+                                        <div className="text-center py-3 px-4 bg-success/10 border-t border-success/20">
+                                          <div className="text-sm font-medium text-success">
                                             Released {new Date(feature.releasedDate).toLocaleDateString()}
                                           </div>
                                         </div>

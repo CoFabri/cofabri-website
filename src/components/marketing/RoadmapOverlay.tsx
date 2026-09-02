@@ -50,17 +50,17 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'released':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
       case 'in progress':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300';
       case 'delayed':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300';
       case 'planned':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
     }
   };
 
@@ -84,13 +84,13 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
   const getReleaseTypeColor = (type: string) => {
     switch (type?.toLowerCase()) {
       case 'major':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
       case 'minor':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
       case 'patch':
-        return 'bg-teal-100 text-teal-800';
+        return 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
     }
   };
 
@@ -104,25 +104,25 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
       
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div 
-          className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+        <div
+          className="relative w-full max-w-4xl bg-card rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="flex items-center gap-4">
               {getStatusIcon(roadmap.status)}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{roadmap.name}</h2>
+                <h2 className="text-2xl font-bold text-foreground">{roadmap.name}</h2>
                 {roadmap.application && (
                   <div className="mt-1">
                     {roadmap.applicationUrl ? (
-                      <a 
+                      <a
                         href={roadmap.applicationUrl.startsWith('http') ? roadmap.applicationUrl : `https://${roadmap.applicationUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 
-                        bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors duration-200"
+                        className="inline-flex items-center text-sm text-accent-foreground hover:text-accent-hover
+                        bg-accent hover:bg-accent/70 px-2.5 py-1 rounded-md transition-colors duration-200"
                       >
                         {roadmap.application}
                         <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
                         </svg>
                       </a>
                     ) : (
-                      <span className="inline-flex text-sm text-gray-600 bg-gray-50 px-2.5 py-1 rounded-md">
+                      <span className="inline-flex text-sm text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
                         {roadmap.application}
                       </span>
                     )}
@@ -140,7 +140,7 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-ink-faint hover:text-foreground hover:bg-muted rounded-lg transition-colors"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -150,36 +150,36 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
             {/* Description */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-              <p className="text-gray-700 leading-relaxed">{roadmap.description}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Description</h3>
+              <p className="text-foreground leading-relaxed">{roadmap.description}</p>
             </div>
 
             {/* Features & Changes */}
             {roadmap.featuresAndChanges && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Features & Changes</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-gray-700 space-y-2">
+                <h3 className="text-lg font-semibold text-foreground mb-3">Features & Changes</h3>
+                <div className="bg-muted rounded-lg p-4">
+                  <div className="text-foreground space-y-2">
                     {roadmap.featuresAndChanges.split('\n').map((item: string, index: number) => {
                       const trimmedItem = item.trim();
                       if (!trimmedItem) return null;
-                      
+
                       // Check for indentation (sub-bullets)
                       const originalIndentation = item.length - item.trimStart().length;
                       const isSubBullet = originalIndentation > 0;
-                      
+
                       // Remove bullet points and clean up
                       const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
-                      
+
                       return (
                         <div key={index} className={`flex items-start ${isSubBullet ? 'ml-6' : ''}`}>
-                          <span className={`mr-3 mt-1 flex-shrink-0 ${isSubBullet ? 'text-gray-400' : 'text-blue-500'}`}>
+                          <span className={`mr-3 mt-1 flex-shrink-0 ${isSubBullet ? 'text-ink-faint' : 'text-primary'}`}>
                             {isSubBullet ? '◦' : '•'}
                           </span>
-                          <span 
+                          <span
                             className="flex-grow leading-relaxed"
-                            dangerouslySetInnerHTML={{ 
-                              __html: roadmapMarkdownToHtml(cleanedItem) 
+                            dangerouslySetInnerHTML={{
+                              __html: roadmapMarkdownToHtml(cleanedItem)
                             }}
                           />
                         </div>
@@ -193,12 +193,12 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
             {/* Release Notes */}
             {roadmap.releaseNotes && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Release Notes</h3>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <div 
-                    className="text-blue-900 leading-relaxed"
-                    dangerouslySetInnerHTML={{ 
-                      __html: releaseNotesMarkdownToHtml(roadmap.releaseNotes) 
+                <h3 className="text-lg font-semibold text-foreground mb-3">Release Notes</h3>
+                <div className="bg-accent rounded-lg p-4">
+                  <div
+                    className="text-accent-foreground leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html: releaseNotesMarkdownToHtml(roadmap.releaseNotes)
                     }}
                   />
                 </div>
@@ -206,9 +206,9 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
             )}
 
             {/* Metadata */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">Status</h4>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">Status</h4>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(roadmap.status)}
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(roadmap.status)}`}>
@@ -216,27 +216,27 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
                   </span>
                 </div>
               </div>
-              
+
               {roadmap.releaseType && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Release Type</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Release Type</h4>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(roadmap.releaseType)}`}>
                     {roadmap.releaseType}
                   </span>
                 </div>
               )}
-              
+
               {roadmap.milestone && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Milestone</h4>
-                  <p className="text-gray-900">{roadmap.milestone}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Milestone</h4>
+                  <p className="text-foreground">{roadmap.milestone}</p>
                 </div>
               )}
-              
+
               {roadmap.launchDate && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">Launch Date</h4>
-                  <p className="text-gray-900">{new Date(roadmap.launchDate).toLocaleDateString()}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Launch Date</h4>
+                  <p className="text-foreground">{new Date(roadmap.launchDate).toLocaleDateString()}</p>
                 </div>
               )}
             </div>

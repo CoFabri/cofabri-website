@@ -52,7 +52,7 @@ export default function ArticleContent({ article }: ArticleContentProps) {
   }, [article.content]);
 
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto px-4 py-12">
         <Link 
           href="/knowledge-base"

@@ -17,7 +17,7 @@ export default function GradientHeading({ title, subtitle, className = '', extra
           {title}
         </h2>
         {subtitle && (
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {subtitle}
           </p>
         )}

@@ -9,7 +9,7 @@ export default function NotFound() {
   const isKnowledgeBaseArticle = pathname?.startsWith('/knowledge-base/');
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto text-center">
           <div className="mb-8">

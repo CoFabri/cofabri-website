@@ -40,7 +40,7 @@ export default function Apps() {
   if (isLoading) {
     return (
       <div className="flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -48,8 +48,8 @@ export default function Apps() {
   if (error) {
     return (
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Error</h2>
-        <p className="mt-2 text-gray-600">{error}</p>
+        <h2 className="text-2xl font-bold text-foreground">Error</h2>
+        <p className="mt-2 text-muted-foreground">{error}</p>
       </div>
     );
   }

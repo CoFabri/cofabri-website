@@ -49,8 +49,8 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
           {/* Badges Section */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
             <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-              app.status === 'Live' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-              app.status === 'Active' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+              app.status === 'Live' ? 'bg-success/15 text-success hover:bg-success/25' :
+              app.status === 'Active' ? 'bg-success/15 text-success hover:bg-success/25' :
               app.status === 'Beta' ? 'bg-accent text-accent-foreground hover:bg-accent/80' :
               app.status === 'Alpha' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' :
               'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -62,8 +62,8 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
                 isLaunchingToday()
                   ? 'bg-accent text-accent-foreground animate-pulse hover:bg-accent/80'
                   : new Date(app.launchDate) > new Date()
-                    ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                    : 'bg-green-100 text-green-800 hover:bg-green-200'
+                    ? 'bg-warning/15 text-warning hover:bg-warning/25'
+                    : 'bg-success/15 text-success hover:bg-success/25'
               }`}>
                 {isLaunchingToday()
                   ? '🚀 Launching Today! 🎉'

@@ -16,7 +16,7 @@ import SupportForm from '@/components/marketing/SupportForm';
 
 export default function SupportPageContent() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <GradientHeading
         title="Support Center"
         subtitle="We're here to help you succeed with our products and services"

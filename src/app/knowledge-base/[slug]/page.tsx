@@ -132,7 +132,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative pt-32 pb-24 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
         <AnimatedGradient />

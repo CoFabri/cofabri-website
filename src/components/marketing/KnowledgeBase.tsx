@@ -75,7 +75,7 @@ export default function KnowledgeBase() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <section className="relative min-h-[320px] flex flex-col items-center justify-center pt-32 pb-24">
           <div className="container mx-auto px-4">
             <div className="text-center">
@@ -97,7 +97,7 @@ export default function KnowledgeBase() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <section className="relative min-h-[320px] flex flex-col items-center justify-center pt-32 pb-24">
         <SectionHeading
           title="Knowledge Base"

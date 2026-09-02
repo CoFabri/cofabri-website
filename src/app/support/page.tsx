@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export default function SupportPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 mt-16">
           <div className="max-w-6xl mx-auto">
             <div className="animate-pulse">

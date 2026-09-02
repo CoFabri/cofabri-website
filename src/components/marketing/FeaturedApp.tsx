@@ -33,12 +33,12 @@ export default function FeaturedApp() {
     return (
       <div className="mb-24">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-1">
-          <div className="relative bg-white rounded-3xl p-8 md:p-12">
+          <div className="relative bg-card rounded-3xl p-8 md:p-12">
             <div className="animate-pulse">
-              <div className="h-4 w-24 bg-gray-200 rounded mb-4"></div>
-              <div className="h-8 w-3/4 bg-gray-200 rounded mb-4"></div>
-              <div className="h-4 w-full bg-gray-200 rounded mb-6"></div>
-              <div className="h-10 w-32 bg-gray-200 rounded"></div>
+              <div className="h-4 w-24 bg-muted rounded mb-4"></div>
+              <div className="h-8 w-3/4 bg-muted rounded mb-4"></div>
+              <div className="h-4 w-full bg-muted rounded mb-6"></div>
+              <div className="h-10 w-32 bg-muted rounded"></div>
             </div>
           </div>
         </div>
@@ -53,17 +53,17 @@ export default function FeaturedApp() {
   return (
     <div className="mb-24">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-1">
-        <div className="relative bg-white rounded-3xl p-8 md:p-12">
+        <div className="relative bg-card rounded-3xl p-8 md:p-12">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="w-full md:w-1/2">
               <div className="flex items-center gap-2 mb-4">
-                <SparklesIcon className="h-5 w-5 text-indigo-500" />
-                <span className="text-sm font-medium text-indigo-500">Featured App</span>
+                <SparklesIcon className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+                <span className="text-sm font-medium text-indigo-500 dark:text-indigo-400">Featured App</span>
               </div>
-              
+
               {/* Mobile Image - shown between badge and title */}
               <div className="md:hidden mb-6">
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20">
                   {featuredApp.screenshot && (
                     <img
                       src={featuredApp.screenshot}
@@ -73,11 +73,11 @@ export default function FeaturedApp() {
                   )}
                 </div>
               </div>
-              
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {featuredApp.name}
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-lg text-muted-foreground mb-6">
                 {featuredApp.description || 'No description available'}
               </p>
               {featuredApp.url && (
@@ -90,10 +90,10 @@ export default function FeaturedApp() {
                 </Link>
               )}
             </div>
-            
+
             {/* Desktop Image - shown on the right side */}
             <div className="hidden md:block w-full md:w-1/2">
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20">
                 {featuredApp.screenshot && (
                   <img
                     src={featuredApp.screenshot}
