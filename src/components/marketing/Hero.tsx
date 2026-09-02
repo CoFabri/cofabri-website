@@ -1,18 +1,74 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { animate, useInView, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import HeroAurora from './HeroAurora';
+import type { App, RoadmapFeature } from '@/lib/api-client';
+import { shippedInLastNDays } from '@/lib/roadmap-display';
 
-const metrics = [
-  { value: '10K+', label: 'Active users' },
-  { value: '5', label: 'Apps live' },
-  { value: '50+', label: 'Countries served' },
-  { value: '98%', label: 'Deployment success rate' },
-];
+function MetricCount({ target, suffix }: { target: number; suffix: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.6 });
+  const shouldReduceMotion = useReducedMotion();
+  const [display, setDisplay] = useState(shouldReduceMotion ? target : 0);
+
+  useEffect(() => {
+    if (!isInView || shouldReduceMotion) return;
+    const controls = animate(0, target, {
+      duration: 1.3,
+      ease: 'easeOut',
+      onUpdate: (value) => setDisplay(Math.round(value)),
+    });
+    return () => controls.stop();
+  }, [isInView, shouldReduceMotion, target]);
+
+  return (
+    <div ref={ref}>
+      {display}
+      {suffix}
+    </div>
+  );
+}
 
 const Hero = () => {
+  const [apps, setApps] = useState<App[]>([]);
+  const [roadmap, setRoadmap] = useState<RoadmapFeature[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const noCacheHeaders = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+    };
+
+    async function fetchMetrics() {
+      try {
+        const [appsRes, roadmapRes] = await Promise.all([
+          fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
+          fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
+        ]);
+        if (appsRes.ok) setApps(await appsRes.json());
+        if (roadmapRes.ok) setRoadmap(await roadmapRes.json());
+      } catch (err) {
+        console.error('Error fetching hero metrics:', err);
+      } finally {
+        setLoaded(true);
+      }
+    }
+
+    fetchMetrics();
+  }, []);
+
+  const liveAppCount = apps.filter((a) => a.status === 'Live').length;
+  const shippedLast30Days = shippedInLastNDays(roadmap, 30);
+
+  const metrics = [
+    { target: liveAppCount, suffix: '', label: 'Apps live' },
+    { target: shippedLast30Days, suffix: '', label: 'Features shipped, last 30 days' },
+  ];
+
   return (
     <section className="relative overflow-hidden bg-background pt-24 pb-0 md:pt-[132px]">
       <HeroAurora />
@@ -43,11 +99,11 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-2 divide-x divide-border border-t border-border sm:grid-cols-4 md:mt-24">
+        <div className="mt-16 grid grid-cols-2 divide-x divide-border border-t border-border md:mt-24">
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-7 first:pl-0">
               <div className="text-[28px] font-semibold tracking-[-0.03em] text-foreground sm:text-[34px]">
-                {m.value}
+                {loaded ? <MetricCount target={m.target} suffix={m.suffix} /> : '—'}
               </div>
               <div className="mt-1.5 text-sm text-muted-foreground">{m.label}</div>
             </div>

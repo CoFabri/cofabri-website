@@ -46,3 +46,10 @@ export function displayAppName(id: string, appNames: Record<string, string>): st
   if (appNames[id]) return appNames[id];
   return id.charAt(0).toUpperCase() + id.slice(1);
 }
+
+export function shippedInLastNDays(roadmap: RoadmapFeature[], days: number): number {
+  const windowMs = days * 24 * 60 * 60 * 1000;
+  return roadmap.filter(
+    (item) => item.status === 'Released' && item.releasedDate && Date.now() - new Date(item.releasedDate).getTime() <= windowMs
+  ).length;
+}
