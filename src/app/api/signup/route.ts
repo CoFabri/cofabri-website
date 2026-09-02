@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
-import Airtable from 'airtable';
 
-// Initialize Airtable
-const base = new Airtable({ apiKey: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN }).base(process.env.AIRTABLE_BASE_ID!);
-
-interface AirtableError {
-  error?: {
-    type?: string;
-    message?: string;
-    status?: number;
-  };
-  name?: string;
+interface ApiError {
   message?: string;
   stack?: string;
   details?: string;
@@ -21,63 +11,53 @@ export async function POST(request: Request) {
     console.log('Received signup request');
     const data = await request.json();
     console.log('Parsed request data:', { ...data, email: '[REDACTED]' });
-    
-    const { firstName, lastName, email, appId, interestLevel, quote, statement } = data;
+
+    const { firstName, lastName, email, appId, interestLevel } = data;
+
+    if (!process.env.COFABRI_API_BASE_URL || !process.env.COFABRI_API_KEY) {
+      throw new Error('cofabri-api configuration missing');
+    }
 
     console.log('Attempting to create waitlist record');
-    // Create record in Waitlist table
-    const waitlistRecord = await base('Waitlist').create([
-      {
-        fields: {
-          'First Name': firstName,
-          'Last Name': lastName,
-          Email: email,
-          App: appId ? [appId] : [],
-          'Interest Level': Number(interestLevel) || 0,
-          Quote: quote || 0,
-          Status: 'New'
-        },
+    // Submit to cofabri-api, which persists the waitlist signup in Supabase.
+    // Note: 'quote' and 'statement' are collected by this form but cofabri-api's
+    // /web/forms/waitlist endpoint does not currently accept or persist them.
+    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/waitlist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
       },
-    ]);
-    console.log('Successfully created waitlist record:', waitlistRecord[0].id);
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        app_id: appId || undefined,
+        interest_level: Number(interestLevel) || undefined,
+      }),
+    });
 
-    // If there's a statement, create a record in Beta Statements table
-    if (statement) {
-      console.log('Creating beta statement record');
-      await base('Beta Statements').create([
-        {
-          fields: {
-            Statement: statement,
-            'App Link': appId ? [appId] : [],
-            'Waitlist Record': [waitlistRecord[0].id],
-          },
-        },
-      ]);
-      console.log('Successfully created beta statement record');
+    if (!apiRes.ok) {
+      const errorBody = await apiRes.json().catch(() => null);
+      console.error('cofabri-api waitlist submission failed:', apiRes.status, errorBody);
+      throw new Error('Failed to create record');
     }
+
+    const waitlistRecord = await apiRes.json();
+    console.log('Successfully created waitlist record:', waitlistRecord.id);
 
     return NextResponse.json({ success: true, waitlistRecord });
   } catch (error: unknown) {
-    const err = error as AirtableError;
+    const err = error as ApiError;
     console.error('Detailed error in signup route:', {
-      name: err.name,
       message: err.message,
       stack: err.stack,
       details: err.details || 'No additional details available'
     });
-    
-    // Log specific Airtable errors if they exist
-    if (err.error) {
-      console.error('Airtable specific error:', {
-        type: err.error.type,
-        message: err.error.message,
-        status: err.error.status
-      });
-    }
 
     return NextResponse.json(
       { error: 'Failed to create record', details: err.message },
       { status: 500 }
     );
   }
-} 
+}
