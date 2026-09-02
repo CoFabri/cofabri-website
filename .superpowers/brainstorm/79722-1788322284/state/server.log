@@ -1,0 +1,6 @@
+{"type":"server-started","port":49546,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:49546/?key=d8bda9b43d1f9cd09933922fc637ca2c3d547013080c1e586803df20b9fdf691","screen_dir":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/content","state_dir":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/state","idle_timeout_ms":14400000}
+{"type":"screen-added","file":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/content/gradient-header.html"}
+{"type":"screen-added","file":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/content/gradient-header-v2.html"}
+{"type":"screen-added","file":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/content/gradient-header-v3-animated.html"}
+{"type":"screen-added","file":"/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website/.superpowers/brainstorm/79722-1788322284/content/waiting.html"}
+{"type":"server-stopped","reason":"owner process exited"}

@@ -1,0 +1,88 @@
+<style>
+  .m-frame{ position:relative; overflow:hidden; border-radius:10px; padding:24px; font-family:-apple-system,'Segoe UI',sans-serif; }
+  .m-title{ font-weight:800; letter-spacing:-0.02em; }
+  .m-badge{ display:inline-flex; align-items:center; font-size:10px; font-weight:600; padding:3px 9px; border-radius:999px; }
+  .m-btn{ display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; border-radius:999px; }
+  .m-arrow{ width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center; }
+</style>
+
+<h2>Merged direction: Structuralism, leaning blue + true black</h2>
+<p class="subtitle">Mostly direction 3 (bold grotesk, double-bezel cards, pill buttons, light base) &mdash; but the glow/mesh is CoFabri blue instead of purple/emerald, and one panel per section goes true black with a frosted-glass texture rather than the whole page going dark. Not dark-mode-native; black is used as a deliberate accent, like the dark stat tile earlier.</p>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="merged-hero" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="m-frame" style="background:#F4F4F5;">
+        <div style="background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); border-radius:28px; padding:6px; box-shadow:0 24px 48px -24px rgba(0,0,0,0.18);">
+          <div style="position:relative; background:#0A0A0A; border-radius:22px; padding:26px; overflow:hidden;">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 75% 10%, rgba(0,123,255,0.45), transparent 55%);"></div>
+            <div style="position:relative; background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px; display:inline-block;">
+              <span class="m-badge" style="background:rgba(0,123,255,0.15); color:#5CB3FF; margin-bottom:12px;">Home</span>
+              <div class="m-title" style="font-size:24px; color:#fff; margin:10px 0 8px;">Powerful SaaS apps for your business needs</div>
+              <div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:16px; max-width:280px;">Self-service solutions to help you grow and succeed</div>
+              <span class="m-btn" style="background:#007BFF; color:#fff; padding:10px 8px 10px 18px;">Explore Apps <span class="m-arrow" style="background:rgba(255,255,255,0.25);">→</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Hero — black glass panel, blue glow</h3>
+      <p>The whole hero sits inside a double-bezel shell whose inner core is true black with a frosted glass content panel and CoFabri-blue mesh glow — not a full dark-mode page, one bold black moment.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="merged-appcard" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="m-frame" style="background:#F4F4F5;">
+        <div style="background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); border-radius:26px; padding:6px; box-shadow:0 24px 48px -24px rgba(0,0,0,0.18);">
+          <div style="background:#fff; border-radius:20px; padding:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+              <span class="m-badge" style="background:#E1F3FE; color:#007BFF;">Live</span>
+              <span class="m-arrow" style="width:36px;height:36px; background:#007BFF; color:#fff; font-size:14px;">↗</span>
+            </div>
+            <div class="m-title" style="font-size:20px; color:#0A0A0A; margin-bottom:6px;">Fieldbook</div>
+            <div style="font-size:12px; color:#71717A; line-height:1.5; margin-bottom:16px;">Field service scheduling that stays in sync with your crew.</div>
+            <span class="m-btn" style="background:#0A0A0A; color:#fff; padding:9px 8px 9px 18px;">Visit App <span class="m-arrow" style="background:#007BFF;">→</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>App card — light, blue accents throughout</h3>
+      <p>Card stays light/white (no glass here) but every accent — status badge, arrow chip, button-in-button icon — is CoFabri blue instead of the neutral black from pure Structuralism.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="merged-stats" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="m-frame" style="background:#F4F4F5;">
+        <div style="display:grid; grid-template-columns:1.4fr 1fr; grid-template-rows:auto auto; gap:10px;">
+          <div style="grid-row:span 2; position:relative; background:#0A0A0A; border-radius:22px; padding:18px; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end;">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 20%, rgba(0,123,255,0.4), transparent 60%);"></div>
+            <div style="position:relative;">
+              <div style="font-size:28px; font-weight:800; color:#fff;">10K+</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.6);">Active Users</div>
+            </div>
+          </div>
+          <div style="background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:22px; padding:16px; box-shadow:0 16px 32px -20px rgba(0,0,0,0.15);">
+            <div style="font-size:22px; font-weight:800; color:#007BFF;">5+</div>
+            <div style="font-size:11px; color:#71717A;">Apps Launched</div>
+          </div>
+          <div style="background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:22px; padding:16px; box-shadow:0 16px 32px -20px rgba(0,0,0,0.15);">
+            <div style="font-size:22px; font-weight:800; color:#007BFF;">98%</div>
+            <div style="font-size:11px; color:#71717A;">Success Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Stat bento — one black-glow tile, blue numerals</h3>
+      <p>Same asymmetric bento as pure Structuralism, but the tall dark cell gets CoFabri-blue glow instead of plain black, and the light cells' numbers use brand blue instead of neutral black.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:22px;">Pattern across all three: true black + CoFabri blue mesh glow is the "bold moment" (hero panel, one bento tile), while cards/surfaces elsewhere stay light with blue as the accent color — so the brand blue stays the throughline, and black reads as a deliberate contrast device rather than a full dark reskin.</p>

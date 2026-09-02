@@ -1,0 +1,97 @@
+<style>
+  .hdr-wrap{
+    --bg:#FAFBFC; --fg:#14171A; --muted:#5B6472; --primary:#007BFF;
+    background:var(--bg); color:var(--fg);
+    border:1px solid #E5E8EC; border-radius:12px;
+    overflow:hidden; position:relative;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .hdr-inner{ position:relative; z-index:1; padding:48px 32px 44px; text-align:center; }
+  .hdr-crumb{ font-size:12px; margin-bottom:18px; }
+  .hdr-eyebrow{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; margin-bottom:8px; }
+  .hdr-title{ font-size:32px; font-weight:700; letter-spacing:-0.01em; margin:0 0 10px; }
+  .hdr-sub{ font-size:14px; max-width:380px; margin:0 auto; line-height:1.5; }
+  .cards h3 { margin-top: 14px; }
+  .cards p { font-size: 13px; }
+</style>
+
+<h2>Round 2 — bolder monochrome-blue treatments</h2>
+<p class="subtitle">Same brand blue only, pushed much further. Click whichever lands, or none.</p>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="bold-glow" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="hdr-wrap">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 75% at 50% 0%, rgba(0,123,255,0.40), rgba(0,123,255,0.06) 65%, rgba(0,123,255,0) 90%);"></div>
+        <div class="hdr-inner">
+          <div class="hdr-crumb" style="color:var(--muted);">Home / Apps</div>
+          <div class="hdr-eyebrow" style="color:var(--primary);">Apps</div>
+          <div class="hdr-title" style="color:var(--fg);">Our Apps</div>
+          <div class="hdr-sub" style="color:var(--muted);">Explore our full collection of applications designed to enhance your productivity.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Strong radial glow</h3>
+      <p>Same idea as before, opacity roughly tripled and pulled in tighter — a real visible dome of blue light behind the heading, not just a hint.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="full-panel" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="hdr-wrap" style="background:linear-gradient(135deg, #0B3D82 0%, #007BFF 55%, #2B96FF 100%); border:none;">
+        <div class="hdr-inner">
+          <div class="hdr-crumb" style="color:rgba(255,255,255,0.75);">Home / Apps</div>
+          <div class="hdr-eyebrow" style="color:rgba(255,255,255,0.85);">Apps</div>
+          <div class="hdr-title" style="color:#FFFFFF;">Our Apps</div>
+          <div class="hdr-sub" style="color:rgba(255,255,255,0.85);">Explore our full collection of applications designed to enhance your productivity.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Full gradient panel (inverted)</h3>
+      <p>The whole header becomes a dark-navy-to-brand-blue gradient band with white text — a genuine "hero banner" feel, closest to the old FeaturedApp treatment but monochrome instead of indigo/purple.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="bold-diagonal" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="hdr-wrap">
+        <div style="position:absolute;inset:0;background:linear-gradient(120deg, rgba(0,123,255,0.35) 0%, rgba(0,123,255,0.05) 45%, rgba(0,123,255,0) 70%);"></div>
+        <div class="hdr-inner">
+          <div class="hdr-crumb" style="color:var(--muted);">Home / Apps</div>
+          <div class="hdr-eyebrow" style="color:var(--primary);">Apps</div>
+          <div class="hdr-title" style="color:var(--fg);">Our Apps</div>
+          <div class="hdr-sub" style="color:var(--muted);">Explore our full collection of applications designed to enhance your productivity.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Bold diagonal sweep</h3>
+      <p>A clearly-visible blue wash sweeping in from the top-left, still fading to flat background so it doesn't fight the content — but unmistakably a gradient at first glance.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="framed-glow" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="hdr-wrap">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg, #0B3D82, #007BFF, #2B96FF);"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,123,255,0.22), rgba(0,123,255,0) 75%);"></div>
+        <div class="hdr-inner">
+          <div class="hdr-crumb" style="color:var(--muted);">Home / Apps</div>
+          <div class="hdr-eyebrow" style="color:var(--primary);">Apps</div>
+          <div class="hdr-title" style="color:var(--fg);">Our Apps</div>
+          <div class="hdr-sub" style="color:var(--muted);">Explore our full collection of applications designed to enhance your productivity.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>D — Gradient top edge + glow</h3>
+      <p>A bold solid gradient bar across the very top of the page/section as a signature stripe, paired with a moderate glow beneath it. Reads as a brand marker even at a glance.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">If B (full panel) is the direction, that's a bigger swing — it'd mean re-introducing colored hero bands generally, closer to reopening Phase 1's rule than a page-header accent. Worth flagging before you pick it.</p>

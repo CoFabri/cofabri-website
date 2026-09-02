@@ -1,0 +1,90 @@
+<style>
+  .dir-frame{
+    position:relative; overflow:hidden; border-radius:10px;
+    min-height:300px; display:flex; align-items:center; justify-content:center;
+    padding:30px 26px;
+  }
+  .dir-eyebrow{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; margin-bottom:10px; }
+  .dir-title{ font-size:26px; font-weight:700; line-height:1.15; margin:0 0 10px; }
+  .dir-sub{ font-size:13px; line-height:1.5; max-width:300px; margin:0 0 18px; }
+  .dir-btn{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; padding:9px 18px; }
+</style>
+
+<h2>Four candidate directions for CoFabri's marketing site</h2>
+<p class="subtitle">Same real hero copy in each, styled per that system's own rules. This is the actual fork in the road — pick the one whose whole feel you want, not just its colors.</p>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="current-apple" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="dir-frame" style="background:#FAFBFC; text-align:left; align-items:flex-start;">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 0%, rgba(0,123,255,0.16), rgba(0,123,255,0) 70%);"></div>
+        <div style="position:relative;z-index:1; font-family:-apple-system,'Segoe UI',sans-serif;">
+          <div class="dir-eyebrow" style="color:#007BFF;">Home</div>
+          <div class="dir-title" style="color:#14171A; letter-spacing:-0.01em;">Powerful SaaS apps for your business needs</div>
+          <div class="dir-sub" style="color:#5B6472;">Self-service solutions to help you grow and succeed</div>
+          <span class="dir-btn" style="background:#007BFF; color:#fff; border-radius:6px;">Explore Apps →</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>1 — Current: Apple-like Restrained</h3>
+      <p>What's already shipped. Geist, neutral+blue tokens, shadcn components, flat cards with hairline borders, quiet motion, eyebrow labels. Calm, product-y, "gets out of the way."</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="editorial-calm" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="dir-frame" style="background:#FBFBFA; text-align:left; align-items:flex-start;">
+        <div style="position:relative;z-index:1;">
+          <span style="display:inline-block; font-family:-apple-system,sans-serif; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; background:#E1F3FE; color:#1F6C9F; padding:4px 10px; border-radius:999px; margin-bottom:14px;">Home</span>
+          <div class="dir-title" style="font-family:Georgia,'Iowan Old Style','Times New Roman',serif; color:#111111; letter-spacing:-0.02em; font-weight:400; font-size:28px;">Powerful SaaS apps for your business needs</div>
+          <div class="dir-sub" style="font-family:-apple-system,sans-serif; color:#787774;">Self-service solutions to help you grow and succeed</div>
+          <span class="dir-btn" style="font-family:-apple-system,sans-serif; background:#111111; color:#fff; border-radius:5px;">Explore Apps</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>2 — Editorial Calm (minimalist-ui)</h3>
+      <p>Warm off-white/bone, serif display headline, pastel pill tags, phosphor icons, near-invisible shadows. Reads as a design studio / notion-style workspace, not a typical SaaS site. Bans gradients &amp; lucide.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="soft-structuralism" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="dir-frame" style="background:#F4F4F5; text-align:left; align-items:flex-start;">
+        <div style="position:relative;z-index:1; font-family:-apple-system,sans-serif; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06); border-radius:28px; padding:22px 24px; box-shadow:0 20px 40px -20px rgba(0,0,0,0.15);">
+          <span style="display:inline-block; font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; background:#fff; border-radius:999px; padding:4px 12px; margin-bottom:14px;">Home</span>
+          <div class="dir-title" style="color:#0A0A0A; font-weight:800; letter-spacing:-0.03em; font-size:26px;">Powerful SaaS apps for your business needs</div>
+          <div class="dir-sub" style="color:#52525B;">Self-service solutions to help you grow and succeed</div>
+          <span class="dir-btn" style="background:#0A0A0A; color:#fff; border-radius:999px; padding:10px 20px 10px 22px;">Explore Apps <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:rgba(255,255,255,0.2);">→</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>3 — Soft Structuralism (high-end-visual-design)</h3>
+      <p>Bold grotesk type, "double-bezel" nested card (a card inside a card), full-pill buttons with a button-in-a-button icon, airy diffused shadows. Premium-consumer, very "agency portfolio."</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="ethereal-glass" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;">
+      <div class="dir-frame" style="background:#050505; text-align:left; align-items:flex-start;">
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 25% 20%, rgba(139,92,246,0.35), transparent 55%), radial-gradient(circle at 80% 70%, rgba(16,185,129,0.25), transparent 50%);"></div>
+        <div style="position:relative;z-index:1; font-family:-apple-system,sans-serif; background:rgba(255,255,255,0.04); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:22px 24px;">
+          <span style="display:inline-block; font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:12px;">Home</span>
+          <div class="dir-title" style="color:#fff; font-weight:600; letter-spacing:-0.02em; font-size:26px;">Powerful SaaS apps for your business needs</div>
+          <div class="dir-sub" style="color:rgba(255,255,255,0.6);">Self-service solutions to help you grow and succeed</div>
+          <span class="dir-btn" style="background:#fff; color:#000; border-radius:999px;">Explore Apps →</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>4 — Ethereal Glass (gpt-taste / high-end-visual-design)</h3>
+      <p>Deep OLED black, mesh gradient orbs (purple/emerald), heavy glass cards, GSAP scroll-pinning &amp; scrubbing elsewhere on the page. Dark-mode-first, AI/tech-agency energy. Biggest swing from today.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:22px;">Worth naming: CoFabri's existing brand blue (#007BFF, from the logo) reads clearly in direction 1 and works in 4; it gets diluted or dropped entirely in 2 and 3, which lean on their own signature palettes instead.</p>
