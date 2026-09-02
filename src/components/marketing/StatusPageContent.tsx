@@ -112,6 +112,73 @@ function DayBar({ date, status, barKey, isOpen, setOpenBar }: DayBarProps) {
   );
 }
 
+interface ServiceRowData {
+  name: string;
+  incident?: SystemStatus;
+  history: ServiceUptimeDay[];
+}
+
+interface ServiceRowProps {
+  service: ServiceRowData;
+  uptimeWindow: string[];
+  openBar: string | null;
+  setOpenBar: (key: string | null) => void;
+}
+
+function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowProps) {
+  const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'none');
+  const daysWithData = bars.filter((s) => s !== 'none').length;
+  const operationalDays = bars.filter((s) => s === 'operational').length;
+  const uptimePct = daysWithData > 0 ? ((operationalDays / daysWithData) * 100).toFixed(1) : null;
+
+  return (
+    <div className="border-t border-border px-7 py-[18px] first:border-t-0">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 sm:grid sm:grid-cols-[200px_1fr_90px_130px] sm:justify-normal sm:gap-8">
+        <div className="flex items-center gap-2.5">
+          <span
+            className={`block h-2 w-2 flex-shrink-0 rounded-full ${
+              service.incident ? incidentDotClasses(service.incident.publicStatus) : 'bg-success'
+            }`}
+          />
+          <span className="text-base font-semibold text-foreground">{service.name}</span>
+        </div>
+        <div className="order-3 w-full sm:order-none sm:w-auto">
+          {daysWithData > 0 ? (
+            <div className="flex h-[26px] items-stretch gap-[2px]">
+              {bars.map((status, i) => {
+                const date = uptimeWindow[i];
+                const barKey = `${service.name}::${date}`;
+                return (
+                  <DayBar
+                    key={barKey}
+                    date={date}
+                    status={status}
+                    barKey={barKey}
+                    isOpen={openBar === barKey}
+                    setOpenBar={setOpenBar}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="h-[26px]" />
+          )}
+        </div>
+        <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
+          {uptimePct !== null ? `${uptimePct}%` : '—'}
+        </span>
+        <span
+          className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
+            service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
+          }`}
+        >
+          {service.incident ? service.incident.publicStatus : 'Operational'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: StatusPageContentProps) {
   const [statuses, setStatuses] = useState(initialStatuses);
   const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(REFRESH_SECONDS);
@@ -189,17 +256,15 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
     ];
   }, [apps, openIncidents, uptimeHistory]);
 
-  // Aggregate row folding every service's day-by-day status into one, so the
-  // page has a single at-a-glance ticker above the per-service breakdown.
-  const rows = useMemo(
-    () => [
-      {
-        name: 'All Services',
-        incident: mostSevereIncident(statuses),
-        history: mergeHistories(services.map((s) => s.history)),
-      },
-      ...services,
-    ],
+  // Folds every service's day-by-day status into one, so the page has a
+  // single at-a-glance ticker for "all of them combined" — kept separate
+  // from the per-service breakdown below since it isn't one of the services.
+  const allServicesRow: ServiceRowData = useMemo(
+    () => ({
+      name: 'All Services',
+      incident: mostSevereIncident(statuses),
+      history: mergeHistories(services.map((s) => s.history)),
+    }),
     [services, statuses]
   );
 
@@ -223,72 +288,23 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
         }
       />
 
-      <RevealSection className="mt-11 overflow-hidden rounded-2xl border border-border">
-        <div className="flex items-center justify-between bg-muted px-7 py-5">
-          <span className="text-[15px] font-semibold text-foreground">Services</span>
-          <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint sm:block">
-            {UPTIME_WINDOW_DAYS}-day uptime
-          </span>
-        </div>
-        <TooltipProvider delayDuration={0}>
-          {rows.map((service) => {
-            const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'none');
-            const daysWithData = bars.filter((s) => s !== 'none').length;
-            const operationalDays = bars.filter((s) => s === 'operational').length;
-            const uptimePct = daysWithData > 0 ? ((operationalDays / daysWithData) * 100).toFixed(1) : null;
+      <TooltipProvider delayDuration={0}>
+        <RevealSection className="mt-11 overflow-hidden rounded-2xl border border-border">
+          <ServiceRow service={allServicesRow} uptimeWindow={uptimeWindow} openBar={openBar} setOpenBar={setOpenBar} />
+        </RevealSection>
 
-            return (
-              <div
-                key={service.name}
-                className="border-t border-border px-7 py-[18px] first:border-t-0"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 sm:grid sm:grid-cols-[200px_1fr_90px_130px] sm:justify-normal sm:gap-8">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className={`block h-2 w-2 flex-shrink-0 rounded-full ${
-                        service.incident ? incidentDotClasses(service.incident.publicStatus) : 'bg-success'
-                      }`}
-                    />
-                    <span className="text-base font-semibold text-foreground">{service.name}</span>
-                  </div>
-                  <div className="order-3 w-full sm:order-none sm:w-auto">
-                    {daysWithData > 0 ? (
-                      <div className="flex h-[26px] items-stretch gap-[2px]">
-                        {bars.map((status, i) => {
-                          const date = uptimeWindow[i];
-                          const barKey = `${service.name}::${date}`;
-                          return (
-                            <DayBar
-                              key={barKey}
-                              date={date}
-                              status={status}
-                              barKey={barKey}
-                              isOpen={openBar === barKey}
-                              setOpenBar={setOpenBar}
-                            />
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="h-[26px]" />
-                    )}
-                  </div>
-                  <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
-                    {uptimePct !== null ? `${uptimePct}%` : '—'}
-                  </span>
-                  <span
-                    className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
-                    }`}
-                  >
-                    {service.incident ? service.incident.publicStatus : 'Operational'}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </TooltipProvider>
-      </RevealSection>
+        <RevealSection className="mt-6 overflow-hidden rounded-2xl border border-border">
+          <div className="flex items-center justify-between bg-muted px-7 py-5">
+            <span className="text-[15px] font-semibold text-foreground">Services</span>
+            <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint sm:block">
+              {UPTIME_WINDOW_DAYS}-day uptime
+            </span>
+          </div>
+          {services.map((service) => (
+            <ServiceRow key={service.name} service={service} uptimeWindow={uptimeWindow} openBar={openBar} setOpenBar={setOpenBar} />
+          ))}
+        </RevealSection>
+      </TooltipProvider>
 
       {(openIncidents.length > 0 || resolvedIncidents.length > 0) && (
         <RevealSection>
