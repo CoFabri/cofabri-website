@@ -203,8 +203,9 @@ export default function PartnerForm() {
               onChange={handleInputChange}
               maxLength={FIRST_NAME_MAX_LENGTH}
               className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20 ${errors.firstName ? 'border-danger' : 'border-border-strong'}`}
+              aria-describedby={errors.firstName ? 'firstName-error' : undefined}
             />
-            {errors.firstName && <p className="mt-1 text-sm text-danger">{errors.firstName}</p>}
+            {errors.firstName && <p id="firstName-error" className="mt-1 text-sm text-danger">{errors.firstName}</p>}
           </div>
           <div>
             <label htmlFor="lastName" className="mb-2 block text-sm font-medium text-foreground">Last Name *</label>
@@ -216,8 +217,9 @@ export default function PartnerForm() {
               onChange={handleInputChange}
               maxLength={LAST_NAME_MAX_LENGTH}
               className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20 ${errors.lastName ? 'border-danger' : 'border-border-strong'}`}
+              aria-describedby={errors.lastName ? 'lastName-error' : undefined}
             />
-            {errors.lastName && <p className="mt-1 text-sm text-danger">{errors.lastName}</p>}
+            {errors.lastName && <p id="lastName-error" className="mt-1 text-sm text-danger">{errors.lastName}</p>}
           </div>
         </div>
 
@@ -232,8 +234,9 @@ export default function PartnerForm() {
               onChange={handleInputChange}
               maxLength={EMAIL_MAX_LENGTH}
               className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20 ${errors.email ? 'border-danger' : 'border-border-strong'}`}
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
-            {errors.email && <p className="mt-1 text-sm text-danger">{errors.email}</p>}
+            {errors.email && <p id="email-error" className="mt-1 text-sm text-danger">{errors.email}</p>}
           </div>
           <div>
             <label htmlFor="phone" className="mb-2 block text-sm font-medium text-foreground">Phone (optional)</label>
@@ -273,8 +276,9 @@ export default function PartnerForm() {
               maxLength={INDUSTRY_MAX_LENGTH}
               placeholder="e.g. Veterinary clinics"
               className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20 ${errors.industry ? 'border-danger' : 'border-border-strong'}`}
+              aria-describedby={errors.industry ? 'industry-error' : undefined}
             />
-            {errors.industry && <p className="mt-1 text-sm text-danger">{errors.industry}</p>}
+            {errors.industry && <p id="industry-error" className="mt-1 text-sm text-danger">{errors.industry}</p>}
           </div>
         </div>
 
@@ -288,9 +292,10 @@ export default function PartnerForm() {
             rows={6}
             maxLength={MESSAGE_MAX_LENGTH}
             className={`w-full resize-none rounded-lg border px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20 ${errors.message ? 'border-danger' : 'border-border-strong'}`}
+            aria-describedby={errors.message ? 'message-error' : undefined}
           />
           <div className="mt-1 flex items-center justify-between">
-            {errors.message && <p className="text-sm text-danger">{errors.message}</p>}
+            {errors.message && <p id="message-error" className="text-sm text-danger">{errors.message}</p>}
             <p className="ml-auto text-sm text-muted-foreground">{formData.message.length}/{MESSAGE_MAX_LENGTH}</p>
           </div>
         </div>
