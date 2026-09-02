@@ -11,7 +11,6 @@ import {
   type CofabriLogoTone,
   type CofabriLogoVariant,
 } from '@/lib/cofabri-logo';
-import CofabriLogoThemedArt from './CofabriLogoThemedArt';
 
 export interface CofabriLogoProps {
   /** Rendered height of the artwork in px, excluding clear space. Width derives from it. */
@@ -41,7 +40,7 @@ export default async function CofabriLogo({
   const cut = pickCofabriCut(height, variant);
   const ratio = cut.startsWith('mark') ? MARK_RATIO : LOCKUP_RATIO;
   const width = Math.round(height * ratio);
-  const pad = Math.round(height * CLEAR_SPACE * (clearSpace === 'dense' ? 0.5 : 1));
+  const pad = Math.ceil(height * CLEAR_SPACE * (clearSpace === 'dense' ? 0.5 : 1));
   // Scoped per render, not per request — fine, since it only has to be
   // unique across logos mounted in the same document, not across requests.
   const scope = `cofabri-${(instanceCounter++).toString(36)}`;
@@ -53,13 +52,25 @@ export default async function CofabriLogo({
         loadCofabriSvg(cofabriAssetUrl(cut, 'light')),
         loadCofabriSvg(cofabriAssetUrl(cut, 'dark')),
       ]);
+      const lightHtml = namespaceIds(lightRaw, `${scope}-light`);
+      const darkHtml = namespaceIds(darkRaw, `${scope}-dark`);
       art = (
-        <CofabriLogoThemedArt
-          lightHtml={namespaceIds(lightRaw, `${scope}-light`)}
-          darkHtml={namespaceIds(darkRaw, `${scope}-dark`)}
-          width={width}
-          height={height}
-        />
+        <>
+          <span
+            role="img"
+            aria-label="CoFabri"
+            className="block dark:hidden"
+            style={{ width, height, flex: 'none' }}
+            dangerouslySetInnerHTML={{ __html: lightHtml }}
+          />
+          <span
+            role="img"
+            aria-label="CoFabri"
+            className="hidden dark:block"
+            style={{ width, height, flex: 'none' }}
+            dangerouslySetInnerHTML={{ __html: darkHtml }}
+          />
+        </>
       );
     } catch (error) {
       console.error(
@@ -67,7 +78,7 @@ export default async function CofabriLogo({
         error instanceof Error ? error.message : String(error)
       );
       // Render empty placeholder to prevent layout shift without showing broken logo
-      art = <span style={{ display: 'block', width, height, flex: 'none' }} />;
+      art = <span role="img" aria-label="CoFabri" style={{ display: 'block', width, height, flex: 'none' }} />;
     }
   } else {
     try {
@@ -87,7 +98,7 @@ export default async function CofabriLogo({
         error instanceof Error ? error.message : String(error)
       );
       // Render empty placeholder to prevent layout shift without showing broken logo
-      art = <span style={{ display: 'block', width, height, flex: 'none' }} />;
+      art = <span role="img" aria-label="CoFabri" style={{ display: 'block', width, height, flex: 'none' }} />;
     }
   }
 

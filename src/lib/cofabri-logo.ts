@@ -74,18 +74,26 @@ export function cofabriAssetUrl(cut: Cut, tone: ResolvedTone): string {
 }
 
 /**
- * Strip the XML prolog/doctype/comments/<title> (the caller supplies the
- * accessible name via aria-label, so a nested <title> would duplicate it),
- * and drop the intrinsic width/height so the wrapper owns sizing. Fills and
- * fill-rule="evenodd" are never touched — the gap between shell and core is
- * a real knockout, and rewriting fills would defeat it.
+ * Strip the XML prolog/doctype/comments/<title>/<metadata> (the caller
+ * supplies the accessible name via aria-label, so a nested <title> would
+ * duplicate it; <metadata> carries C2PA provenance data that serves no
+ * purpose once inlined and is pure dead weight in every page's HTML), and
+ * drop the intrinsic width/height so the wrapper owns sizing. Also strips
+ * <script> tags and inline event handler attributes as defense-in-depth —
+ * the source is the organization's own asset CDN, so this isn't guarding
+ * against an active threat, but the cost is near zero. Fills and
+ * fill-rule="evenodd" are never touched — the gap between shell and core
+ * is a real knockout, and rewriting fills would defeat it.
  */
-function sanitize(svg: string): string {
+function normalizeSvg(svg: string): string {
   return svg
     .replace(/<\?xml[\s\S]*?\?>/g, '')
     .replace(/<!DOCTYPE[\s\S]*?>/g, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<title[\s\S]*?<\/title>/gi, '')
+    .replace(/<metadata[\s\S]*?<\/metadata>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/\son[a-z]+="[^"]*"/gi, '')
     .replace(/<svg\b([^>]*)>/i, (_m, attrs: string) =>
       `<svg${attrs.replace(/\s(?:width|height)="[^"]*"/gi, '')} style="display:block;width:100%;height:100%">`,
     )
@@ -117,22 +125,33 @@ export function namespaceIds(svg: string, prefix: string): string {
  * fetch, not subject to browser CORS) — Next's fetch cache also dedupes
  * this across requests, but this cache additionally dedupes within a single
  * render when a header + footer both request the same URL in one pass.
- * `revalidate: 3600` means a design-team asset update shows up within an
- * hour without a redeploy.
+ * Note: this in-memory cache never expires once a fetch succeeds, so a
+ * long-lived warm server instance keeps serving the first version it ever
+ * fetched until the process restarts — `revalidate: 3600` governs Next's
+ * own fetch cache, which a warm instance with an already-resolved promise
+ * here never re-consults. A design-team asset update reaches NEW server
+ * instances within the hour; an existing warm instance needs a restart.
  */
 const svgCache = new Map<string, Promise<string>>();
+const failedAt = new Map<string, number>();
+const FAILURE_COOLDOWN_MS = 30_000;
 
 export function loadCofabriSvg(url: string): Promise<string> {
+  const lastFailure = failedAt.get(url);
+  if (lastFailure && Date.now() - lastFailure < FAILURE_COOLDOWN_MS) {
+    return Promise.reject(new Error(`CofabriLogo: ${url} recently failed, cooling down`));
+  }
   let pending = svgCache.get(url);
   if (!pending) {
-    pending = fetch(url, { next: { revalidate: 3600 } })
+    pending = fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(3000) })
       .then((res) => {
         if (!res.ok) throw new Error(`CofabriLogo: ${url} -> ${res.status}`);
         return res.text();
       })
-      .then(sanitize)
+      .then(normalizeSvg)
       .catch((err) => {
         svgCache.delete(url);
+        failedAt.set(url, Date.now());
         throw err;
       });
     svgCache.set(url, pending);
