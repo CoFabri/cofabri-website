@@ -16,7 +16,7 @@ interface TestimonialPreviewCardProps {
 
 export default function TestimonialPreviewCard({ testimonial }: TestimonialPreviewCardProps) {
   return (
-    <div className="group relative p-8 rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1">
+    <div className="group relative p-8 rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1">
       <div className="flex items-center mb-6">
         <div className="relative w-14 h-14 rounded-full overflow-hidden transition-transform duration-300 group-hover:scale-110">
           <Image
@@ -27,13 +27,13 @@ export default function TestimonialPreviewCard({ testimonial }: TestimonialPrevi
           />
         </div>
         <div className="ml-4">
-          <h3 className="text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-600">
+          <h3 className="text-lg font-semibold text-foreground transition-colors duration-300 group-hover:text-primary">
             {testimonial.name}
           </h3>
-          <p className="text-gray-600 transition-colors duration-300 group-hover:text-gray-700">
+          <p className="text-muted-foreground transition-colors duration-300">
             {testimonial.role}
           </p>
-          <p className="text-gray-500 text-sm transition-colors duration-300 group-hover:text-gray-600">
+          <p className="text-muted-foreground text-sm transition-colors duration-300">
             {testimonial.company}
           </p>
         </div>
@@ -48,13 +48,13 @@ export default function TestimonialPreviewCard({ testimonial }: TestimonialPrevi
         ))}
       </div>
 
-      <blockquote className="text-gray-600 italic transition-colors duration-300 group-hover:text-gray-700">
+      <blockquote className="text-muted-foreground italic transition-colors duration-300">
         "{testimonial.content}"
       </blockquote>
 
-      <div className="absolute top-4 right-4 text-6xl font-serif text-indigo-100 select-none transition-transform duration-300 group-hover:scale-110 group-hover:text-indigo-200">
+      <div className="absolute top-4 right-4 text-6xl font-serif text-muted-foreground/10 select-none transition-transform duration-300 group-hover:scale-110 group-hover:text-muted-foreground/20">
         "
       </div>
     </div>
   );
-} 
+}

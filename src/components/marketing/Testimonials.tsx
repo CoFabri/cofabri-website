@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { StarIcon } from '@heroicons/react/24/solid';
 import SectionHeading from './SectionHeading';
 import TestimonialPreviewCard from './TestimonialPreviewCard';
-import { Testimonial, getTestimonials } from '@/lib/airtable';
+import RevealSection from './RevealSection';
+import { Testimonial } from '@/lib/airtable';
 
 interface TestimonialsProps {
   appId?: string;
@@ -39,9 +39,10 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6">
           <SectionHeading
+            eyebrow="Testimonials"
             title="What Our Customers Say"
             subtitle="Hear from businesses that have transformed their operations with our apps"
           />
@@ -49,17 +50,17 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
             {[...Array(3)].map((_, index) => (
               <div
                 key={index}
-                className="relative p-8 rounded-2xl bg-white shadow-lg animate-pulse"
+                className="relative p-8 rounded-2xl bg-card border border-border shadow-sm animate-pulse"
               >
                 <div className="flex items-center mb-6">
-                  <div className="w-14 h-14 rounded-full bg-gray-200" />
+                  <div className="w-14 h-14 rounded-full bg-muted" />
                   <div className="ml-4">
-                    <div className="h-4 w-32 bg-gray-200 rounded" />
-                    <div className="h-3 w-24 bg-gray-200 rounded mt-2" />
+                    <div className="h-4 w-32 bg-muted rounded" />
+                    <div className="h-3 w-24 bg-muted rounded mt-2" />
                   </div>
                 </div>
-                <div className="h-4 w-full bg-gray-200 rounded mb-4" />
-                <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                <div className="h-4 w-full bg-muted rounded mb-4" />
+                <div className="h-4 w-3/4 bg-muted rounded" />
               </div>
             ))}
           </div>
@@ -70,13 +71,14 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
 
   if (error) {
     return (
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6">
           <SectionHeading
+            eyebrow="Testimonials"
             title="What Our Customers Say"
             subtitle="Hear from businesses that have transformed their operations with our apps"
           />
-          <div className="text-center text-red-500">
+          <div className="text-center text-destructive">
             {error}
           </div>
         </div>
@@ -85,9 +87,10 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
   }
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <RevealSection className="py-20 bg-muted/30">
+      <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
+          eyebrow="Testimonials"
           title="What Our Customers Say"
           subtitle="Hear from businesses that have transformed their operations with our apps"
         />
@@ -109,8 +112,8 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
           ))}
         </div>
       </div>
-    </section>
+    </RevealSection>
   );
 };
 
-export default Testimonials; 
+export default Testimonials;
