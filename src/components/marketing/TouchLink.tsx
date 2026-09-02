@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useNavigationTouchFeedback } from '@/hooks/useTouchFeedback';
+import { useTouchFeedback } from '@/hooks/useTouchFeedback';
 import { cn } from '@/lib/utils';
 
 interface TouchLinkProps {
@@ -33,7 +33,7 @@ const TouchLink: React.FC<TouchLinkProps> = ({
   rel,
   ...props
 }) => {
-  const { touchProps } = useNavigationTouchFeedback();
+  const { touchProps } = useTouchFeedback({ hapticType, preventDefault: false, stopPropagation: false });
 
   const baseClasses = 'touch-link touch-focus select-none';
   

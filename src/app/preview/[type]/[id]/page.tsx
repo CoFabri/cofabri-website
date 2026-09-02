@@ -74,8 +74,9 @@ interface Roadmap {
 
 export default function PreviewPage() {
   const params = useParams();
+  const paramType = params && 'type' in params ? (params.type as string) : undefined;
+  const paramId = params && 'id' in params ? (params.id as string) : undefined;
   const [content, setContent] = useState<PreviewContent | null>(null);
-  const [_isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seoPreview, setSeoPreview] = useState<SeoPreview | null>(null);
   const [isReadyToPost, setIsReadyToPost] = useState(false);
@@ -89,19 +90,18 @@ export default function PreviewPage() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        if (!params || typeof params !== 'object' || !('type' in params) || !('id' in params)) {
+        if (!paramType || !paramId) {
           setError('Invalid preview parameters.');
-          setIsLoading(false);
           setShowLoading(false);
           return;
         }
-        const response = await fetch(`/api/preview/${params.type}/${params.id}`);
+        const response = await fetch(`/api/preview/${paramType}/${paramId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch preview content');
         }
         const data = await response.json();
         setContent(data);
-        
+
         // Generate SEO preview
         const title = data.title || 'Untitled';
         const description = data.excerpt || data.content?.substring(0, 160) || 'No description available';
@@ -109,7 +109,7 @@ export default function PreviewPage() {
         setSeoPreview({
           title: fullTitle,
           description,
-          url: `${window.location.origin}/${params.type}/${data.slug || ''}`,
+          url: `${window.location.origin}/${paramType}/${data.slug || ''}`,
           titleLength: fullTitle.length,
           descriptionLength: description.length
         });
@@ -150,8 +150,8 @@ export default function PreviewPage() {
           status: ['publicStatus', 'affectedServices', 'application', 'updates']
         };
 
-        const fields = requiredFieldsMap[params.type as keyof typeof requiredFieldsMap] || [];
-        const optionalFieldsList = optionalFieldsMap[params.type as keyof typeof optionalFieldsMap] || [];
+        const fields = requiredFieldsMap[paramType as keyof typeof requiredFieldsMap] || [];
+        const optionalFieldsList = optionalFieldsMap[paramType as keyof typeof optionalFieldsMap] || [];
         const missing: MissingField[] = [];
         const allFields = Object.keys(data);
         
@@ -189,14 +189,13 @@ export default function PreviewPage() {
       } finally {
         // Add a minimum display time for the loading state
         setTimeout(() => {
-          setIsLoading(false);
           setShowLoading(false);
         }, 500);
       }
     };
 
     fetchContent();
-  }, [params && 'type' in params ? params.type : undefined, params && 'id' in params ? params.id : undefined]);
+  }, [paramType, paramId]);
 
   const getStatusIcon = (status: string) => {
     switch (status?.toLowerCase().replace(/_/g, ' ')) {
@@ -261,10 +260,10 @@ export default function PreviewPage() {
           <p className="text-muted-foreground mb-4">{error}</p>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <span>Type:</span>
-            <span className="font-medium">{params && 'type' in params ? params.type : 'N/A'}</span>
+            <span className="font-medium">{paramType || 'N/A'}</span>
             <span>•</span>
             <span>ID:</span>
-            <span className="font-medium">{params && 'id' in params ? params.id : 'N/A'}</span>
+            <span className="font-medium">{paramId || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -959,7 +958,7 @@ export default function PreviewPage() {
               <span className="text-sm font-medium text-accent-foreground">Preview Mode</span>
             </div>
             <span className="text-xs text-accent-foreground bg-accent-hover/15 px-2 py-1 rounded-full">
-              {params && 'type' in params ? params.type : 'N/A'}/{params && 'id' in params ? params.id : 'N/A'}
+              {paramType || 'N/A'}/{paramId || 'N/A'}
             </span>
           </div>
         </div>

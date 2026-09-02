@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { hapticFeedback, isTouchDevice, isIOS } from '@/lib/utils';
+import { hapticFeedback, isTouchDevice } from '@/lib/utils';
 
 interface TouchFeedbackOptions {
   hapticType?: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error';
@@ -98,7 +98,7 @@ export function useButtonTouchFeedback(options: TouchFeedbackOptions = {}) {
     ...options
   });
 
-  const handleClick = useCallback((event: React.MouseEvent) => {
+  const handleClick = useCallback(() => {
     // Provide haptic feedback on click for touch devices
     if (isTouchDevice()) {
       hapticFeedback(options.hapticType || 'light');

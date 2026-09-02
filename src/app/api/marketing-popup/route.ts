@@ -4,7 +4,7 @@ import { getMarketingPopupConfig } from '@/lib/api-client';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: Request) {
+export async function GET() {
   try {
     const config = await getMarketingPopupConfig();
     return NextResponse.json(config);

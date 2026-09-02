@@ -23,10 +23,7 @@ interface Banner {
   textColor?: string;
 }
 
-// Track number of requests
-let requestCount = 0;
 const fetcher = async (url: string) => {
-  requestCount++;
   const res = await fetch(url, {
     cache: 'no-store',
     headers: {
@@ -120,7 +117,6 @@ export default function SitewideBanner() {
   const banner = activeBanners.sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
 
   const getBannerStyles = () => {
-    const type = (banner.type || '').toLowerCase();
     const bgColor = banner.backgroundColor?.toLowerCase() || 'blue';
     const textColor = banner.textColor?.toLowerCase() || 'white';
 

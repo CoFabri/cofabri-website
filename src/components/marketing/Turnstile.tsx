@@ -118,10 +118,10 @@ export default function Turnstile({
         try {
           widgetIdRef.current = window.turnstile.render(containerRef.current, options);
           setIsRendered(true);
-        } catch (error) {
+        } catch {
           setHasError(true);
         }
-      } catch (error) {
+      } catch {
         setHasError(true);
       } finally {
         if (mounted) {
@@ -138,7 +138,7 @@ export default function Turnstile({
       if (widgetIdRef.current && window.turnstile) {
         try {
           window.turnstile.reset(widgetIdRef.current);
-        } catch (error) {
+        } catch {
           // Silently handle reset errors
         }
       }

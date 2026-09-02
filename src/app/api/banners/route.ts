@@ -4,7 +4,7 @@ import { getBanners } from '@/lib/api-client';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: Request) {
+export async function GET() {
   try {
     console.log('Fetching banners...');
     const banners = await getBanners();

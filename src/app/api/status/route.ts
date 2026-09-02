@@ -9,7 +9,7 @@ let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const now = Date.now();
     
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
 }
 
 // Handle OPTIONS requests for CORS preflight
-export async function OPTIONS(request: Request) {
+export async function OPTIONS() {
   const response = new NextResponse(null, { status: 200 });
   
   response.headers.set('Access-Control-Allow-Origin', '*');

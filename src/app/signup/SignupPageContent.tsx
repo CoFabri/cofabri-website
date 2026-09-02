@@ -1,11 +1,9 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import GradientHeading from '@/components/marketing/GradientHeading';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SparklesIcon, RocketLaunchIcon, StarIcon, HeartIcon, CheckCircleIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { SparklesIcon, StarIcon, HeartIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import AnimatedGradient from '@/components/marketing/AnimatedGradient';
 import { Button } from '@/components/ui/button';
 import { CoreLoader } from '@/components/ui/core-loader';

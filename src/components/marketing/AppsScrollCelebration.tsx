@@ -66,7 +66,11 @@ export default function AppsScrollCelebration({ apps }: AppsScrollCelebrationPro
     }
 
     return () => observer.disconnect();
-  }, [apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
+    // apps.length (not apps, and not hasLaunchingApps which closes over it)
+    // is intentional: apps is a new array reference every render, which
+    // would tear down and recreate the observer on every render otherwise.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apps.length]);
 
   return (
     <div 

@@ -4,17 +4,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CoreLoader } from '@/components/ui/core-loader';
 
-interface PreviewContent {
-  id: string;
-  type: string;
-  [key: string]: unknown;
-}
-
-interface MissingField {
-  field: string;
-  value: unknown;
-}
-
 export default function LoginPreviewPage() {
   return (
     <Suspense fallback={
@@ -33,12 +22,7 @@ function LoginPreviewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirect = searchParams ? searchParams.get('redirect') || '/' : '/';
-  const [content, setContent] = useState<PreviewContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [requiredFields, setRequiredFields] = useState<string[]>([]);
-  const [optionalFields, setOptionalFields] = useState<string[]>([]);
-  const [missingFields, setMissingFields] = useState<MissingField[]>([]);
-  const [isReadyToPost, setIsReadyToPost] = useState(false);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -47,8 +31,6 @@ function LoginPreviewContent() {
         if (!response.ok) {
           throw new Error('Failed to fetch login preview content');
         }
-        const data = await response.json();
-        setContent(data);
         setIsLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch content');
@@ -69,7 +51,7 @@ function LoginPreviewContent() {
       const redirectUrl = new URL(redirect, window.location.origin);
       redirectUrl.searchParams.set('password', password);
       router.push(redirectUrl.toString());
-    } catch (err) {
+    } catch {
       setError('Failed to redirect. Please try again.');
     }
   };

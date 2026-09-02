@@ -65,7 +65,11 @@ export default function AppsCelebration({ apps }: AppsCelebrationProps) {
     }, 400);
 
     return () => clearInterval(interval);
-  }, [apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
+    // apps.length (not apps) is intentional: apps is a new array reference
+    // every render, which would re-fire this effect (and the confetti) on
+    // every render if it were a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apps.length]);
 
   return null;
 } 

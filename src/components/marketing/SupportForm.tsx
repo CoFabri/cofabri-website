@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { ChevronDown, Mail, Phone, CircleCheck, LifeBuoy, Lightbulb } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
@@ -50,102 +51,6 @@ interface App {
   faviconUrl?: string;
 }
 
-interface CustomDropdownProps {
-  options: { value: string; label: string; image?: string }[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  disabled?: boolean;
-}
-
-function CustomDropdown({ options, value, onChange, placeholder, disabled = false }: CustomDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedOption = options.find(option => option.value === value);
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        className={`w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors bg-background text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-ink-faint'
-        }`}
-      >
-        <div className="flex items-center space-x-3">
-          {selectedOption?.image ? (
-            <img 
-              src={selectedOption.image} 
-              alt={selectedOption.label}
-              className="w-6 h-6 rounded object-contain"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
-              <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-              </svg>
-            </div>
-          )}
-          <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
-            {selectedOption ? selectedOption.label : placeholder}
-          </span>
-        </div>
-        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-3 text-left hover:bg-muted flex items-center space-x-3 transition-colors"
-            >
-              {option.image ? (
-                <img 
-                  src={option.image} 
-                  alt={option.label}
-                  className="w-6 h-6 rounded object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
-                  <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-              <span className="text-foreground">{option.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Simple dropdown component for text-only options (no images)
 // Multi-select dropdown component
 function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, disabled = false }: {
@@ -187,9 +92,12 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
               {selectedOptions.slice(0, 2).map((option) => (
                 <div key={option.value} className="flex items-center space-x-1 bg-accent text-accent-foreground px-2 py-1 rounded text-sm">
                   {option.image && (
-                    <img 
-                      src={option.image} 
+                    <Image
+                      src={option.image}
                       alt={option.label}
+                      width={16}
+                      height={16}
+                      unoptimized={process.env.NODE_ENV === 'development'}
                       className="w-4 h-4 rounded object-contain"
                     />
                   )}
@@ -234,9 +142,12 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
                 )}
               </div>
               {option.image ? (
-                <img 
-                  src={option.image} 
+                <Image
+                  src={option.image}
                   alt={option.label}
+                  width={24}
+                  height={24}
+                  unoptimized={process.env.NODE_ENV === 'development'}
                   className="w-6 h-6 rounded object-contain"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -608,8 +519,8 @@ export default function SupportForm() {
       formDataToSend.append('turnstileToken', turnstileToken);
 
       // Append screenshots
-      formData.screenshots.forEach((file, index) => {
-        formDataToSend.append(`screenshots`, file);
+      formData.screenshots.forEach((file) => {
+        formDataToSend.append('screenshots', file);
       });
 
       const response = await fetch('/api/support', {
@@ -644,7 +555,7 @@ export default function SupportForm() {
         setSubmitStatus('error');
         setErrorMessage(errorData.error || 'Failed to submit form. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
       setErrorMessage('Network error. Please check your connection and try again.');
     } finally {

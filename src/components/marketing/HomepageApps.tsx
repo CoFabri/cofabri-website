@@ -119,7 +119,11 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
     observer.observe(sectionRef.current);
     return () => observer.disconnect();
-  }, [hasTriggeredConfetti, apps.length]); // Use apps.length instead of apps array to prevent infinite re-renders
+    // apps.length (not apps) is intentional: apps is a new array reference
+    // every render, which would tear down and recreate the observer on
+    // every render if it were a dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasTriggeredConfetti, apps.length]);
 
   if (isLoading) {
     return (

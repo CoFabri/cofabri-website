@@ -10,7 +10,7 @@ let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const now = Date.now();
     

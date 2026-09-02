@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
@@ -88,9 +89,12 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
       >
         <div className="flex items-center space-x-3">
           {selectedOption?.image ? (
-            <img 
-              src={selectedOption.image} 
+            <Image
+              src={selectedOption.image}
               alt={selectedOption.label}
+              width={24}
+              height={24}
+              unoptimized={process.env.NODE_ENV === 'development'}
               className="w-6 h-6 rounded object-contain"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -123,9 +127,12 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
               className="w-full px-4 py-3 text-left hover:bg-muted flex items-center space-x-3 transition-colors"
             >
               {option.image ? (
-                <img 
-                  src={option.image} 
+                <Image
+                  src={option.image}
                   alt={option.label}
+                  width={24}
+                  height={24}
+                  unoptimized={process.env.NODE_ENV === 'development'}
                   className="w-6 h-6 rounded object-contain"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -496,7 +503,7 @@ export default function ContactForm() {
         setSubmitStatus('error');
         setErrorMessage(errorData.error || 'Failed to submit form. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
       setErrorMessage('Network error. Please check your connection and try again.');
     } finally {
