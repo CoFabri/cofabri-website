@@ -368,3 +368,104 @@ export async function getTestimonials(randomCount?: number): Promise<Testimonial
     return [];
   }
 }
+
+export interface Banner {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  linkUrl?: string;
+  linkText?: string;
+  backgroundColor: string;
+  textColor: string;
+  priority: number;
+}
+
+interface BannerRow {
+  id: string;
+  title: string;
+  message: string | null;
+  type: string;
+  link_url: string | null;
+  link_text: string | null;
+  background_color: string;
+  text_color: string;
+  priority: number;
+}
+
+function mapBanner(row: BannerRow): Banner {
+  return {
+    id: row.id,
+    title: row.title,
+    message: row.message || '',
+    type: row.type,
+    linkUrl: row.link_url || undefined,
+    linkText: row.link_text || undefined,
+    backgroundColor: row.background_color,
+    textColor: row.text_color,
+    priority: row.priority,
+  };
+}
+
+export async function getBanners(): Promise<Banner[]> {
+  try {
+    const rows = await apiFetch<BannerRow[]>('/web/content/banners');
+    return rows.map(mapBanner);
+  } catch (error) {
+    console.error('Error fetching banners:', error);
+    return [];
+  }
+}
+
+export interface MarketingPopupConfig {
+  title: string;
+  content: string;
+  buttonText: string;
+  buttonLink: string;
+  backgroundColor: string;
+  textColor: string;
+  buttonColor: string;
+  position: 'Center' | 'Bottom Right' | 'Bottom Left';
+  delay: number;
+  isEnabled: boolean;
+}
+
+interface MarketingPopupRow {
+  title: string;
+  content: string | null;
+  button_text: string | null;
+  button_link: string | null;
+  background_color: string;
+  text_color: string;
+  button_color: string;
+  position: 'center' | 'bottom_right' | 'bottom_left';
+  delay: number;
+}
+
+const POSITION_MAP: Record<MarketingPopupRow['position'], MarketingPopupConfig['position']> = {
+  center: 'Center',
+  bottom_right: 'Bottom Right',
+  bottom_left: 'Bottom Left',
+};
+
+export async function getMarketingPopupConfig(): Promise<MarketingPopupConfig | null> {
+  try {
+    const row = await apiFetch<MarketingPopupRow | null>('/web/content/marketing-popups');
+    if (!row) return null;
+    return {
+      title: row.title,
+      content: row.content || '',
+      buttonText: row.button_text || '',
+      buttonLink: row.button_link || '/',
+      backgroundColor: row.background_color,
+      textColor: row.text_color,
+      buttonColor: row.button_color,
+      position: POSITION_MAP[row.position] || 'Center',
+      delay: (row.delay || 0) * 1000,
+      isEnabled: true,
+    };
+  } catch (error) {
+    console.error('Error fetching marketing popup config:', error);
+    return null;
+  }
+}
