@@ -43,7 +43,7 @@ const Hero = () => {
 
         <div className="mt-16 grid grid-cols-2 divide-x divide-border border-t border-border sm:grid-cols-4 md:mt-24">
           {metrics.map((m) => (
-            <div key={m.label} className="py-7 pr-6">
+            <div key={m.label} className="px-6 py-7 first:pl-0">
               <div className="text-[28px] font-semibold tracking-[-0.03em] text-foreground sm:text-[34px]">
                 {m.value}
               </div>

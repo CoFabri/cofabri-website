@@ -69,20 +69,24 @@ const Navbar = () => {
         </Link>
 
         <ul className="hidden lg:flex items-center gap-1">
-          {navigation.map((item) => (
-            <li key={item.name}>
-              <Link
-                href={item.href}
-                className={`inline-flex items-center rounded-lg px-3.5 py-2 text-[15px] font-medium transition-colors duration-200 ${
-                  isActive(item.href)
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                }`}
-              >
-                {item.name}
-              </Link>
-            </li>
-          ))}
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[15px] font-medium leading-none transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? 'bg-muted text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-[15px] w-[15px] flex-shrink-0" />
+                  {item.name}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">

@@ -4,18 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
-import Testimonials from '@/components/marketing/Testimonials';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
-import NewsletterSignup from '@/components/marketing/NewsletterSignup';
 import LiveChat from '@/components/marketing/LiveChat';
-import RevealSection from '@/components/marketing/RevealSection';
-import { Card } from '@/components/ui/card';
 
 export default function HomeContent() {
   const searchParams = useSearchParams();
   const [showCacheCleared, setShowCacheCleared] = useState(false);
-  const [appsLoaded, setAppsLoaded] = useState(false);
 
   useEffect(() => {
     if (searchParams?.get('cache-cleared') === 'true') {
@@ -25,22 +20,6 @@ export default function HomeContent() {
     }
   }, [searchParams]);
 
-  // Handle anchor links after apps are loaded
-  useEffect(() => {
-    if (appsLoaded && typeof window !== 'undefined') {
-      const hash = window.location.hash;
-      if (hash === '#about') {
-        // Small delay to ensure DOM is fully rendered
-        setTimeout(() => {
-          const element = document.getElementById('about');
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      }
-    }
-  }, [appsLoaded]);
-
   return (
     <main>
       {showCacheCleared && (
@@ -49,17 +28,9 @@ export default function HomeContent() {
         </div>
       )}
       <Hero />
-      <HomepageApps onAppsLoaded={() => setAppsLoaded(true)} />
-      <Testimonials />
+      <HomepageApps />
       <CompactRoadmap />
       <FAQ />
-      <RevealSection className="py-20 bg-background">
-        <div className="mx-auto max-w-6xl px-6">
-          <Card className="max-w-2xl mx-auto p-8 md:p-10">
-            <NewsletterSignup />
-          </Card>
-        </div>
-      </RevealSection>
       <LiveChat />
     </main>
   );
