@@ -117,9 +117,7 @@ export default function RootLayout({
           <StructuredData
             type="organization"
             data={{
-              "foundingDate": "2024",
-              "industry": "Software Development",
-              "numberOfEmployees": "10-50"
+              "industry": "Software Development"
             }}
           />
           <StructuredData
