@@ -48,29 +48,47 @@ export default async function CofabriLogo({
 
   let art: React.ReactNode;
   if (tone === 'auto') {
-    const [lightRaw, darkRaw] = await Promise.all([
-      loadCofabriSvg(cofabriAssetUrl(cut, 'light')),
-      loadCofabriSvg(cofabriAssetUrl(cut, 'dark')),
-    ]);
-    art = (
-      <CofabriLogoThemedArt
-        lightHtml={namespaceIds(lightRaw, `${scope}-light`)}
-        darkHtml={namespaceIds(darkRaw, `${scope}-dark`)}
-        width={width}
-        height={height}
-      />
-    );
+    try {
+      const [lightRaw, darkRaw] = await Promise.all([
+        loadCofabriSvg(cofabriAssetUrl(cut, 'light')),
+        loadCofabriSvg(cofabriAssetUrl(cut, 'dark')),
+      ]);
+      art = (
+        <CofabriLogoThemedArt
+          lightHtml={namespaceIds(lightRaw, `${scope}-light`)}
+          darkHtml={namespaceIds(darkRaw, `${scope}-dark`)}
+          width={width}
+          height={height}
+        />
+      );
+    } catch (error) {
+      console.error(
+        `Failed to load CoFabri logo (cut: ${cut}):`,
+        error instanceof Error ? error.message : String(error)
+      );
+      // Render empty placeholder to prevent layout shift without showing broken logo
+      art = <span style={{ display: 'block', width, height, flex: 'none' }} />;
+    }
   } else {
-    const raw = await loadCofabriSvg(cofabriAssetUrl(cut, tone));
-    const html = namespaceIds(raw, scope);
-    art = (
-      <span
-        role="img"
-        aria-label="CoFabri"
-        style={{ display: 'block', width, height, flex: 'none' }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    );
+    try {
+      const raw = await loadCofabriSvg(cofabriAssetUrl(cut, tone));
+      const html = namespaceIds(raw, scope);
+      art = (
+        <span
+          role="img"
+          aria-label="CoFabri"
+          style={{ display: 'block', width, height, flex: 'none' }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      );
+    } catch (error) {
+      console.error(
+        `Failed to load CoFabri logo (cut: ${cut}, tone: ${tone}):`,
+        error instanceof Error ? error.message : String(error)
+      );
+      // Render empty placeholder to prevent layout shift without showing broken logo
+      art = <span style={{ display: 'block', width, height, flex: 'none' }} />;
+    }
   }
 
   const wrapperStyle: React.CSSProperties = { padding: pad, lineHeight: 0 };
