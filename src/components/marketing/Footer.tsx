@@ -61,11 +61,7 @@ const Footer = () => {
           </ul>
 
           <div className="flex-shrink-0 text-xs text-[#6B7880]">
-            &copy; {new Date().getFullYear()} CoFabri by{' '}
-            <Link href="https://mavenx.co" className="font-medium text-[#9BA7B0] hover:text-white underline underline-offset-2" target="_blank" rel="noopener noreferrer">
-              Maven X LLC
-            </Link>
-            . All rights reserved.
+            &copy; {new Date().getFullYear()} CoFabri. All rights reserved.
           </div>
         </div>
       </div>
