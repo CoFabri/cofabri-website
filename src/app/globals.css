@@ -170,14 +170,6 @@
     @apply rounded-lg shadow-lg p-6 bg-white;
   }
   
-  .btn-primary {
-    @apply bg-[var(--accent)] text-white px-6 py-2 rounded-lg hover:bg-[var(--accent)]/90 transition-all duration-200;
-  }
-
-  .btn-secondary {
-    @apply bg-[var(--secondary)] text-white px-6 py-2 rounded-lg hover:bg-[var(--secondary)]/90 transition-all duration-200;
-  }
-
   .glass-card {
     @apply backdrop-blur-lg border;
     background: var(--glass-bg);
@@ -569,34 +561,6 @@
     content: "";
     margin-top: 0.5rem;
   }
-}
-
-  .futuristic-button {
-  @apply px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold;
-  @apply transition-all duration-300;
-  @apply relative overflow-hidden;
-  @apply border border-indigo-500/50;
-  @apply shadow-lg shadow-indigo-500/20;
-}
-
-.futuristic-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: 0.5s;
-}
-
-.futuristic-button:hover::before {
-  left: 100%;
 }
 
 /* Modern Scrollbar */
