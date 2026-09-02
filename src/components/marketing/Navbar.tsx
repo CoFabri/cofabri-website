@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   Home, LayoutGrid, TrendingUp, BookOpen, LifeBuoy, Mail,
-  Menu, Sun, Moon, ArrowRight,
+  Menu, Sun, Moon, Monitor, ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -22,20 +22,33 @@ const navigation = [
   { name: 'Contact', href: '/contact', icon: Mail },
 ];
 
+const THEME_CYCLE = ['light', 'dark', 'system'] as const;
+const THEME_ICONS = { light: Sun, dark: Moon, system: Monitor } as const;
+
 function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   React.useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="h-9 w-9" />;
+
+  const current = THEME_CYCLE.includes(theme as (typeof THEME_CYCLE)[number])
+    ? (theme as (typeof THEME_CYCLE)[number])
+    : 'system';
+  const ActiveIcon = THEME_ICONS[current];
+
+  const cycleTheme = () => {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
+    setTheme(next);
+  };
 
   return (
     <Button
       variant="outline"
       size="icon"
-      aria-label="Toggle dark mode"
-      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      aria-label={`Theme: ${current}. Click to change.`}
+      onClick={cycleTheme}
     >
-      {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      <ActiveIcon className="h-4 w-4" />
     </Button>
   );
 }
