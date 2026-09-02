@@ -229,3 +229,66 @@ export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
     return [];
   }
 }
+
+export interface LegalDocument {
+  id: string;
+  title: string;
+  description?: string;
+  documentType: string;
+  status: string;
+  version: string;
+  lastUpdated: string;
+  documentUrl?: string;
+  associatedApp?: string;
+  category?: string;
+  isPublic: boolean;
+  tags?: string[];
+}
+
+interface LegalDocRow {
+  id: string;
+  document_name: string | null;
+  title: string;
+  document_type: string;
+  status: string;
+  version: number | null;
+  last_updated: string | null;
+  effective_date: string | null;
+}
+
+function mapLegalDocument(row: LegalDocRow): LegalDocument {
+  return {
+    id: row.id,
+    title: row.title || row.document_name || 'Untitled Document',
+    description: undefined,
+    documentType: row.document_type,
+    status: row.status,
+    version: String(row.version ?? '1.0'),
+    lastUpdated: row.last_updated || row.effective_date || new Date().toISOString(),
+    documentUrl: undefined,
+    associatedApp: undefined,
+    category: undefined,
+    isPublic: true,
+    tags: [],
+  };
+}
+
+export async function getLegalDocuments(): Promise<LegalDocument[]> {
+  try {
+    const rows = await apiFetch<LegalDocRow[]>('/web/content/legal');
+    return rows.map(mapLegalDocument);
+  } catch (error) {
+    console.error('Error fetching legal documents:', error);
+    return [];
+  }
+}
+
+export async function getLegalDocument(id: string): Promise<LegalDocument | null> {
+  try {
+    const row = await apiFetch<LegalDocRow>(`/web/content/legal/${encodeURIComponent(id)}`);
+    return mapLegalDocument(row);
+  } catch (error) {
+    console.error('Error fetching legal document:', error);
+    return null;
+  }
+}
