@@ -292,3 +292,79 @@ export async function getLegalDocument(id: string): Promise<LegalDocument | null
     return null;
   }
 }
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  rating: number;
+  image: string;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  apps: string[];
+  featured: boolean;
+}
+
+interface TestimonialRow {
+  id: string;
+  name: string;
+  role_position: string | null;
+  company: string | null;
+  content: string | null;
+  rating: number | null;
+  profile_image_url: string | null;
+  is_active: boolean;
+  is_featured: boolean;
+  created_at: string;
+  apps?: string[];
+}
+
+function mapTestimonial(row: TestimonialRow): Testimonial {
+  return {
+    id: row.id,
+    name: row.name,
+    role: row.role_position || '',
+    company: row.company || '',
+    content: row.content || '',
+    rating: row.rating || 0,
+    image: row.profile_image_url || '/images/placeholder.jpg',
+    isActive: row.is_active,
+    order: 0,
+    createdAt: row.created_at,
+    apps: row.apps || [],
+    featured: row.is_featured,
+  };
+}
+
+export async function getTestimonials(randomCount?: number): Promise<Testimonial[]> {
+  try {
+    const rows = await apiFetch<TestimonialRow[]>('/web/content/testimonials');
+    const testimonials = rows.map(mapTestimonial);
+
+    if (randomCount && randomCount > 0) {
+      const featured = testimonials.filter((t) => t.featured);
+      const nonFeatured = testimonials.filter((t) => !t.featured);
+      const shuffle = (arr: Testimonial[]) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      };
+      const shuffledFeatured = shuffle([...featured]);
+      const shuffledNonFeatured = shuffle([...nonFeatured]);
+      if (shuffledFeatured.length >= randomCount) {
+        return shuffledFeatured.slice(0, randomCount);
+      }
+      return [...shuffledFeatured, ...shuffledNonFeatured].slice(0, randomCount);
+    }
+
+    return testimonials;
+  } catch (error) {
+    console.error('Error fetching testimonials:', error);
+    return [];
+  }
+}
