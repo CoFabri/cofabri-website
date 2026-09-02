@@ -437,7 +437,9 @@ git commit -m "feat: add POST /web/forms/partnership route"
 **Interfaces:**
 - Produces: `export default function CoBuildWordmark({ className }: { className?: string })` — a `<span>` rendering "Co" in the UnifrakturMaguntia display font followed by plain "-Build" text. Consumed by Task 7 (`/partners` hero) and Task 8 (homepage section heading).
 
-- [ ] **Step 1: Attempt the primary approach — load the font via `next/font/google`**
+UnifrakturMaguntia is confirmed available in Google Fonts' catalog (https://fonts.google.com/specimen/UnifrakturMaguntia) — `next/font/google` mirrors that catalog directly, so it loads via the standard `next/font/google` API, self-hosted at build time (no runtime request to Google, no CSP exception needed). This also matches the existing brand mark: `public/images/placeholder.jpg` (the site's real OG share image) already renders "Co" in this exact blackletter style next to a plain bold "Fabri" — confirms this is consistent with established branding, not a one-off choice.
+
+- [ ] **Step 1: Write the component**
 
 Write `src/components/marketing/CoBuildWordmark.tsx`:
 
@@ -461,54 +463,21 @@ export default function CoBuildWordmark({ className = '' }: { className?: string
 }
 ```
 
-- [ ] **Step 2: Build check — confirm `next/font/google` actually exports this font**
+The `fallback` array is the safety net the user asked for: if the self-hosted font file fails to load client-side for any reason, the browser falls through to `Georgia` / `Times New Roman` / generic `serif` instead of showing invisible or broken text.
+
+- [ ] **Step 2: Build check**
 
 Run: `npm run build`
+Expected: succeeds. If it fails with an error naming `UnifrakturMaguntia` (e.g. "has no exported member"), the font isn't in this installed Next.js version's (16.1.7) generated font list despite being in Google's catalog — stop and flag this to the user rather than guessing a workaround, since it would mean the confirmed assumption this step rests on was wrong.
 
-If this succeeds with no error: the primary approach works, skip Step 3 and go to Step 4.
+- [ ] **Step 3: Visual verification**
 
-If it fails with an error naming `UnifrakturMaguntia` (e.g. "has no exported member 'UnifrakturMaguntia'" or a Next.js font-loading error identifying the font as unknown): this specific font isn't available through `next/font/google` under that name in the installed Next.js version (16.1.7). Proceed to Step 3's fallback instead — do not spend time guessing alternate export-name spellings.
+Create a temporary throwaway usage (e.g. drop `<CoBuildWordmark />` into any page temporarily, or wait until Task 7/8 wire it in for real — either is fine) and confirm in the browser that "Co" renders in the same blackletter/gothic style visible in `public/images/placeholder.jpg`, distinct from "-Build", in both light and dark mode. Then, with browser devtools' network conditions set to block the font file request, reload and confirm "Co" falls back to a plain serif font rather than rendering as invisible text or a broken glyph.
 
-- [ ] **Step 3 (fallback, only if Step 2 failed): load the font via a `<link>` tag instead**
-
-Rewrite `src/components/marketing/CoBuildWordmark.tsx`:
-
-```tsx
-export default function CoBuildWordmark({ className = '' }: { className?: string }) {
-  return (
-    <span className={className}>
-      <span style={{ fontFamily: "'UnifrakturMaguntia', Georgia, 'Times New Roman', serif" }}>Co</span>
-      -Build
-    </span>
-  );
-}
-```
-
-Then add the Google Fonts `<link>` tags to the root layout's `<head>` in `src/app/layout.tsx` (alongside the existing `<link rel="icon" .../>` tag near the top of the `<head>` element):
-
-```tsx
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
-```
-
-Re-read `src/app/layout.tsx`'s current `<head>` contents first — it was already flagged as having uncommitted changes from another session, so confirm exactly where the existing `<link>` tags live before adding these three lines near them, and don't touch anything else in the file.
-
-- [ ] **Step 4: Build check**
-
-Run: `npm run build`
-Expected: succeeds (whichever approach was used).
-
-- [ ] **Step 5: Visual verification**
-
-Create a temporary throwaway usage (e.g. drop `<CoBuildWordmark />` into any page temporarily, or wait until Task 7/8 wire it in for real — either is fine) and confirm in the browser that "Co" renders in a visibly different, blackletter/gothic-style typeface from "-Build", in both light and dark mode. Then, with browser devtools' network conditions set to block requests to `fonts.gstatic.com` (or `fonts.googleapis.com` if using the fallback approach), reload and confirm "Co" falls back to a plain serif font rather than rendering as invisible text or a broken glyph.
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
 git add -- src/components/marketing/CoBuildWordmark.tsx
-# if the Step 3 fallback path was used, also:
-# git add -- src/app/layout.tsx
 git commit -m "feat: add CoBuildWordmark component for Co-Build branding"
 ```
 
@@ -1413,7 +1382,8 @@ Submit once more with the Turnstile widget deliberately left incomplete (don't c
 
 **Type/signature consistency:** `submitPartnershipInquiry({ first_name, last_name, email, company_name, industry, phone, message })` is defined once in Task 2 Step 3 and called with the same shape (via `req.body`) in Task 3 Step 3 — the frontend's `api/partners/route.ts` (Task 6) is the one place translating camelCase (`firstName`) to the snake_case the backend expects (`first_name`), matching exactly how `api/contact/route.ts` already does this translation. `PageHero`'s `title` prop widened from `string` to `React.ReactNode` in Task 7 Step 1 is additive and doesn't break any of the six existing string-title callers.
 
-## Discoveries flagged for the user (not acted on in this plan)
+## Discoveries flagged for the user (resolved after this plan was drafted)
 
-- **`src/app/layout.tsx`'s root `metadata` export** (title "CoFabri - SaaS Apps for Modern Businesses", generic keywords) is the same stale-boilerplate problem the sibling copy-pass plan's Task 3 fixes on individual pages — but every page in this codebase already sets its own `metadata`/`generateMetadata`, so this root default mostly only matters as an OG-image/title fallback where a page doesn't override every field. Not included in either plan since it wasn't in the original spec's file list and `layout.tsx` already has uncommitted changes from a concurrent session — worth a follow-up decision, not a silent scope add here.
-- **`Navbar.tsx` currently includes a "Contact" entry** in its primary nav array — this contradicts this project's own memory notes, which say Contact is deliberately footer/CTA-only. `Navbar.tsx` is also currently uncommitted (modified by a concurrent session before this plan was written), so this may be in-flight work by someone else, not a bug introduced here. Neither plan touches this — flagging so the user can reconcile it with whichever session is mid-edit there.
+- **`src/app/layout.tsx`'s root `metadata` export** had the same stale-boilerplate problem as the individual pages — the user asked for it as a follow-up, so it's now Task 8 of the sibling copy-pass plan (`2026-09-02-site-copy-pass.md`) rather than this one, since it's pure copy with no Co-Build dependency.
+- **`Navbar.tsx`'s "Contact" entry** (another session's uncommitted work, contradicting this project's footer-only convention for Contact) has been reverted directly by the user — `Contact` is removed from the `navigation` array and the now-unused `Mail` icon import. Neither plan needs to touch this further.
+- **UnifrakturMaguntia's availability** was confirmed by the user via https://fonts.google.com/specimen/UnifrakturMaguntia — it's in Google's catalog, so Task 4 now commits directly to the `next/font/google` approach instead of branching on an uncertain build-check.

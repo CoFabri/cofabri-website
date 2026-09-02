@@ -664,9 +664,144 @@ git commit -m "fix: match Footer's Roadmap nav label to Navbar's singular form"
 
 ---
 
+### Task 8: Rewrite the root layout's default SEO metadata
+
+**Files:**
+- Modify: `src/app/layout.tsx:16-79` (the `metadata` export's `title`, `description`, `keywords`, `openGraph`, and `twitter` fields only)
+
+**Interfaces:**
+- Consumes: nothing new.
+- Produces: nothing other tasks depend on.
+
+This is the site-wide default metadata every page inherits unless it defines its own (Task 3 already overrides it for `/` and `/apps`) — it's the same stale-boilerplate problem as Task 3, just one level up. `src/app/layout.tsx` has unrelated uncommitted changes from another session (favicon/icon URLs, at different line numbers than the fields below) — re-read the file first and edit only the fields shown here; do not touch the `icons` block.
+
+- [ ] **Step 1: Re-read the current file first**
+
+Confirm the current line numbers for the `title`, `description`, `keywords`, `openGraph`, and `twitter` fields inside the `metadata` export before editing — another session's concurrent changes may have shifted them since this plan was written.
+
+- [ ] **Step 2: Rewrite title, description, and keywords**
+
+Change:
+
+```tsx
+  title: {
+    default: "CoFabri - SaaS Apps for Modern Businesses",
+    template: "%s | CoFabri"
+  },
+  description: "Discover our suite of powerful SaaS applications designed to help your business grow and succeed. From productivity tools to AI-powered solutions, we build software that works.",
+  keywords: [
+    'SaaS', 
+    'software development', 
+    'AI', 
+    'cloud solutions', 
+    'business automation',
+    'productivity tools',
+    'business software',
+    'web applications',
+    'enterprise software',
+    'digital transformation'
+  ],
+```
+
+to:
+
+```tsx
+  title: {
+    default: "CoFabri — Small software that does one thing well.",
+    template: "%s | CoFabri"
+  },
+  description: "CoFabri is a software studio operating a portfolio of independent apps across industries — each one built to solve a single problem well.",
+```
+
+Drop the `keywords` array entirely, same reasoning as Task 3 Step 2: it was generic boilerplate ('AI', 'cloud solutions', 'digital transformation') that doesn't describe CoFabri and has no real SEO value in modern search engines.
+
+- [ ] **Step 3: Rewrite openGraph and twitter text**
+
+Change:
+
+```tsx
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://cofabri.com',
+    siteName: 'CoFabri',
+    title: 'CoFabri - SaaS Apps for Real Business Needs',
+    description: 'CoFabri builds innovative SaaS applications that solve real business challenges. Discover our suite of productivity tools and AI-powered solutions.',
+    images: [
+      {
+        url: '/images/placeholder.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri - SaaS Apps for Real Business Needs',
+        type: 'image/jpeg',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CoFabri - SaaS Apps for Real Business Needs',
+    description: 'CoFabri builds innovative SaaS applications that solve real business challenges.',
+    images: ['/images/placeholder.jpg'],
+    creator: '@cofabri',
+    site: '@cofabri',
+  },
+```
+
+to:
+
+```tsx
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://cofabri.com',
+    siteName: 'CoFabri',
+    title: 'CoFabri — Small software that does one thing well.',
+    description: 'A software studio operating a portfolio of independent apps across industries.',
+    images: [
+      {
+        url: '/images/placeholder.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+        type: 'image/jpeg',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CoFabri — Small software that does one thing well.',
+    description: 'A software studio operating a portfolio of independent apps across industries.',
+    images: ['/images/placeholder.jpg'],
+    creator: '@cofabri',
+    site: '@cofabri',
+  },
+```
+
+`/images/placeholder.jpg` is the real branded OG card (confirmed visually — it renders the CoFabri wordmark on a light-blue gradient background, 1200x630px) — leave the image reference as-is, only the surrounding title/description/alt text changes.
+
+Leave `authors`, `creator`, `publisher`, `category`, `classification`, `icons`, `manifest`, `formatDetection`, `metadataBase`, `robots`, `verification`, and `other` untouched — none of that is stale marketing copy, it's functional config outside this plan's scope.
+
+- [ ] **Step 4: Build check**
+
+Run: `npm run build`
+Expected: succeeds.
+
+- [ ] **Step 5: Manual verification**
+
+View source on any page that doesn't override metadata (e.g. `/support` or `/contact`) and confirm the inherited `<title>`, `<meta name="description">`, and Open Graph/Twitter tags show the new copy, matching the voice already applied to `/` and `/apps` in Task 3.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -- src/app/layout.tsx
+git commit -m "content: rewrite root layout's default SEO metadata to match on-page voice"
+```
+
+---
+
 ## Self-Review
 
-**Spec coverage** (spec Part 1, items 1-7): About rewrite → Task 1. FAQ rewrite + contradiction fix → Task 2. Meta descriptions/StructuredData → Task 3. Apps page terminology + count → Task 4. Hero stat bar → Task 6. Nav/Footer consistency → Task 7. Placeholder OG image → confirmed real during research, folded into Task 3 as a verified no-op rather than a separate task. Additional discovery (same hardcoded-count bug in `HomepageApps.tsx`) → Task 5, called out explicitly as beyond the spec's original list.
+**Spec coverage** (spec Part 1, items 1-7): About rewrite → Task 1. FAQ rewrite + contradiction fix → Task 2. Meta descriptions/StructuredData → Task 3. Apps page terminology + count → Task 4. Hero stat bar → Task 6. Nav/Footer consistency → Task 7. Placeholder OG image → confirmed real during research (visually verified: it's the branded wordmark card, not a dead reference), folded into Task 3 and Task 8 as a verified no-op rather than a separate task. Additional discoveries beyond the spec's original list: the same hardcoded-count bug in `HomepageApps.tsx` → Task 5; the root layout's default metadata has the identical staleness problem as Task 3's targets, flagged during brainstorming and approved as a follow-up → Task 8. The Navbar's out-of-plan "Contact" nav item (another session's uncommitted work, contradicting this project's footer-only convention for Contact) was reverted directly by the user rather than via a plan task — Task 7 accounts for this when touching the same file.
 
 **Placeholder scan:** no TBD/TODO; every step has literal code; no "similar to Task N" shortcuts — Tasks 4 and 5 fix the same class of bug in two different files with two full, separately-shown code blocks rather than one referencing the other.
 
