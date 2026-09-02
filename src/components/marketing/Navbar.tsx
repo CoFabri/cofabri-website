@@ -1,163 +1,127 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useTheme } from 'next-themes';
+import {
+  Home, LayoutGrid, TrendingUp, BookOpen, LifeBuoy, Mail,
+  Menu, Sun, Moon, ArrowRight,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
-import TouchLink from './TouchLink';
-import TouchButton from './TouchButton';
 
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Apps', href: '/apps' },
-  { name: 'Roadmaps', href: '/roadmaps' },
-  { name: 'Knowledge Base', href: '/knowledge-base' },
-  { name: 'Support', href: '/support' },
-  { name: 'Contact', href: '/contact' },
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Apps', href: '/apps', icon: LayoutGrid },
+  { name: 'Roadmaps', href: '/roadmaps', icon: TrendingUp },
+  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
+  { name: 'Support', href: '/support', icon: LifeBuoy },
+  { name: 'Contact', href: '/contact', icon: Mail },
 ];
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  React.useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="h-9 w-9" />;
 
-  // Function to check if a nav item is active
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label="Toggle dark mode"
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+    >
+      {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+}
+
+const Navbar = () => {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
   const isActive = (href: string) => {
     if (!pathname) return false;
     if (href === '/') return pathname === href;
-    if (href.includes('#')) {
-      // For anchor links, check if we're on the homepage
-      return pathname === '/';
-    }
     return pathname.startsWith(href);
   };
 
-  // Function to handle anchor links
-  const handleNavClick = (href: string, e: React.MouseEvent) => {
-    if (href.includes('#')) {
-      e.preventDefault();
-      const id = href.split('#')[1];
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
-
-  useEffect(() => {
-    setMounted(true);
-    if (!isHomePage) {
-      setIsVisible(true);
-      return;
-    }
-
-    const handleScroll = () => {
-      const heroHeight = window.innerHeight * 0.8;
-      const scrollPosition = window.scrollY;
-      setIsVisible(scrollPosition > heroHeight * 0.5);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isHomePage]);
-
-  if (!mounted) return null;
-
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center touch-target-min haptic-feedback">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-sm">
+      <nav className="max-w-6xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+        <Link href="/" className="flex items-center flex-shrink-0">
           <Logo size="nav" noLink />
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center touch-spacing-horizontal">
-          {navigation.map((item) => (
-            <TouchLink
-              key={item.name}
-              href={item.href}
-              variant="nav"
-              onClick={(e) => handleNavClick(item.href, e)}
-              className={
-                isActive(item.href)
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-              }
-            >
-              {item.name}
-            </TouchLink>
-          ))}
-        </div>
-
-        {/* CTA Button and Status Indicator */}
-        <div className="hidden lg:flex items-center ml-8 touch-spacing-horizontal">
-          <StatusIndicator />
-          <TouchLink
-            href="/apps"
-            variant="primary"
-            size="medium"
-            className="ml-4"
-          >
-            Explore Apps
-          </TouchLink>
-        </div>
-
-        {/* Mobile Status Indicator and Menu Button */}
-        <div className="flex items-center lg:hidden touch-spacing-horizontal-compact">
-          <StatusIndicator />
-          <TouchButton
-            variant="icon"
-            size="medium"
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            {isOpen ? (
-              <XMarkIcon className="h-6 w-6" />
-            ) : (
-              <Bars3Icon className="h-6 w-6" />
-            )}
-          </TouchButton>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-200 lg:hidden">
-            <div className="container mx-auto px-4 py-2 touch-spacing">
-              {navigation.map((item) => (
-                <TouchLink
-                  key={item.name}
+        <ul className="hidden lg:flex items-center gap-7 text-sm">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.name}>
+                <Link
                   href={item.href}
-                  variant="nav"
-                  size="large"
-                  onClick={(e) => {
-                    handleNavClick(item.href, e);
-                    setIsOpen(false);
-                  }}
-                  className={`block ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  className={`inline-flex items-center gap-1.5 transition-colors ${
+                    isActive(item.href) ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
+                  <Icon className="h-[15px] w-[15px]" />
                   {item.name}
-                </TouchLink>
-              ))}
-            </div>
-          </div>
-        )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+          <StatusIndicator />
+          <ThemeToggle />
+          <Button asChild size="sm">
+            <Link href="/apps">
+              Explore Apps
+              <ArrowRight className="h-[15px] w-[15px] transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 lg:hidden">
+          <StatusIndicator />
+          <ThemeToggle />
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Open menu">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetTitle className="sr-only">Navigation</SheetTitle>
+              <div className="flex flex-col gap-1 mt-8">
+                {navigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-base transition-colors ${
+                        isActive(item.href) ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <Icon className="h-[18px] w-[18px]" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </nav>
     </header>
   );
 };
 
-export default Navbar; 
+export default Navbar;
