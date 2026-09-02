@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: "CoFabri - SaaS Apps for Modern Businesses",
     template: "%s | CoFabri"
   },
-  description: "Discover our suite of powerful SaaS applications designed to help your business grow and succeed. From productivity tools to AI-powered solutions, we build software that works.",
+  description: "CoFabri builds and operates a portfolio of independent SaaS apps across industries, and partners with the industry operators who know those markets best to build new ones.",
   keywords: [
     'SaaS', 
     'software development', 
