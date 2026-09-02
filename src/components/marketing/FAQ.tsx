@@ -1,9 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import React from 'react';
 import SectionHeading from './SectionHeading';
-import TouchButton from './TouchButton';
+import RevealSection from './RevealSection';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const faqs = [
   {
@@ -33,51 +38,32 @@ const faqs = [
 ];
 
 const FAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <RevealSection className="py-20 bg-muted/30">
+      <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
+          eyebrow="FAQ"
           title="Frequently Asked Questions"
           subtitle="Find answers to common questions about our products and services"
         />
 
-        <div className="max-w-3xl mx-auto touch-spacing">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="mb-4"
-            >
-              <TouchButton
-                variant="ghost"
-                size="large"
-                feedback="normal"
-                className="w-full flex items-center justify-between p-6 rounded-xl bg-gray-50 hover:bg-gray-100 text-left"
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-              >
-                <span className="text-lg font-medium text-gray-900">
+        <div className="max-w-3xl mx-auto">
+          <Accordion type="single" collapsible>
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`faq-${index}`}>
+                <AccordionTrigger className="text-lg font-medium text-foreground">
                   {faq.question}
-                </span>
-                <ChevronDownIcon
-                  className={`w-6 h-6 text-gray-600 transform transition-transform duration-200 ${
-                    openIndex === index ? 'rotate-180' : ''
-                  }`}
-                />
-              </TouchButton>
-              {openIndex === index && (
-                <div className="px-6 py-4">
-                  <p className="text-gray-600">
-                    {faq.answer}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </div>
-    </section>
+    </RevealSection>
   );
 };
 
-export default FAQ; 
+export default FAQ;
