@@ -469,3 +469,73 @@ export async function getMarketingPopupConfig(): Promise<MarketingPopupConfig | 
     return null;
   }
 }
+
+export interface SystemStatus {
+  ticketId: string;
+  title: string;
+  publicStatus: 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved';
+  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  message: string;
+  'Created Date': string;
+  'Updated At': string;
+  'Resolved Date': string;
+  affectedServices: string[];
+  application?: string;
+  updates?: string;
+}
+
+interface SupportCaseRow {
+  issue_ticket_id: string | null;
+  subject: string;
+  public_status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  message: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_date: string | null;
+  affected_services: string[] | null;
+  app_id: string | null;
+  updates: string | null;
+}
+
+const PUBLIC_STATUS_MAP: Record<SupportCaseRow['public_status'], SystemStatus['publicStatus']> = {
+  investigating: 'Investigating',
+  identified: 'Identified',
+  monitoring: 'Monitoring',
+  resolved: 'Resolved',
+};
+
+const SEVERITY_MAP: Record<SupportCaseRow['severity'], SystemStatus['severity']> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  critical: 'Critical',
+};
+
+function mapSystemStatus(row: SupportCaseRow): SystemStatus {
+  const publicStatus = PUBLIC_STATUS_MAP[row.public_status] || 'Monitoring';
+  return {
+    ticketId: row.issue_ticket_id || `TICKET-${Date.now()}`,
+    title: row.subject,
+    publicStatus,
+    severity: SEVERITY_MAP[row.severity] || 'Medium',
+    message: row.message || `We are currently ${publicStatus.toLowerCase()} a system issue.`,
+    'Created Date': row.created_at,
+    'Updated At': row.updated_at,
+    'Resolved Date': row.resolved_date || '',
+    affectedServices: row.affected_services || [],
+    application: row.app_id || 'CoFabri System',
+    updates: row.updates || '',
+  };
+}
+
+export async function getSystemStatus(appId?: string): Promise<SystemStatus[]> {
+  try {
+    const path = appId ? `/web/content/status/${encodeURIComponent(appId)}` : '/web/content/status';
+    const rows = await apiFetch<SupportCaseRow[]>(path);
+    return rows.map(mapSystemStatus);
+  } catch (error) {
+    console.error('Error fetching system status:', error);
+    return [];
+  }
+}
