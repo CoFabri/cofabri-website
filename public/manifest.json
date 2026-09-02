@@ -8,14 +8,9 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "https://files.cofabri.com/images/cofabri-favicon.jpg",
-      "sizes": "32x32",
-      "type": "image/jpeg"
-    },
-    {
-      "src": "https://files.cofabri.com/images/cofabri-favicon.jpg",
-      "sizes": "180x180",
-      "type": "image/jpeg"
+      "src": "https://files.cofabri.com/logos/cofabri-core/core-mark.png",
+      "sizes": "168x168",
+      "type": "image/png"
     }
   ]
 } 

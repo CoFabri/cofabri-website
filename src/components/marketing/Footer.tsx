@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LayoutGrid, TrendingUp, BookOpen, ScrollText, LifeBuoy } from 'lucide-react';
-import Logo from './Logo';
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
@@ -44,7 +44,13 @@ const Footer = () => {
       <div className="border-t border-[#35424C]">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
           <Link href="/" className="flex items-center flex-shrink-0">
-            <Logo size="footer" variant="inverted" noLink />
+            <Image
+              src="https://files.cofabri.com/logos/cofabri-core/core-mark.png"
+              alt="CoFabri"
+              width={40}
+              height={40}
+              className="h-9 w-9"
+            />
           </Link>
 
           <ul className="flex items-center gap-6 flex-wrap justify-center text-sm">
