@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/marketing/Navbar";
 import Footer from "@/components/marketing/Footer";
@@ -13,8 +12,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -117,7 +114,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <StructuredData
             type="organization"
