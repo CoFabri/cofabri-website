@@ -499,21 +499,47 @@ Load `/`, scroll to the apps section, and confirm the "N features shipped in the
 
 - [ ] **Step 6: Rewrite Hero.tsx to fetch and show real numbers**
 
-Replace the entire contents of `src/components/marketing/Hero.tsx`:
+**Before editing, re-read `src/components/marketing/Hero.tsx` fresh.** A concurrent session has already modified this file since this plan was drafted, adding an animated count-up (`MetricCount`, using `framer-motion`'s `animate`/`useInView`/`useReducedMotion`) applied to the same four fabricated metrics this task removes. That animation is a real, deliberate enhancement — preserve it. Do not silently discard it via a blind full-file replace. Instead, replace the entire contents of `src/components/marketing/Hero.tsx` with this version, which keeps the `MetricCount` component and its animation exactly as the concurrent session built it, but drives it from the two real derived numbers instead of the four fabricated ones, and shows "—" until the fetch resolves (an animated count from a not-yet-loaded number would look broken — that's why `loaded` gates whether `MetricCount` mounts at all):
 
 ```tsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { animate, useInView, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import HeroAurora from './HeroAurora';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import { shippedInLastNDays } from '@/lib/roadmap-display';
 
+function MetricCount({ target, suffix }: { target: number; suffix: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.6 });
+  const shouldReduceMotion = useReducedMotion();
+  const [display, setDisplay] = useState(shouldReduceMotion ? target : 0);
+
+  useEffect(() => {
+    if (!isInView || shouldReduceMotion) return;
+    const controls = animate(0, target, {
+      duration: 1.3,
+      ease: 'easeOut',
+      onUpdate: (value) => setDisplay(Math.round(value)),
+    });
+    return () => controls.stop();
+  }, [isInView, shouldReduceMotion, target]);
+
+  return (
+    <div ref={ref}>
+      {display}
+      {suffix}
+    </div>
+  );
+}
+
 const Hero = () => {
   const [apps, setApps] = useState<App[]>([]);
   const [roadmap, setRoadmap] = useState<RoadmapFeature[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const noCacheHeaders = {
@@ -531,6 +557,8 @@ const Hero = () => {
         if (roadmapRes.ok) setRoadmap(await roadmapRes.json());
       } catch (err) {
         console.error('Error fetching hero metrics:', err);
+      } finally {
+        setLoaded(true);
       }
     }
 
@@ -541,8 +569,8 @@ const Hero = () => {
   const shippedLast30Days = shippedInLastNDays(roadmap, 30);
 
   const metrics = [
-    { value: liveAppCount > 0 ? `${liveAppCount}` : '—', label: 'Apps live' },
-    { value: shippedLast30Days > 0 ? `${shippedLast30Days}` : '—', label: 'Features shipped, last 30 days' },
+    { target: liveAppCount, suffix: '', label: 'Apps live' },
+    { target: shippedLast30Days, suffix: '', label: 'Features shipped, last 30 days' },
   ];
 
   return (
@@ -579,7 +607,7 @@ const Hero = () => {
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-7 first:pl-0">
               <div className="text-[28px] font-semibold tracking-[-0.03em] text-foreground sm:text-[34px]">
-                {m.value}
+                {loaded ? <MetricCount target={m.target} suffix={m.suffix} /> : '—'}
               </div>
               <div className="mt-1.5 text-sm text-muted-foreground">{m.label}</div>
             </div>
@@ -593,7 +621,7 @@ const Hero = () => {
 export default Hero;
 ```
 
-Note the grid changed from `grid-cols-2 ... sm:grid-cols-4` (four metrics) to a plain `grid-cols-2` (two metrics) — there are now only two real numbers to show, down from the four fabricated ones.
+Note the grid changed from `grid-cols-2 ... sm:grid-cols-4` (four metrics) to a plain `grid-cols-2` (two metrics) — there are now only two real numbers to show, down from the four fabricated ones. The eyebrow text, h1, paragraph, and both buttons are byte-identical to the current file — this step only touches the metrics data source and the metrics array/render, nothing else. If the concurrent session has changed those other parts too by the time you re-read the file, preserve whatever is currently there for that content and only apply the metrics-related change described here — ask the controller if the file has diverged enough that a clean merge isn't obvious.
 
 - [ ] **Step 7: Build check**
 
