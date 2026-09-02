@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import AppPreviewCard from '@/components/ui/AppPreviewCard';
 import TestimonialPreviewCard from '@/components/ui/TestimonialPreviewCard';
-import type { App } from '@/lib/airtable';
+import type { App } from '@/lib/api-client';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
@@ -17,12 +17,7 @@ interface PreviewContent {
   company?: string;
   content?: string;
   rating?: number;
-  image?: {
-    url: string;
-    thumbnails?: {
-      large: { url: string };
-    };
-  }[];
+  image?: string;
   [key: string]: any;
 }
 
@@ -83,48 +78,59 @@ export default function PreviewPage() {
         setContent(data);
         
         // Generate SEO preview
-        const title = data.Title || data.title || 'Untitled';
-        const description = data.Excerpt || data.excerpt || data.Content?.substring(0, 160) || 'No description available';
+        const title = data.title || 'Untitled';
+        const description = data.excerpt || data.content?.substring(0, 160) || 'No description available';
         const fullTitle = `${title} | Preview`;
         setSeoPreview({
           title: fullTitle,
           description,
-          url: `${window.location.origin}/${params.type}/${data.Slug || data.slug || ''}`,
+          url: `${window.location.origin}/${params.type}/${data.slug || ''}`,
           titleLength: fullTitle.length,
           descriptionLength: description.length
         });
 
-        // Define required and optional fields
+        // Define required and optional fields.
+        // Field names match the properties returned by /api/preview/[type]/[id]
+        // (which mirror the api-client.ts interfaces), not the old Airtable
+        // field names.
         const requiredFieldsMap = {
-          kb: ['Title', 'Content', 'Slug', 'Category'],
-          apps: [
-            'Name',
-            'Description',
-            'Application Status',
-            'Category',
-            'URL'
-          ],
-          authors: ['Name', 'Role'],
-          roadmap: ['Name', 'Description', 'Status'],
-          status: ['Title', 'Message', 'Severity'],
-          testimonial: ['Name', 'Role/Position', 'Company', 'Content', 'Rating', 'Profile Image']
+          kb: ['title', 'content', 'slug', 'category'],
+          apps: ['name', 'description', 'status', 'category', 'url'],
+          roadmap: ['name', 'description', 'status'],
+          legal: ['title', 'documentType', 'status'],
+          testimonial: ['name', 'role', 'company', 'content', 'rating', 'image'],
+          banner: ['title', 'message', 'bannerType'],
+          marketing: ['title', 'content', 'buttonText', 'buttonLink'],
+          popup: ['title', 'content', 'buttonText', 'buttonLink'],
+          status: ['title', 'message', 'severity']
         };
 
         const optionalFieldsMap = {
+          kb: ['author', 'readTime', 'publishedAt', 'lastUpdated', 'isPopular', 'isFeatured', 'tags', 'applications', 'logoUrl', 'relatedTopics'],
           apps: [
-            'Feature 1',
-            'Feature 2',
-            'Feature 3',
-            'Launch Date',
-            'Launch Announcement',
-            'Launch Countdown',
-            'Featured Image URL'
+            'feature1',
+            'feature2',
+            'feature3',
+            'launchDate',
+            'releaseDate',
+            'screenshot',
+            'faviconUrl',
+            'domains',
+            'featureOnWebsite'
           ],
+          roadmap: ['milestone', 'releaseType', 'releasedDate', 'application', 'applicationUrl', 'featuresAndChanges', 'releaseNotes'],
+          legal: ['description', 'version', 'lastUpdated', 'documentUrl', 'associatedApp', 'category', 'isPublic', 'tags'],
           testimonial: [
-            'Featured',
-            'Order',
-            'Apps'
-          ]
+            'featured',
+            'order',
+            'apps',
+            'isActive',
+            'createdAt'
+          ],
+          banner: ['linkUrl', 'linkText', 'backgroundColor', 'textColor', 'priority'],
+          marketing: ['backgroundColor', 'textColor', 'buttonColor', 'position', 'delay', 'isEnabled'],
+          popup: ['backgroundColor', 'textColor', 'buttonColor', 'position', 'delay', 'isEnabled'],
+          status: ['publicStatus', 'affectedServices', 'application', 'updates']
         };
 
         const fields = requiredFieldsMap[params.type as keyof typeof requiredFieldsMap] || [];
@@ -176,7 +182,7 @@ export default function PreviewPage() {
   }, [params && 'type' in params ? params.type : undefined, params && 'id' in params ? params.id : undefined]);
 
   const getStatusIcon = (status: string) => {
-    switch (status?.toLowerCase()) {
+    switch (status?.toLowerCase().replace(/_/g, ' ')) {
       case 'released':
         return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
       case 'in progress':
@@ -193,7 +199,7 @@ export default function PreviewPage() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
+    switch (status?.toLowerCase().replace(/_/g, ' ')) {
       case 'released':
         return 'bg-green-100 text-green-800';
       case 'in progress':
@@ -262,34 +268,37 @@ export default function PreviewPage() {
   // Map content to App interface for AppCard
   const appContent: App = {
     id: content.id,
-    name: content.Name || content.name || '',
-    description: content.Description || content.description || '',
-    screenshot: content['Featured Image URL'] || content.imageUrl || '',
-    url: content.URL || content.url || '',
-    feature1: content['Feature 1'] || content.feature1 || '',
-    feature2: content['Feature 2'] || content.feature2 || '',
-    feature3: content['Feature 3'] || content.feature3 || '',
-    status: content['Application Status'] || content.status || '',
-    launchDate: content['Launch Date'] || content.launchDate || content.Launch || '',
-    category: content.Category || content.category || ''
+    name: content.name || '',
+    description: content.description || '',
+    screenshot: content.screenshot || '',
+    url: content.url || '',
+    feature1: content.feature1 || '',
+    feature2: content.feature2 || '',
+    feature3: content.feature3 || '',
+    status: content.status || '',
+    launchDate: content.launchDate || '',
+    category: content.category || ''
   };
 
-  // Map content to Roadmap interface for RoadmapCard
+  // Map content to Roadmap interface for RoadmapCard.
+  // RoadmapFeature (api-client.ts) has no `category`/`launchDate` fields —
+  // `milestone` (e.g. a target quarter) and `releasedDate` are the closest
+  // equivalents, so they're reused for those display slots.
   const roadmapContent: Roadmap = {
     id: content.id,
-    name: content.Name || content.name || '',
-    description: content.Description || content.description || '',
-    status: content.Status || content.status || '',
-    category: content.Category || content.category || '',
-    launchDate: content['Launch Date'] || content.launchDate || '',
-    featuresAndChanges: content['Features & Changes'] || content.featuresAndChanges || '',
-    releaseNotes: content['Release Notes'] || content.releaseNotes || '',
-    releaseType: content['Release Type'] || content.releaseType || '',
-    milestone: content.Milestone || content.milestone || ''
+    name: content.name || '',
+    description: content.description || '',
+    status: content.status || '',
+    category: content.milestone || '',
+    launchDate: content.releasedDate || '',
+    featuresAndChanges: content.featuresAndChanges || '',
+    releaseNotes: content.releaseNotes || '',
+    releaseType: content.releaseType || '',
+    milestone: content.milestone || ''
   };
 
   // Debug logging
-  console.log('Content from Airtable:', content);
+  console.log('Content from cofabri-api:', content);
   console.log('Mapped app content:', appContent);
   console.log('Mapped roadmap content:', roadmapContent);
 
@@ -486,7 +495,7 @@ export default function PreviewPage() {
                       <div className="relative h-48 overflow-hidden">
                         <Image
                           src="/images/placeholder.jpg"
-                          alt={content.Title || content.title || 'Article'}
+                          alt={content.title || 'Article'}
                           fill
                           className="object-cover"
                         />
@@ -494,23 +503,23 @@ export default function PreviewPage() {
                       <div className="p-6">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {content.Category || content.category || 'Uncategorized'}
+                            {content.category || 'Uncategorized'}
                           </span>
                         </div>
                         <h2 className="text-xl font-semibold mb-2 text-gray-900">
-                          {content.Title || content.title || 'Untitled'}
+                          {content.title || 'Untitled'}
                         </h2>
                         <p className="text-gray-600 mb-4">
-                          {content.Excerpt || content.excerpt || content.Content?.substring(0, 150) || 'No excerpt available'}
+                          {content.excerpt || content.content?.substring(0, 150) || 'No excerpt available'}
                         </p>
                         <div className="flex items-center justify-between text-sm text-gray-500">
                           <div className="flex items-center gap-2">
                             <span className="text-blue-500">⏱️</span>
-                            <span>{content.ReadTime || content.readTime || '5'} min read</span>
+                            <span>{content.readTime || '5'} min read</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-blue-500">📅</span>
-                            <span>{new Date(content.PublishedAt || content.publishedAt || new Date()).toLocaleDateString()}</span>
+                            <span>{new Date(content.publishedAt || content.lastUpdated || new Date()).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
@@ -533,34 +542,34 @@ export default function PreviewPage() {
                         <div className="space-y-4">
                           {/* Banner Content */}
                           <div className={`p-4 rounded-lg ${
-                            content.Severity?.toLowerCase() === 'error' 
-                              ? 'bg-red-50 border border-red-200' 
-                              : content.Severity?.toLowerCase() === 'warning'
+                            content.bannerType?.toLowerCase() === 'error'
+                              ? 'bg-red-50 border border-red-200'
+                              : content.bannerType?.toLowerCase() === 'warning'
                                 ? 'bg-yellow-50 border border-yellow-200'
                                 : 'bg-blue-50 border border-blue-200'
                           }`}>
                             <div className="flex items-start gap-3">
-                              {content.Severity?.toLowerCase() === 'error' ? (
+                              {content.bannerType?.toLowerCase() === 'error' ? (
                                 <ExclamationCircleIcon className="w-5 h-5 text-red-500 mt-0.5" />
-                              ) : content.Severity?.toLowerCase() === 'warning' ? (
+                              ) : content.bannerType?.toLowerCase() === 'warning' ? (
                                 <ExclamationCircleIcon className="w-5 h-5 text-yellow-500 mt-0.5" />
                               ) : (
                                 <CheckCircleIcon className="w-5 h-5 text-blue-500 mt-0.5" />
                               )}
                               <div>
                                 <h3 className="font-medium text-gray-900">
-                                  {content.Title || content.title || 'Banner Title'}
+                                  {content.title || 'Banner Title'}
                                 </h3>
                                 <p className="mt-1 text-sm text-gray-600">
-                                  {content.Message || content.message || 'Banner message content'}
+                                  {content.message || 'Banner message content'}
                                 </p>
-                                {content.Action && (
+                                {content.linkText && (
                                   <div className="mt-3">
-                                    <a 
-                                      href={content.ActionURL || content.actionUrl || '#'}
+                                    <a
+                                      href={content.linkUrl || '#'}
                                       className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
                                     >
-                                      {content.Action}
+                                      {content.linkText}
                                       <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                       </svg>
@@ -589,33 +598,21 @@ export default function PreviewPage() {
                       <div className="p-6">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Marketing Content Preview</h2>
                         <div className="space-y-6">
-                          {/* Hero Section */}
-                          <div className="relative h-64 rounded-xl overflow-hidden">
-                            <Image
-                              src={content.HeroImage || content.heroImage || '/images/placeholder.jpg'}
-                              alt={content.Title || content.title || 'Marketing Hero'}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
                           <div className="text-center">
                             <h1 className="text-3xl font-bold text-gray-900">
-                              {content.Title || content.title || 'Marketing Title'}
+                              {content.title || 'Marketing Title'}
                             </h1>
-                            <p className="mt-2 text-xl text-gray-600">
-                              {content.Subtitle || content.subtitle || 'Marketing subtitle'}
-                            </p>
                           </div>
                           <div className="prose prose-lg max-w-none">
-                            {content.Content || content.content || 'Marketing content'}
+                            {content.content || 'Marketing content'}
                           </div>
-                          {content.CTAText && (
+                          {content.buttonText && (
                             <div className="text-center">
                               <a
-                                href={content.CTAURL || content.ctaUrl || '#'}
+                                href={content.buttonLink || '#'}
                                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
                               >
-                                {content.CTAText}
+                                {content.buttonText}
                                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
@@ -650,17 +647,14 @@ export default function PreviewPage() {
                           </div>
                           <div className="text-center">
                             <h3 className="text-xl font-semibold text-gray-900">
-                              {content.Title || content.title || 'Pop-up Title'}
+                              {content.title || 'Pop-up Title'}
                             </h3>
                             <p className="mt-2 text-gray-600">
-                              {content.Message || content.message || 'Pop-up message content'}
+                              {content.content || 'Pop-up message content'}
                             </p>
                             <div className="mt-4 space-y-2">
                               <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                                {content.PrimaryButton || content.primaryButton || 'Primary Action'}
-                              </button>
-                              <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                                {content.SecondaryButton || content.secondaryButton || 'Secondary Action'}
+                                {content.buttonText || 'Primary Action'}
                               </button>
                             </div>
                           </div>
@@ -685,46 +679,42 @@ export default function PreviewPage() {
                         <div className="space-y-4">
                           {/* Status Header */}
                           <div className="flex items-center gap-3">
-                            {content.Status?.toLowerCase() === 'operational' ? (
+                            {content.publicStatus === 'Resolved' ? (
                               <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                            ) : content.Status?.toLowerCase() === 'degraded' ? (
-                              <ExclamationCircleIcon className="w-5 h-5 text-yellow-500" />
-                            ) : (
+                            ) : content.severity === 'Critical' || content.severity === 'High' ? (
                               <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
+                            ) : (
+                              <ExclamationCircleIcon className="w-5 h-5 text-yellow-500" />
                             )}
                             <h3 className="text-xl font-semibold text-gray-900">
-                              {content.Title || content.title || 'System Status'}
+                              {content.title || 'System Status'}
                             </h3>
                           </div>
                           <p className="text-gray-600">
-                            {content.Message || content.message || 'Status message'}
+                            {content.message || 'Status message'}
                           </p>
-                          {content.Impact && (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {content.publicStatus && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                {content.publicStatus}
+                              </span>
+                            )}
+                            {content.severity && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                {content.severity} severity
+                              </span>
+                            )}
+                          </div>
+                          {Array.isArray(content.affectedServices) && content.affectedServices.length > 0 && (
                             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                              <h4 className="text-sm font-medium text-gray-900 mb-2">Impact</h4>
-                              <p className="text-sm text-gray-600">{content.Impact}</p>
+                              <h4 className="text-sm font-medium text-gray-900 mb-2">Affected Services</h4>
+                              <p className="text-sm text-gray-600">{content.affectedServices.join(', ')}</p>
                             </div>
                           )}
-                          {content.Updates && (
+                          {content.updates && (
                             <div className="mt-4">
                               <h4 className="text-sm font-medium text-gray-900 mb-2">Updates</h4>
-                              <div className="space-y-3">
-                                {Array.isArray(content.Updates) ? content.Updates.map((update: any, index: number) => (
-                                  <div key={index} className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 mt-1">
-                                      <ClockIcon className="w-4 h-4 text-gray-400" />
-                                    </div>
-                                    <div>
-                                      <p className="text-sm text-gray-600">{update.message}</p>
-                                      <p className="text-xs text-gray-400 mt-1">
-                                        {new Date(update.timestamp).toLocaleString()}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )) : (
-                                  <p className="text-sm text-gray-600">No updates available</p>
-                                )}
-                              </div>
+                              <p className="text-sm text-gray-600">{content.updates}</p>
                             </div>
                           )}
                         </div>
@@ -737,7 +727,7 @@ export default function PreviewPage() {
           )}
 
           {/* Testimonial Preview */}
-          {content.type === 'testimonial' && content.name && content['Role/Position'] && content.company && content.content && content.rating && content.image && (
+          {content.type === 'testimonial' && content.name && content.role && content.company && content.content && content.rating && content.image && (
             <section className="bg-white">
               <div className="container mx-auto px-4 py-12">
                 <div className="flex justify-center">
@@ -748,12 +738,12 @@ export default function PreviewPage() {
                         <TestimonialPreviewCard testimonial={{
                           id: content.id,
                           name: content.name,
-                          role: content['Role/Position'],
+                          role: content.role,
                           company: content.company,
                           content: content.content,
                           rating: content.rating,
-                          image: Array.isArray(content.image) && content.image.length > 0 
-                            ? content.image[0].url 
+                          image: typeof content.image === 'string' && content.image
+                            ? content.image
                             : '/images/placeholder.jpg'
                         }} />
                       </div>
