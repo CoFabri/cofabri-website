@@ -692,137 +692,53 @@ git commit -m "fix: match Footer's Roadmap nav label to Navbar's singular form"
 
 ---
 
-### Task 8: Rewrite the root layout's default SEO metadata
+### Task 8: Fix a premature Co-Build name-drop in the root layout's default SEO metadata
 
 **Files:**
-- Modify: `src/app/layout.tsx:16-79` (the `metadata` export's `title`, `description`, `keywords`, `openGraph`, and `twitter` fields only)
+- Modify: `src/app/layout.tsx` (the `metadata` export's `description` field only — see below for why the scope shrank)
 
 **Interfaces:**
 - Consumes: nothing new.
 - Produces: nothing other tasks depend on.
 
-This is the site-wide default metadata every page inherits unless it defines its own (Task 3 already overrides it for `/` and `/apps`) — it's the same stale-boilerplate problem as Task 3, just one level up. `src/app/layout.tsx` has unrelated uncommitted changes from another session (favicon/icon URLs, at different line numbers than the fields below) — re-read the file first and edit only the fields shown here; do not touch the `icons` block.
+**This task's scope changed from the original plan.** This was originally a full rewrite of the root layout's stale default metadata (the same boilerplate problem Task 3 fixed on `/` and `/apps`). Before dispatching, the controller re-checked the live file (standard practice for a heavily-concurrently-edited file) and found a concurrent session had *already* rewritten this entire block — title, keywords, openGraph, twitter, and even removed the placeholder `verification` codes with a good explanatory comment — to copy that's on-voice, accurate, and describes CoFabri as a portfolio studio. That work is good and should be kept, not overwritten.
+
+However, one field in that concurrent rewrite names "Co-Build" as a proper noun: the plain `description` field reads *"CoFabri builds and operates a portfolio of independent SaaS apps across industries, and partners with industry operators to co-build and co-own new ones through Co-Build."* — this violates this plan's Global Constraint against naming "Co-Build" or `/partners` before that page exists (a separate plan, `2026-09-02-cobuild-partner-program.md`, builds it, and hasn't shipped yet). Note the *other* fields in that same concurrent rewrite (`openGraph.description`, `twitter.description`) already describe the same concept — "co-build new ones with the industry operators who know those markets best" — **without** naming the program, which is exactly the compliant pattern already used in this plan's Task 1 (About.tsx) and Task 2 (FAQ.tsx). This task's only job is to bring the one non-compliant `description` field in line with that same pattern.
 
 - [ ] **Step 1: Re-read the current file first**
 
-Confirm the current line numbers for the `title`, `description`, `keywords`, `openGraph`, and `twitter` fields inside the `metadata` export before editing — another session's concurrent changes may have shifted them since this plan was written.
+Re-read `src/app/layout.tsx` fresh. Confirm the `metadata.description` field (top-level, not `openGraph.description` or `twitter.description`) still contains the word "Co-Build" as a proper noun. If the concurrent session has changed this further since this plan was updated, or if "Co-Build" no longer appears anywhere in this file's metadata, stop and report NEEDS_CONTEXT describing exactly what's there now rather than guessing.
 
-- [ ] **Step 2: Rewrite title, description, and keywords**
+- [ ] **Step 2: Fix the one non-compliant field**
 
-Change:
+Change only the top-level `description` field. It currently reads (or something very close to — confirm the exact current text before editing):
 
 ```tsx
-  title: {
-    default: "CoFabri - SaaS Apps for Modern Businesses",
-    template: "%s | CoFabri"
-  },
-  description: "Discover our suite of powerful SaaS applications designed to help your business grow and succeed. From productivity tools to AI-powered solutions, we build software that works.",
-  keywords: [
-    'SaaS', 
-    'software development', 
-    'AI', 
-    'cloud solutions', 
-    'business automation',
-    'productivity tools',
-    'business software',
-    'web applications',
-    'enterprise software',
-    'digital transformation'
-  ],
+  description: "CoFabri builds and operates a portfolio of independent SaaS apps across industries, and partners with industry operators to co-build and co-own new ones through Co-Build.",
 ```
 
 to:
 
 ```tsx
-  title: {
-    default: "CoFabri — Small software that does one thing well.",
-    template: "%s | CoFabri"
-  },
-  description: "CoFabri is a software studio operating a portfolio of independent apps across industries — each one built to solve a single problem well.",
+  description: "CoFabri builds and operates a portfolio of independent SaaS apps across industries, and partners with the industry operators who know those markets best to build new ones.",
 ```
 
-Drop the `keywords` array entirely, same reasoning as Task 3 Step 2: it was generic boilerplate ('AI', 'cloud solutions', 'digital transformation') that doesn't describe CoFabri and has no real SEO value in modern search engines.
+This keeps the same information (portfolio studio, partners with industry operators) using the exact same non-naming pattern already present two fields below it in the same file (`openGraph.description`) — do not invent new wording beyond this substitution. Do not touch `title`, `keywords`, `openGraph`, `twitter`, the `verification`-removal comment, or anything else in the file — all of that is the concurrent session's work and is already compliant/good.
 
-- [ ] **Step 3: Rewrite openGraph and twitter text**
-
-Change:
-
-```tsx
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://cofabri.com',
-    siteName: 'CoFabri',
-    title: 'CoFabri - SaaS Apps for Real Business Needs',
-    description: 'CoFabri builds innovative SaaS applications that solve real business challenges. Discover our suite of productivity tools and AI-powered solutions.',
-    images: [
-      {
-        url: '/images/placeholder.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'CoFabri - SaaS Apps for Real Business Needs',
-        type: 'image/jpeg',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'CoFabri - SaaS Apps for Real Business Needs',
-    description: 'CoFabri builds innovative SaaS applications that solve real business challenges.',
-    images: ['/images/placeholder.jpg'],
-    creator: '@cofabri',
-    site: '@cofabri',
-  },
-```
-
-to:
-
-```tsx
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://cofabri.com',
-    siteName: 'CoFabri',
-    title: 'CoFabri — Small software that does one thing well.',
-    description: 'A software studio operating a portfolio of independent apps across industries.',
-    images: [
-      {
-        url: '/images/placeholder.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'CoFabri',
-        type: 'image/jpeg',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'CoFabri — Small software that does one thing well.',
-    description: 'A software studio operating a portfolio of independent apps across industries.',
-    images: ['/images/placeholder.jpg'],
-    creator: '@cofabri',
-    site: '@cofabri',
-  },
-```
-
-`/images/placeholder.jpg` is the real branded OG card (confirmed visually — it renders the CoFabri wordmark on a light-blue gradient background, 1200x630px) — leave the image reference as-is, only the surrounding title/description/alt text changes.
-
-Leave `authors`, `creator`, `publisher`, `category`, `classification`, `icons`, `manifest`, `formatDetection`, `metadataBase`, `robots`, `verification`, and `other` untouched — none of that is stale marketing copy, it's functional config outside this plan's scope.
-
-- [ ] **Step 4: Build check**
+- [ ] **Step 3: Build check**
 
 Run: `npm run build`
 Expected: succeeds.
 
-- [ ] **Step 5: Manual verification**
+- [ ] **Step 4: Manual verification**
 
-View source on any page that doesn't override metadata (e.g. `/support` or `/contact`) and confirm the inherited `<title>`, `<meta name="description">`, and Open Graph/Twitter tags show the new copy, matching the voice already applied to `/` and `/apps` in Task 3.
+View source on any page that doesn't override metadata (e.g. `/support` or `/contact`) and confirm the inherited `<meta name="description">` no longer contains the word "Co-Build," and that the rest of the metadata (title, OG tags, Twitter tags) is unchanged from what's currently live.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add -- src/app/layout.tsx
-git commit -m "content: rewrite root layout's default SEO metadata to match on-page voice"
+git commit -m "fix: remove premature Co-Build name-drop from root layout metadata"
 ```
 
 ---
