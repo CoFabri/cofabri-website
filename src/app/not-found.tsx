@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import GradientHeading from '@/components/ui/GradientHeading';
+import GradientHeading from '@/components/marketing/GradientHeading';
 
 export default function NotFound() {
   const pathname = usePathname();

@@ -5,7 +5,7 @@ import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronDownIcon } fr
 import { RoadmapFeature } from '@/lib/airtable';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import AnimatedGradient from '@/components/ui/AnimatedGradient';
+import AnimatedGradient from '@/components/marketing/AnimatedGradient';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
 import RoadmapOverlay from './RoadmapOverlay';
 

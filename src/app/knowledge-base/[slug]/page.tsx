@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpenIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { Metadata } from 'next';
-import AnimatedGradient from '@/components/ui/AnimatedGradient';
-import BackButton from '@/components/ui/BackButton';
+import AnimatedGradient from '@/components/marketing/AnimatedGradient';
+import BackButton from '@/components/marketing/BackButton';
 import { marked } from 'marked';
 
 // Force dynamic rendering for this page

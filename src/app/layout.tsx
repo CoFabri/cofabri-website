@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/ui/Navbar";
-import Footer from "@/components/ui/Footer";
-import SitewideBanner from "@/components/ui/SitewideBanner";
+import Navbar from "@/components/marketing/Navbar";
+import Footer from "@/components/marketing/Footer";
+import SitewideBanner from "@/components/marketing/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
-import Analytics from "@/components/ui/Analytics";
-import CookieConsent from "@/components/ui/CookieConsent";
-import StructuredData from "@/components/ui/StructuredData";
+import Analytics from "@/components/marketing/Analytics";
+import CookieConsent from "@/components/marketing/CookieConsent";
+import StructuredData from "@/components/marketing/StructuredData";
 import { ThemeProvider } from "@/components/theme-provider";
 
 // Force dynamic rendering for the entire app

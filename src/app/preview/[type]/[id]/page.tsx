@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import AppPreviewCard from '@/components/ui/AppPreviewCard';
-import TestimonialPreviewCard from '@/components/ui/TestimonialPreviewCard';
+import AppPreviewCard from '@/components/marketing/AppPreviewCard';
+import TestimonialPreviewCard from '@/components/marketing/TestimonialPreviewCard';
 import type { App } from '@/lib/airtable';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';

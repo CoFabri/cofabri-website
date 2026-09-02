@@ -1,12 +1,12 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Apps from '@/components/ui/Apps';
-import NewsletterSignup from '@/components/ui/NewsletterSignup';
-import GradientHeading from '@/components/ui/GradientHeading';
+import Apps from '@/components/marketing/Apps';
+import NewsletterSignup from '@/components/marketing/NewsletterSignup';
+import GradientHeading from '@/components/marketing/GradientHeading';
 import Link from 'next/link';
-import Testimonials from '@/components/ui/Testimonials';
-import FeaturedApp from '@/components/ui/FeaturedApp';
-import Breadcrumbs from '@/components/ui/Breadcrumbs';
+import Testimonials from '@/components/marketing/Testimonials';
+import FeaturedApp from '@/components/marketing/FeaturedApp';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
