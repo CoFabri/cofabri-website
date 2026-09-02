@@ -10,6 +10,7 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import RevealSection from './RevealSection';
 import AppRow from './AppRow';
 import { statusPillClasses, actionLabel, actionHref } from '@/lib/app-display';
+import { shippedInLastNDays } from '@/lib/roadmap-display';
 
 interface HomepageAppsProps {
   onAppsLoaded?: () => void;
@@ -147,10 +148,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   const openIncidents = systemStatus.filter((s) => s.publicStatus !== 'Resolved');
   const allOperational = openIncidents.length === 0;
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const shippedLast30Days = roadmap.filter(
-    (item) => item.status === 'Released' && item.releasedDate && Date.now() - new Date(item.releasedDate).getTime() <= THIRTY_DAYS_MS
-  ).length;
+  const shippedLast30Days = shippedInLastNDays(roadmap, 30);
 
   return (
     <RevealSection ref={sectionRef} className="py-24 md:py-28 bg-background">
