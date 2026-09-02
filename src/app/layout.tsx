@@ -34,17 +34,23 @@ export const metadata: Metadata = {
   category: 'Technology',
   classification: 'Business Software',
   icons: {
+    // The hosted favicon.svg/icon-*.png set at this path renders the mark on
+    // a filled dark square using Core's app-blue (#3B82F6), not the parent
+    // brand's colors (#007BFF on a transparent/light ground) — it's Core's
+    // app-icon treatment, not this site's. cofabri-mark-light.svg is the
+    // correct vector brand mark (transparent ground, real brand colors, no
+    // embedded <text> so no webfont-loading concern for a plain <link>);
+    // the PNG raster is the fallback for contexts that require PNG.
     icon: [
-      { url: 'https://files.cofabri.com/logos/cofabri/favicon.svg', type: 'image/svg+xml' },
-      { url: 'https://files.cofabri.com/logos/cofabri/favicon-32.png', sizes: '32x32', type: 'image/png' },
-      { url: 'https://files.cofabri.com/logos/cofabri/favicon-64.png', sizes: '64x64', type: 'image/png' },
-      { url: 'https://files.cofabri.com/logos/cofabri/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: 'https://files.cofabri.com/logos/cofabri/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/cofabri-mark-light.svg', type: 'image/svg+xml' },
+      { url: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png', sizes: '32x32', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png', sizes: '192x192', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: 'https://files.cofabri.com/logos/cofabri/apple-touch-icon-180.png', sizes: '180x180' },
+      { url: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png', sizes: '180x180' },
     ],
-    shortcut: 'https://files.cofabri.com/logos/cofabri/favicon-32.png',
+    shortcut: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png',
   },
   manifest: '/manifest.json',
   formatDetection: {
@@ -108,8 +114,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="https://files.cofabri.com/logos/cofabri/favicon.svg" sizes="any" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri/apple-touch-icon-180.png" />
+        <link rel="icon" href="https://files.cofabri.com/logos/cofabri/cofabri-mark-light.svg" type="image/svg+xml" />
+        <link rel="icon" href="https://files.cofabri.com/logos/cofabri/mark-1024-light.png" sizes="any" type="image/png" />
+        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri/mark-1024-light.png" />
         <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>
