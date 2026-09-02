@@ -17,10 +17,19 @@ export const metadata: Metadata = {
     title: 'Contact | CoFabri',
     description: "Sales questions, partnerships, or anything that doesn't fit a support ticket.",
     url: 'https://cofabri.com/contact',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Contact | CoFabri',
     description: "Sales questions, partnerships, or anything that doesn't fit a support ticket.",
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 

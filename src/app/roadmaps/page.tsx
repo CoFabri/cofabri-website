@@ -15,10 +15,19 @@ export const metadata: Metadata = {
     title: 'Roadmap | CoFabri',
     description: "See what's shipping next across the CoFabri suite, what's in progress, and what's been released.",
     url: 'https://cofabri.com/roadmaps',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Roadmap | CoFabri',
     description: "See what's shipping next across the CoFabri suite, what's in progress, and what's been released.",
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 

@@ -14,10 +14,19 @@ export const metadata: Metadata = {
     title: 'Status | CoFabri',
     description: 'Live status for every CoFabri service. Updated automatically, and by a human when something needs saying.',
     url: 'https://cofabri.com/status',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Status | CoFabri',
     description: 'Live status for every CoFabri service. Updated automatically, and by a human when something needs saying.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
   alternates: {
     canonical: '/status',

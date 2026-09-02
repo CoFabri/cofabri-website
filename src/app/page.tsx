@@ -24,10 +24,19 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'CoFabri — We don\'t build platforms. We build answers.',
       description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
       url: 'https://cofabri.com/',
+      images: [
+        {
+          url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'CoFabri',
+        },
+      ],
     },
     twitter: {
       title: 'CoFabri — We don\'t build platforms. We build answers.',
       description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
+      images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     },
   };
 }

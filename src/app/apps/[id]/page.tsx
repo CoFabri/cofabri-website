@@ -53,11 +53,16 @@ export async function generateMetadata({ params }: AppDetailPageProps): Promise<
       title: `${app.name} | CoFabri`,
       description,
       url: `https://cofabri.com/apps/${id}`,
-      ...(app.screenshot ? { images: [{ url: app.screenshot, width: 1200, height: 630, alt: app.name }] } : {}),
+      images: [
+        app.screenshot
+          ? { url: app.screenshot, width: 1200, height: 630, alt: app.name }
+          : { url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png', width: 1200, height: 630, alt: 'CoFabri' },
+      ],
     },
     twitter: {
       title: `${app.name} | CoFabri`,
       description,
+      images: [app.screenshot || 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     },
   };
 }

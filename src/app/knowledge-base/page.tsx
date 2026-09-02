@@ -15,10 +15,19 @@ export const metadata: Metadata = {
     title: 'Knowledge Base | CoFabri',
     description: 'Find answers to common questions and learn how to use our apps.',
     url: 'https://cofabri.com/knowledge-base',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Knowledge Base | CoFabri',
     description: 'Find answers to common questions and learn how to use our apps.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 

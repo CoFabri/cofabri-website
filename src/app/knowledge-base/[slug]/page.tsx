@@ -50,6 +50,19 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
       authors: article.author ? [article.author] : undefined,
       tags: article.tags,
       url: `https://cofabri.com/knowledge-base/${slug}`,
+      images: [
+        {
+          url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'CoFabri',
+        },
+      ],
+    },
+    twitter: {
+      title: article.title,
+      description,
+      images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     },
     other: {
       'article:published_time': article.publishedAt,

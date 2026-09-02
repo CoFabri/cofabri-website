@@ -14,10 +14,19 @@ export const metadata: Metadata = {
     title: 'Support | CoFabri',
     description: 'Get help with any CoFabri app. Real people reply within one business day.',
     url: 'https://cofabri.com/support',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Support | CoFabri',
     description: 'Get help with any CoFabri app. Real people reply within one business day.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 

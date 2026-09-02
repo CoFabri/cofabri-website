@@ -15,10 +15,19 @@ export const metadata: Metadata = {
     title: 'Changelog | CoFabri',
     description: 'Released features across the CoFabri suite, most recent first.',
     url: 'https://cofabri.com/changelog',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Changelog | CoFabri',
     description: 'Released features across the CoFabri suite, most recent first.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 

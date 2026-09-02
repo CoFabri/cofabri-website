@@ -25,10 +25,19 @@ export const metadata: Metadata = {
     title: 'Co-Build | CoFabri',
     description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',
     url: 'https://cofabri.com/partners',
+    images: [
+      {
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'CoFabri',
+      },
+    ],
   },
   twitter: {
     title: 'Co-Build | CoFabri',
     description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
 };
 
