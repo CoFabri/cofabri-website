@@ -50,13 +50,13 @@ const About = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <div className="space-y-6">
             <p className="text-lg text-muted-foreground">
-            CoFabri helps modern businesses unlock their potential through automation, AI-enhanced tools, and intuitive software. Whether you're a solo founder or an established enterprise, our growing suite of apps is built to streamline operations, reduce inefficiencies, and spark meaningful growth.
+            CoFabri helps modern businesses unlock their potential through automation, AI-enhanced tools, and intuitive software. Whether you’re a solo founder or an established enterprise, our growing suite of apps is built to streamline operations, reduce inefficiencies, and spark meaningful growth.
             </p>
             <p className="text-lg text-muted-foreground">
             With deep expertise in software development and business process optimization, we create elegant, no-code and low-code solutions that simplify complexity and deliver measurable results. Every product is built to be modular, easy to adopt, and backed by ongoing support.
             </p>
             <p className="text-lg text-muted-foreground">
-            We're not just a software provider — we're your technology partner.
+            We’re not just a software provider â we’re your technology partner.
             </p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2">
