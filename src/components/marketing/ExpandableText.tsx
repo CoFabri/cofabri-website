@@ -30,7 +30,7 @@ export default function ExpandableText({ text, maxLength = 150, className = '' }
       </p>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200"
+        className="text-primary hover:text-accent-hover text-sm font-medium transition-colors duration-200"
       >
         {isExpanded ? 'Read Less' : 'Read More'}
       </button>

@@ -148,22 +148,22 @@ export default function LegalDocumentsContent() {
                   placeholder="Search legal documents..."
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 
-                    text-gray-700 font-medium hover:border-blue-400 focus:border-blue-500 focus:ring-2 
-                    focus:ring-blue-200 focus:outline-none transition-all duration-200
+                  className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-border
+                    text-foreground font-medium hover:border-primary focus:border-primary focus:ring-2
+                    focus:ring-ring focus:outline-none transition-all duration-200
                     shadow-sm hover:shadow-md"
                 />
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-ink-faint" />
               </div>
               {/* Document Types */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium text-gray-700 mr-2 self-center">Document Types:</span>
+                <span className="text-sm font-medium text-foreground mr-2 self-center">Document Types:</span>
                 <button
                   onClick={() => handleTypeChange('')}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                     ${!selectedType
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'bg-muted text-foreground hover:bg-muted/80'
                     }`}
                 >
                   All Types
@@ -174,8 +174,8 @@ export default function LegalDocumentsContent() {
                     onClick={() => handleTypeChange(type)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                       ${selectedType === type
-                        ? 'bg-blue-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted text-foreground hover:bg-muted/80'
                       }`}
                   >
                     {type}
@@ -186,13 +186,13 @@ export default function LegalDocumentsContent() {
               {/* Applications */}
               {applications.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-medium text-gray-700 mr-2 self-center">Applications:</span>
+                  <span className="text-sm font-medium text-foreground mr-2 self-center">Applications:</span>
                   <button
                     onClick={() => handleApplicationChange('')}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                       ${!selectedApplication
                         ? 'bg-purple-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                   >
                     All Applications
@@ -204,7 +204,7 @@ export default function LegalDocumentsContent() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                         ${selectedApplication === application
                           ? 'bg-purple-500 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                     >
                       {application}
@@ -222,11 +222,11 @@ export default function LegalDocumentsContent() {
         {/* Documents Grid */}
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : paginatedDocuments.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">No legal documents found matching your criteria.</p>
+            <p className="text-muted-foreground">No legal documents found matching your criteria.</p>
           </div>
         ) : (
           <div className={`${
@@ -239,27 +239,27 @@ export default function LegalDocumentsContent() {
             {paginatedDocuments.map((document) => (
               <div
                 key={document.id}
-                className={`bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden ${
+                className={`bg-card rounded-xl shadow-lg border border-border hover:shadow-xl transition-all duration-300 overflow-hidden ${
                   paginatedDocuments.length === 1 ? 'w-full max-w-sm md:max-w-md lg:max-w-lg' : paginatedDocuments.length === 2 ? 'w-full max-w-sm' : ''
                 }`}
               >
                 {/* Document Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-6 py-4">
+                <div className="bg-accent border-b border-border px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">{document.documentType}</p>
+                        <p className="text-xs font-medium text-accent-foreground uppercase tracking-wide">{document.documentType}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center justify-end space-x-1">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <p className="text-xs text-gray-500">Active</p>
+                        <p className="text-xs text-muted-foreground">Active</p>
                       </div>
                     </div>
                   </div>
@@ -267,26 +267,26 @@ export default function LegalDocumentsContent() {
 
                 <div className="p-6">
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+                    <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">
                       {document.title}
                     </h3>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                       </svg>
                       <span>Last updated: {formatDate(document.lastUpdated)}</span>
                     </div>
                   </div>
-                  
+
                   {document.description && (
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
                       {document.description}
                     </p>
                   )}
-                  
+
                   {/* Document Metadata */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                  <div className="bg-muted rounded-lg p-4 mb-4">
+                    <h4 className="text-sm font-medium text-foreground mb-3 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
@@ -294,23 +294,23 @@ export default function LegalDocumentsContent() {
                     </h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500 flex items-center">
+                        <span className="text-muted-foreground flex items-center">
                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                           </svg>
                           Version
                         </span>
-                        <span className="font-medium text-gray-900 bg-white px-2 py-1 rounded text-xs">{document.version}</span>
+                        <span className="font-medium text-foreground bg-card px-2 py-1 rounded text-xs">{document.version}</span>
                       </div>
                       {document.associatedApp && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500 flex items-center">
+                          <span className="text-muted-foreground flex items-center">
                                                       <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M3 7a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 11a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                           </svg>
                             Application
                           </span>
-                          <span className="font-medium text-gray-900 bg-white px-2 py-1 rounded text-xs">{document.associatedApp}</span>
+                          <span className="font-medium text-foreground bg-card px-2 py-1 rounded text-xs">{document.associatedApp}</span>
                         </div>
                       )}
                     </div>
@@ -318,7 +318,7 @@ export default function LegalDocumentsContent() {
                   
                   {document.tags && document.tags.length > 0 && (
                     <div className="mb-4">
-                      <h5 className="text-xs font-medium text-gray-600 mb-2 flex items-center">
+                      <h5 className="text-xs font-medium text-muted-foreground mb-2 flex items-center">
                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                         </svg>
@@ -328,7 +328,7 @@ export default function LegalDocumentsContent() {
                         {document.tags.map((tag, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground border border-border"
                           >
                             {tag}
                           </span>
@@ -337,13 +337,13 @@ export default function LegalDocumentsContent() {
                     </div>
                   )}
                   
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="border-t border-border pt-4">
                     {document.documentUrl ? (
                       <a
                         href={document.documentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+                        className="w-full bg-primary text-primary-foreground text-center py-3 px-4 rounded-lg hover:bg-accent-hover transition-all duration-200 font-medium flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
@@ -352,7 +352,7 @@ export default function LegalDocumentsContent() {
                         <span>View Document</span>
                       </a>
                     ) : (
-                      <div className="w-full bg-gray-100 text-gray-500 text-center py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
+                      <div className="w-full bg-muted text-muted-foreground text-center py-3 px-4 rounded-lg font-medium flex items-center justify-center space-x-2">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
@@ -372,17 +372,17 @@ export default function LegalDocumentsContent() {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               Previous
             </button>
-            <span className="px-4 py-2 text-sm text-gray-600">
+            <span className="px-4 py-2 text-sm text-muted-foreground">
               Page {currentPage} of {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               Next
             </button>

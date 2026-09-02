@@ -69,8 +69,8 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
         }`}
       >
         <div className="flex items-center space-x-3">
@@ -84,21 +84,21 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
               }}
             />
           ) : (
-            <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+              <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
               </svg>
             </div>
           )}
-          <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
+          <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -107,7 +107,7 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-muted flex items-center space-x-3 transition-colors"
             >
               {option.image ? (
                 <img 
@@ -119,13 +119,13 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
                   }}
                 />
               ) : (
-                <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                  <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
                 </div>
               )}
-              <span className="text-gray-900">{option.label}</span>
+              <span className="text-foreground">{option.label}</span>
             </button>
           ))}
         </div>
@@ -164,18 +164,18 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
         }`}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -184,9 +184,9 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
             >
-              <span className="text-gray-900">{option.label}</span>
+              <span className="text-foreground">{option.label}</span>
             </button>
           ))}
         </div>
@@ -475,41 +475,41 @@ export default function ContactForm() {
   ];
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm">
+    <div className="bg-card rounded-3xl p-8 shadow-sm">
       {submitStatus === 'success' ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-success" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Message Sent Successfully!</h2>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Message Sent Successfully!</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Thank you for contacting us. We&apos;ve received your message and will get back to you as soon as possible.
           </p>
           <button
             type="button"
             onClick={clearForm}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Send Another Message
           </button>
         </div>
       ) : submitStatus === 'error' ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-16 h-16 bg-danger/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-danger" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Submission Failed</h2>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Submission Failed</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             {errorMessage}
           </p>
           <button
             type="button"
             onClick={() => setSubmitStatus('idle')}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Try Again
           </button>
@@ -523,7 +523,7 @@ export default function ContactForm() {
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
               First Name *
             </label>
             <input
@@ -534,21 +534,21 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={FIRST_NAME_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.firstName ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.firstName ? 'border-danger' : 'border-border'
               }`}
               placeholder="Enter your first name"
               aria-describedby={errors.firstName ? 'firstName-error' : undefined}
             />
             {errors.firstName && (
-              <p id="firstName-error" className="mt-1 text-sm text-red-600">
+              <p id="firstName-error" className="mt-1 text-sm text-danger">
                 {errors.firstName}
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-2">
               Last Name *
             </label>
             <input
@@ -559,14 +559,14 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={LAST_NAME_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.lastName ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.lastName ? 'border-danger' : 'border-border'
               }`}
               placeholder="Enter your last name"
               aria-describedby={errors.lastName ? 'lastName-error' : undefined}
             />
             {errors.lastName && (
-              <p id="lastName-error" className="mt-1 text-sm text-red-600">
+              <p id="lastName-error" className="mt-1 text-sm text-danger">
                 {errors.lastName}
               </p>
             )}
@@ -575,7 +575,7 @@ export default function ContactForm() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
               Email Address *
             </label>
             <input
@@ -586,21 +586,21 @@ export default function ContactForm() {
               onChange={handleInputChange}
               required
               maxLength={EMAIL_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.email ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.email ? 'border-danger' : 'border-border'
               }`}
               placeholder="Enter your email address"
               aria-describedby={errors.email ? 'email-error' : undefined}
             />
             {errors.email && (
-              <p id="email-error" className="mt-1 text-sm text-red-600">
+              <p id="email-error" className="mt-1 text-sm text-danger">
                 {errors.email}
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="languagePreference" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
               Language Preference
             </label>
             <SimpleDropdown
@@ -626,7 +626,7 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
             Subject *
           </label>
           <input
@@ -637,24 +637,24 @@ export default function ContactForm() {
             onChange={handleInputChange}
             required
             maxLength={SUBJECT_MAX_LENGTH}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.subject ? 'border-red-300' : 'border-gray-300'
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.subject ? 'border-danger' : 'border-border'
               }`}
             placeholder="What is this regarding?"
             aria-describedby={errors.subject ? 'subject-error' : undefined}
           />
           <div className="flex justify-between items-center mt-1">
             {errors.subject && (
-              <p id="subject-error" className="text-sm text-red-600">
+              <p id="subject-error" className="text-sm text-danger">
                 {errors.subject}
               </p>
             )}
             <p className={`text-sm ml-auto ${
-              formData.subject.length > SUBJECT_MAX_LENGTH * 0.9 
-                ? 'text-orange-600' 
-                : formData.subject.length > SUBJECT_MAX_LENGTH * 0.8 
-                ? 'text-yellow-600' 
-                : 'text-gray-500'
+              formData.subject.length > SUBJECT_MAX_LENGTH * 0.9
+                ? 'text-danger'
+                : formData.subject.length > SUBJECT_MAX_LENGTH * 0.8
+                ? 'text-warning'
+                : 'text-muted-foreground'
             }`}>
               {formData.subject.length}/{SUBJECT_MAX_LENGTH}
             </p>
@@ -662,11 +662,11 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label htmlFor="relatedApp" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="relatedApp" className="block text-sm font-medium text-foreground mb-2">
             Application (Optional)
           </label>
           {isLoadingApps ? (
-            <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500">
+            <div className="w-full px-4 py-3 border border-border rounded-lg bg-muted text-muted-foreground">
               Loading apps...
             </div>
           ) : (
@@ -681,7 +681,7 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
             Message *
           </label>
           <textarea
@@ -692,24 +692,24 @@ export default function ContactForm() {
             required
             rows={6}
             maxLength={MESSAGE_MAX_LENGTH}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 resize-none ${
-                errors.message ? 'border-red-300' : 'border-gray-300'
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 resize-none ${
+                errors.message ? 'border-danger' : 'border-border'
               }`}
             placeholder="Tell us more about your inquiry..."
             aria-describedby={errors.message ? 'message-error' : undefined}
           />
           <div className="flex justify-between items-center mt-1">
             {errors.message && (
-              <p id="message-error" className="text-sm text-red-600">
+              <p id="message-error" className="text-sm text-danger">
                 {errors.message}
               </p>
             )}
             <p className={`text-sm ml-auto ${
-              formData.message.length > MESSAGE_MAX_LENGTH * 0.9 
-                ? 'text-orange-600' 
-                : formData.message.length > MESSAGE_MAX_LENGTH * 0.8 
-                ? 'text-yellow-600' 
-                : 'text-gray-500'
+              formData.message.length > MESSAGE_MAX_LENGTH * 0.9
+                ? 'text-danger'
+                : formData.message.length > MESSAGE_MAX_LENGTH * 0.8
+                ? 'text-warning'
+                : 'text-muted-foreground'
             }`}>
               {formData.message.length}/{MESSAGE_MAX_LENGTH}
             </p>
@@ -718,7 +718,7 @@ export default function ContactForm() {
 
         {/* Turnstile Security Verification */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Security Verification *
           </label>
           {getTurnstileSiteKey() ? (
@@ -733,12 +733,12 @@ export default function ContactForm() {
               className="flex justify-start"
             />
           ) : (
-            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+            <div className="text-sm text-danger bg-danger/10 p-3 rounded-lg border border-danger">
               Security verification is not configured. Please contact the administrator.
             </div>
           )}
           {(errors.turnstile || turnstileError) && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-danger">
               {errors.turnstile || turnstileError}
             </p>
           )}
@@ -748,7 +748,7 @@ export default function ContactForm() {
           <button
             type="button"
             onClick={clearForm}
-            className="text-sm text-gray-600 hover:text-gray-800 inline-flex items-center"
+            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -758,11 +758,11 @@ export default function ContactForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>

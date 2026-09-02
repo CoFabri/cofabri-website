@@ -75,8 +75,8 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
         }`}
       >
         <div className="flex items-center space-x-3">
@@ -90,21 +90,21 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
               }}
             />
           ) : (
-            <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+              <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
               </svg>
             </div>
           )}
-          <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
+          <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -113,7 +113,7 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-muted flex items-center space-x-3 transition-colors"
             >
               {option.image ? (
                 <img 
@@ -125,13 +125,13 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
                   }}
                 />
               ) : (
-                <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                  <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
                 </div>
               )}
-              <span className="text-gray-900">{option.label}</span>
+              <span className="text-foreground">{option.label}</span>
             </button>
           ))}
         </div>
@@ -171,15 +171,15 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
         }`}
       >
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           {selectedOptions.length > 0 ? (
             <div className="flex items-center space-x-2 min-w-0">
               {selectedOptions.slice(0, 2).map((option) => (
-                <div key={option.value} className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
+                <div key={option.value} className="flex items-center space-x-1 bg-accent text-accent-foreground px-2 py-1 rounded text-sm">
                   {option.image && (
                     <img 
                       src={option.image} 
@@ -191,30 +191,30 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
                 </div>
               ))}
               {selectedOptions.length > 2 && (
-                <span className="text-gray-500 text-sm">
+                <span className="text-muted-foreground text-sm">
                   +{selectedOptions.length - 2} more
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-gray-500">{placeholder}</span>
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <label
               key={option.value}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors cursor-pointer"
+              className="w-full px-4 py-3 text-left hover:bg-muted flex items-center space-x-3 transition-colors cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => onChange(option.value)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-primary border-border rounded focus:ring-primary/20"
               />
               {option.image ? (
                 <img 
@@ -226,13 +226,13 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
                   }}
                 />
               ) : (
-                <div className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">
+                  <svg className="w-4 h-4 text-ink-faint" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                   </svg>
                 </div>
               )}
-              <span className="text-gray-900">{option.label}</span>
+              <span className="text-foreground">{option.label}</span>
             </label>
           ))}
         </div>
@@ -270,18 +270,18 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
         }`}
       >
-        <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -290,9 +290,9 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-muted transition-colors"
             >
-              <span className="text-gray-900">{option.label}</span>
+              <span className="text-foreground">{option.label}</span>
             </button>
           ))}
         </div>
@@ -716,41 +716,41 @@ export default function SupportForm() {
     }));
 
   return (
-    <div className="bg-white rounded-3xl p-8 shadow-sm">
+    <div className="bg-card rounded-3xl p-8 shadow-sm">
       {submitStatus === 'success' ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-success" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Support Ticket Submitted!</h2>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Support Ticket Submitted!</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Thank you for contacting us. We&apos;ve received your support request and will get back to you as soon as possible.
           </p>
           <button
             type="button"
             onClick={clearForm}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Submit Another Ticket
           </button>
         </div>
       ) : submitStatus === 'error' ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-16 h-16 bg-danger/15 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-danger" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Submission Failed</h2>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Submission Failed</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             {errorMessage}
           </p>
           <button
             type="button"
             onClick={() => setSubmitStatus('idle')}
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
           >
             Try Again
           </button>
@@ -764,11 +764,11 @@ export default function SupportForm() {
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Contact Information Section */}
         <div className="space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
-          
+          <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
                 First Name *
               </label>
               <input
@@ -779,21 +779,21 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={FIRST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.firstName ? 'border-red-300' : 'border-gray-300'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.firstName ? 'border-danger' : 'border-border'
               }`}
                 placeholder="Enter your first name"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
               />
               {errors.firstName && (
-                <p id="firstName-error" className="mt-1 text-sm text-red-600">
+                <p id="firstName-error" className="mt-1 text-sm text-danger">
                   {errors.firstName}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-2">
                 Last Name *
               </label>
               <input
@@ -804,14 +804,14 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={LAST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.lastName ? 'border-red-300' : 'border-gray-300'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.lastName ? 'border-danger' : 'border-border'
               }`}
                 placeholder="Enter your last name"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}
               />
               {errors.lastName && (
-                <p id="lastName-error" className="mt-1 text-sm text-red-600">
+                <p id="lastName-error" className="mt-1 text-sm text-danger">
                   {errors.lastName}
                 </p>
               )}
@@ -819,7 +819,7 @@ export default function SupportForm() {
           </div>
 
           <div>
-            <label htmlFor="languagePreference" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
               Language Preference
             </label>
             <SimpleDropdown
@@ -834,7 +834,7 @@ export default function SupportForm() {
           </div>
 
           <div>
-            <label htmlFor="companyOrganization" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="companyOrganization" className="block text-sm font-medium text-foreground mb-2">
               Company/Organization
             </label>
             <input
@@ -844,13 +844,13 @@ export default function SupportForm() {
               value={formData.companyOrganization}
               onChange={handleInputChange}
               maxLength={COMPANY_ORGANIZATION_MAX_LENGTH}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors"
               placeholder="Enter your company or organization"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-foreground mb-3">
               Preferred Contact Method *
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -859,12 +859,12 @@ export default function SupportForm() {
                 { value: 'phone', label: 'Phone', icon: '📞' },
                 { value: 'any', label: 'Any', icon: '✅' }
               ].map((option) => (
-                <label 
-                  key={option.value} 
+                <label
+                  key={option.value}
                   className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                     formData.preferredContactMethod === option.value
-                      ? 'border-blue-500 bg-blue-50 shadow-sm'
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-primary bg-accent shadow-sm'
+                      : 'border-border bg-card hover:border-input hover:bg-muted'
                   }`}
                 >
                   <input
@@ -878,30 +878,30 @@ export default function SupportForm() {
                   <div className="flex items-center space-x-3">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       formData.preferredContactMethod === option.value
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300 bg-white'
+                        ? 'border-primary bg-primary'
+                        : 'border-border bg-card'
                     }`}>
                       {formData.preferredContactMethod === option.value && (
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-lg">{option.icon}</span>
-                      <span className="text-sm font-medium text-gray-900">{option.label}</span>
+                      <span className="text-sm font-medium text-foreground">{option.label}</span>
                     </div>
                   </div>
                 </label>
               ))}
             </div>
             {errors.preferredContactMethod && (
-              <p className="mt-2 text-sm text-red-600">
+              <p className="mt-2 text-sm text-danger">
                 {errors.preferredContactMethod}
               </p>
             )}
             <button
               type="button"
               onClick={() => handleContactMethodChange('')}
-              className="mt-3 text-sm text-gray-500 hover:text-gray-700 inline-flex items-center transition-colors"
+              className="mt-3 text-sm text-muted-foreground hover:text-foreground inline-flex items-center transition-colors"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -912,7 +912,7 @@ export default function SupportForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                 Email *
               </label>
               <input
@@ -923,21 +923,21 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={EMAIL_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.email ? 'border-red-300' : 'border-gray-300'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.email ? 'border-danger' : 'border-border'
               }`}
                 placeholder="Enter your email address"
                 aria-describedby={errors.email ? 'email-error' : undefined}
               />
               {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-red-600">
+                <p id="email-error" className="mt-1 text-sm text-danger">
                   {errors.email}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                 Phone Number *
               </label>
               <div className="relative">
@@ -948,8 +948,8 @@ export default function SupportForm() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 ${
-                errors.phone ? 'border-red-300' : 'border-gray-300'
+                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
+                errors.phone ? 'border-danger' : 'border-border'
               }`}
                   placeholder="(555) 555-5555"
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
@@ -957,16 +957,16 @@ export default function SupportForm() {
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <div className="flex items-center space-x-1">
-                    <span className="text-sm font-medium text-gray-500">🇺🇸</span>
-                    <span className="text-xs text-gray-400">+1</span>
+                    <span className="text-sm font-medium text-muted-foreground">🇺🇸</span>
+                    <span className="text-xs text-ink-faint">+1</span>
                   </div>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 US phone number format: (555) 555-5555
               </p>
               {errors.phone && (
-                <p id="phone-error" className="mt-1 text-sm text-red-600">
+                <p id="phone-error" className="mt-1 text-sm text-danger">
                   {errors.phone}
                 </p>
               )}
@@ -975,11 +975,11 @@ export default function SupportForm() {
         </div>
 
         {/* Ticket Information Section */}
-        <div className="space-y-6 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Ticket Information</h3>
-          
+        <div className="space-y-6 pt-6 border-t border-border">
+          <h3 className="text-lg font-semibold text-foreground">Ticket Information</h3>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Application(s)
             </label>
             <MultiSelectDropdown
@@ -991,7 +991,7 @@ export default function SupportForm() {
             />
             {selectedApps.length > 0 && (
               <div className="mt-3">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Selected: {selectedApps.length} application{selectedApps.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -999,7 +999,7 @@ export default function SupportForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-foreground mb-3">
               Subject *
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1007,12 +1007,12 @@ export default function SupportForm() {
                 { value: 'support', label: 'Support/Help', icon: '🆘', description: 'Get help with issues or questions' },
                 { value: 'feature', label: 'Feature Request', icon: '💡', description: 'Suggest new features or improvements' }
               ].map((option) => (
-                <label 
-                  key={option.value} 
+                <label
+                  key={option.value}
                   className={`relative flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                     formData.subject === option.value
-                      ? 'border-blue-500 bg-blue-50 shadow-sm'
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-primary bg-accent shadow-sm'
+                      : 'border-border bg-card hover:border-input hover:bg-muted'
                   }`}
                 >
                   <input
@@ -1026,33 +1026,33 @@ export default function SupportForm() {
                   <div className="flex items-start space-x-3 w-full">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${
                       formData.subject === option.value
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300 bg-white'
+                        ? 'border-primary bg-primary'
+                        : 'border-border bg-card'
                     }`}>
                       {formData.subject === option.value && (
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-lg">{option.icon}</span>
-                        <span className="text-sm font-medium text-gray-900">{option.label}</span>
+                        <span className="text-sm font-medium text-foreground">{option.label}</span>
                       </div>
-                      <p className="text-xs text-gray-500">{option.description}</p>
+                      <p className="text-xs text-muted-foreground">{option.description}</p>
                     </div>
                   </div>
                 </label>
               ))}
             </div>
             {errors.subject && (
-              <p className="mt-2 text-sm text-red-600">
+              <p className="mt-2 text-sm text-danger">
                 {errors.subject}
               </p>
             )}
             <button
               type="button"
               onClick={() => handleSubjectChange('')}
-              className="mt-3 text-sm text-gray-500 hover:text-gray-700 inline-flex items-center transition-colors"
+              className="mt-3 text-sm text-muted-foreground hover:text-foreground inline-flex items-center transition-colors"
             >
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1062,7 +1062,7 @@ export default function SupportForm() {
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
               Description *
             </label>
             <textarea
@@ -1073,24 +1073,24 @@ export default function SupportForm() {
               required
               rows={6}
               maxLength={DESCRIPTION_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 hover:shadow-sm transition-all duration-200 resize-none ${
-                errors.description ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 resize-none ${
+                errors.description ? 'border-danger' : 'border-border'
               }`}
               placeholder="Please describe your issue or request..."
               aria-describedby={errors.description ? 'description-error' : undefined}
             />
             <div className="flex justify-between items-center mt-1">
               {errors.description && (
-                <p id="description-error" className="text-sm text-red-600">
+                <p id="description-error" className="text-sm text-danger">
                   {errors.description}
                 </p>
               )}
               <p className={`text-sm ml-auto ${
-                formData.description.length > DESCRIPTION_MAX_LENGTH * 0.9 
-                  ? 'text-orange-600' 
-                  : formData.description.length > DESCRIPTION_MAX_LENGTH * 0.8 
-                  ? 'text-yellow-600' 
-                  : 'text-gray-500'
+                formData.description.length > DESCRIPTION_MAX_LENGTH * 0.9
+                  ? 'text-danger'
+                  : formData.description.length > DESCRIPTION_MAX_LENGTH * 0.8
+                  ? 'text-warning'
+                  : 'text-muted-foreground'
               }`}>
                 {formData.description.length}/{DESCRIPTION_MAX_LENGTH}
               </p>
@@ -1098,13 +1098,13 @@ export default function SupportForm() {
           </div>
 
           <div>
-            <label htmlFor="screenshots" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="screenshots" className="block text-sm font-medium text-foreground mb-2">
               Screenshots
             </label>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               Supported formats: JPG, PNG, GIF, WebP, BMP (max 10MB per file, 50MB total)
             </p>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
               <input
                 type="file"
                 id="screenshots"
@@ -1116,27 +1116,27 @@ export default function SupportForm() {
               />
               <label htmlFor="screenshots" className="cursor-pointer">
                 <div className="flex flex-col items-center">
-                  <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 text-ink-faint mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
-                  <span className="text-sm text-gray-600">Drop files here or browse</span>
+                  <span className="text-sm text-muted-foreground">Drop files here or browse</span>
                 </div>
               </label>
             </div>
             {formData.screenshots.length > 0 && (
               <div className="mt-3 space-y-2">
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-muted-foreground mb-2">
                   {formData.screenshots.length} file(s) selected
                 </p>
                 {formData.screenshots.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
                     <div className="flex items-center space-x-3">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <div>
-                        <span className="text-sm font-medium text-gray-700">{file.name}</span>
-                        <span className="text-xs text-gray-500 block">
+                        <span className="text-sm font-medium text-foreground">{file.name}</span>
+                        <span className="text-xs text-muted-foreground block">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </span>
                       </div>
@@ -1149,7 +1149,7 @@ export default function SupportForm() {
                           screenshots: prev.screenshots.filter((_, i) => i !== index)
                         }));
                       }}
-                      className="text-red-600 hover:text-red-800 p-1 rounded"
+                      className="text-danger hover:text-danger/80 p-1 rounded"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1164,7 +1164,7 @@ export default function SupportForm() {
 
         {/* Turnstile Security Verification */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Security Verification *
           </label>
           {getTurnstileSiteKey() ? (
@@ -1179,12 +1179,12 @@ export default function SupportForm() {
               className="flex justify-start"
             />
           ) : (
-            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+            <div className="text-sm text-danger bg-danger/10 p-3 rounded-lg border border-danger">
               Security verification is not configured. Please contact the administrator.
             </div>
           )}
           {(errors.turnstile || turnstileError) && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-danger">
               {errors.turnstile || turnstileError}
             </p>
           )}
@@ -1194,7 +1194,7 @@ export default function SupportForm() {
           <button
             type="button"
             onClick={clearForm}
-            className="text-sm text-gray-600 hover:text-gray-800 inline-flex items-center"
+            className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1204,11 +1204,11 @@ export default function SupportForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-primary-foreground" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>

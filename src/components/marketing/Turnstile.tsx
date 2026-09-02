@@ -149,7 +149,7 @@ export default function Turnstile({
   if (hasError) {
     return (
       <div className={`turnstile-container ${className}`}>
-        <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border">
+        <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg border">
           Security verification is not configured. Please contact the administrator.
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function Turnstile({
     <div className={`turnstile-container ${className}`}>
       <div ref={containerRef} className="turnstile-widget" />
       {isLoading && !isRendered && (
-        <div className="text-sm text-gray-500">Loading security verification...</div>
+        <div className="text-sm text-muted-foreground">Loading security verification...</div>
       )}
     </div>
   );

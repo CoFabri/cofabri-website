@@ -134,7 +134,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-24 bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
+      <section className="relative pt-32 pb-24 bg-gradient-to-b from-muted to-background border-b border-border">
         <AnimatedGradient />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
@@ -146,20 +146,20 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               {article.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-gray-600 mb-6">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-muted-foreground mb-6">
               <div className="flex items-center gap-x-2">
-                <BookOpenIcon className="h-5 w-5 text-blue-500" />
-                <span className="text-gray-900">{article.author}</span>
+                <BookOpenIcon className="h-5 w-5 text-primary" />
+                <span className="text-foreground">{article.author}</span>
               </div>
               {article.readTime && (
                 <div className="flex items-center gap-x-2">
-                  <ClockIcon className="h-5 w-5 text-blue-500" />
+                  <ClockIcon className="h-5 w-5 text-primary" />
                   <span>{article.readTime} min read</span>
                 </div>
               )}
               <div className="flex items-center gap-x-2">
-                <span className="text-gray-500">Published:</span>
-                <time dateTime={article.publishedAt} className="text-gray-900">
+                <span className="text-muted-foreground">Published:</span>
+                <time dateTime={article.publishedAt} className="text-foreground">
                   {new Date(article.publishedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -168,8 +168,8 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                 </time>
               </div>
               <div className="flex items-center gap-x-2">
-                <span className="text-gray-500">Last Updated:</span>
-                <time dateTime={article.lastUpdated || article.publishedAt} className="text-gray-900">
+                <span className="text-muted-foreground">Last Updated:</span>
+                <time dateTime={article.lastUpdated || article.publishedAt} className="text-foreground">
                   {new Date(article.lastUpdated || article.publishedAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -185,7 +185,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                 {article.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
+                    className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground ring-1 ring-inset ring-primary/10"
                   >
                     {tag}
                   </span>
@@ -212,7 +212,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
             <div className="prose prose-lg prose-blue max-w-none">
               {article.content ? (
                 <div 
-                  className="text-gray-700 leading-relaxed markdown-content"
+                  className="text-foreground leading-relaxed markdown-content"
                   dangerouslySetInnerHTML={{ __html: htmlContent }} 
                   style={{
                     '--tw-prose-body': '#374151',
@@ -233,7 +233,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                   } as React.CSSProperties}
                 />
               ) : (
-                <div className="text-gray-700 leading-relaxed">
+                <div className="text-foreground leading-relaxed">
                   <p>{article.excerpt || 'Content not available.'}</p>
                 </div>
               )}
@@ -243,10 +243,10 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
       </section>
 
       {/* Related Topics Section */}
-      <section className="py-16 bg-blue-600 border-t border-blue-700">
+      <section className="py-16 bg-primary border-t border-accent-hover">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-8">Related Topics</h2>
+            <h2 className="text-3xl font-bold text-primary-foreground mb-8">Related Topics</h2>
             {relatedArticles.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {relatedArticles.map((relatedArticle) => (
@@ -256,23 +256,23 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                     className="group p-6 rounded-xl glass-card hover:border-indigo-500/50 transition-all duration-300"
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
                         {relatedArticle.category}
                       </span>
                       {relatedArticle.applications && relatedArticle.applications.length > 0 && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                           {relatedArticle.applications[0]}
                           {relatedArticle.applications.length > 1 && ` +${relatedArticle.applications.length - 1}`}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                    <h3 className="text-xl font-semibold mb-3 text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                       {relatedArticle.title}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
                       {relatedArticle.excerpt || (relatedArticle.content ? relatedArticle.content.substring(0, 150) + '...' : '')}
                     </p>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <span className="text-indigo-500">⏱️</span>
                       <span className="ml-2">{relatedArticle.readTime} min read</span>
                     </div>
@@ -281,7 +281,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-blue-100">No related topics available for this article.</p>
+                <p className="text-primary-foreground/80">No related topics available for this article.</p>
               </div>
             )}
           </div>

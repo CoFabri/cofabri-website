@@ -150,10 +150,10 @@ function SignupPageContent() {
 
   if (!hasAppId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Access</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Invalid Access</h1>
+          <p className="text-muted-foreground">
             Please access this page with a valid app ID. Example: /signup?appId=your-app-id
           </p>
         </div>
@@ -162,19 +162,19 @@ function SignupPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative pt-32 pb-24 overflow-hidden">
         <AnimatedGradient />
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-100 rounded-full filter blur-3xl opacity-50 animate-float" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-100 rounded-full filter blur-3xl opacity-50 animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-50 animate-float" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl opacity-50 animate-float" style={{ animationDelay: '2s' }} />
         </div>
 
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex justify-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-600">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-accent-foreground">
                 <SparklesIcon className="w-5 h-5" />
                 <span className="text-sm font-medium">Coming Soon</span>
               </div>
@@ -182,7 +182,7 @@ function SignupPageContent() {
             <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
               Be the First to Experience {appData?.name}
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Join our exclusive waitlist and get early access to our upcoming products.
               We&apos;re building something special, and you&apos;ll be among the first to experience it.
             </p>
@@ -193,25 +193,25 @@ function SignupPageContent() {
                 data is available (betaSpotsTotal > 0) — otherwise it shows false
                 "0 spots left" scarcity messaging. */}
             {!isLoading && appData && appData.betaSpotsTotal > 0 && (
-              <div className="max-w-md mx-auto bg-white rounded-2xl p-6 shadow-lg mb-8">
+              <div className="max-w-md mx-auto bg-card rounded-2xl p-6 shadow-lg mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <UserGroupIcon className="w-5 h-5 text-indigo-600" />
-                    <span className="text-sm font-medium text-gray-600">Beta Spots Remaining</span>
+                    <UserGroupIcon className="w-5 h-5 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">Beta Spots Remaining</span>
                   </div>
-                  <span className="text-2xl font-bold text-indigo-600">
+                  <span className="text-2xl font-bold text-primary">
                     {appData.betaSpotsTotal - appData.betaSpotsFilled}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500"
+                <div className="w-full bg-muted rounded-full h-2.5">
+                  <div
+                    className="bg-primary h-2.5 rounded-full transition-all duration-500"
                     style={{ width: `${(appData.betaSpotsFilled / appData.betaSpotsTotal) * 100}%` }}
                   />
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   {appData.betaSpotsTotal - appData.betaSpotsFilled < 10 ? (
-                    <span className="text-red-500 font-medium">
+                    <span className="text-danger font-medium">
                       Hurry! Only {appData.betaSpotsTotal - appData.betaSpotsFilled} spots left!
                     </span>
                   ) : (
@@ -219,7 +219,7 @@ function SignupPageContent() {
                   )}
                 </p>
                 {appData.betaPrice > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     Beta access: ${appData.betaPrice}/month
                   </p>
                 )}
@@ -232,7 +232,7 @@ function SignupPageContent() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               {/* Left Side - Visuals */}
               <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 lg:p-12 text-white">
@@ -294,19 +294,19 @@ function SignupPageContent() {
                 <div className="space-y-6">
                   {showThankYou ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <HeartIcon className="w-8 h-8 text-green-600" />
+                      <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <HeartIcon className="w-8 h-8 text-success" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
-                      <p className="text-gray-600">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">Thank You!</h3>
+                      <p className="text-muted-foreground">
                         We&apos;ve received your submission and will keep you updated on our progress.
                       </p>
                     </div>
                   ) : (
                     <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border border-white/20">
                       <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Join the {appData?.name} Waitlist</h2>
-                        <p className="text-gray-600">Fill out the form below to secure your spot on our waitlist. We&apos;ll notify you as soon as we&apos;re ready to launch.</p>
+                        <h2 className="text-2xl font-bold text-foreground mb-2">Join the {appData?.name} Waitlist</h2>
+                        <p className="text-muted-foreground">Fill out the form below to secure your spot on our waitlist. We&apos;ll notify you as soon as we&apos;re ready to launch.</p>
                       </div>
 
 
@@ -314,8 +314,8 @@ function SignupPageContent() {
                       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                              First Name <span className="text-red-500">*</span>
+                            <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-1">
+                              First Name <span className="text-danger">*</span>
                             </label>
                             <input
                               type="text"
@@ -324,13 +324,13 @@ function SignupPageContent() {
                               required
                               value={formData.firstName}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                               placeholder="John"
                             />
                           </div>
                           <div>
-                            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                              Last Name <span className="text-red-500">*</span>
+                            <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-1">
+                              Last Name <span className="text-danger">*</span>
                             </label>
                             <input
                               type="text"
@@ -339,14 +339,14 @@ function SignupPageContent() {
                               required
                               value={formData.lastName}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                               placeholder="Doe"
                             />
                           </div>
                         </div>
                         <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email Address <span className="text-red-500">*</span>
+                          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+                            Email Address <span className="text-danger">*</span>
                           </label>
                           <input
                             type="email"
@@ -355,15 +355,15 @@ function SignupPageContent() {
                             required
                             value={formData.email}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                             placeholder="you@company.com"
                           />
                         </div>
 
                         {/* Interest Level Selector */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            How interested are you? <span className="text-red-500">*</span>
+                          <label className="block text-sm font-medium text-foreground mb-1">
+                            How interested are you? <span className="text-danger">*</span>
                           </label>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((level) => (
@@ -377,24 +377,24 @@ function SignupPageContent() {
                                   className={`w-8 h-8 ${
                                     level <= (interestLevel || 0)
                                       ? 'text-yellow-400 fill-yellow-400'
-                                      : 'text-gray-300'
+                                      : 'text-muted-foreground'
                                   }`}
                                 />
                               </button>
                             ))}
                           </div>
                           {!interestLevel && (
-                            <p className="mt-1 text-sm text-red-500">Please select your interest level</p>
+                            <p className="mt-1 text-sm text-danger">Please select your interest level</p>
                           )}
                         </div>
 
                         <div>
-                          <label htmlFor="quote" className="block text-sm font-medium text-gray-700 mb-1">
-                            How much would you pay monthly? <span className="text-red-500">*</span>
+                          <label htmlFor="quote" className="block text-sm font-medium text-foreground mb-1">
+                            How much would you pay monthly? <span className="text-danger">*</span>
                           </label>
                           <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                              <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+                              <CurrencyDollarIcon className="h-5 w-5 text-ink-faint" />
                             </div>
                             <input
                               type="number"
@@ -405,13 +405,13 @@ function SignupPageContent() {
                               step="1"
                               value={formData.quote}
                               onChange={handleInputChange}
-                              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              className="w-full pl-10 pr-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                               placeholder="Enter amount"
                             />
                           </div>
                         </div>
                         <div>
-                          <label htmlFor="statement" className="block text-sm font-medium text-gray-700 mb-1">
+                          <label htmlFor="statement" className="block text-sm font-medium text-foreground mb-1">
                             Beta Statement (Optional)
                           </label>
                           <textarea
@@ -419,10 +419,10 @@ function SignupPageContent() {
                             name="statement"
                             value={formData.statement}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-[100px]"
+                            className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-ring focus:border-transparent transition-all min-h-[100px]"
                             placeholder="Share why you're excited about this beta"
                           />
-                          <p className="mt-1 text-sm text-gray-500">
+                          <p className="mt-1 text-sm text-muted-foreground">
                             If approved, your statement will appear on this waitlist page
                           </p>
                         </div>
@@ -449,9 +449,9 @@ function SignupPageContent() {
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Loading...</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Loading...</h1>
         </div>
       </div>
     }>

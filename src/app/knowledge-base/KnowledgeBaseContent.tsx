@@ -159,22 +159,22 @@ export default function KnowledgeBaseContent() {
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 
-                    text-gray-700 font-medium hover:border-blue-400 focus:border-blue-500 focus:ring-2 
-                    focus:ring-blue-200 focus:outline-none transition-all duration-200
+                  className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-border
+                    text-foreground font-medium hover:border-primary focus:border-primary focus:ring-2
+                    focus:ring-ring focus:outline-none transition-all duration-200
                     shadow-sm hover:shadow-md"
                 />
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-ink-faint" />
               </div>
               {/* Categories */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm font-medium text-gray-700 mr-2 self-center">Categories:</span>
+                <span className="text-sm font-medium text-foreground mr-2 self-center">Categories:</span>
                 <button
                   onClick={() => handleCategoryChange('')}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                     ${!selectedCategory
-                      ? 'bg-blue-500 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                 >
                   All Categories
@@ -185,8 +185,8 @@ export default function KnowledgeBaseContent() {
                     onClick={() => handleCategoryChange(category)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
                       ${selectedCategory === category
-                        ? 'bg-blue-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                   >
                     {category}
@@ -197,13 +197,13 @@ export default function KnowledgeBaseContent() {
               {/* Tags */}
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-medium text-gray-700 mr-2 self-center">Tags:</span>
+                  <span className="text-sm font-medium text-foreground mr-2 self-center">Tags:</span>
                   <button
                     onClick={() => handleTagChange('')}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                       ${!selectedTag
                         ? 'bg-green-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                   >
                     All Tags
@@ -215,7 +215,7 @@ export default function KnowledgeBaseContent() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                         ${selectedTag === tag
                           ? 'bg-green-500 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                     >
                       {tag}
@@ -227,13 +227,13 @@ export default function KnowledgeBaseContent() {
               {/* Applications */}
               {applications.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm font-medium text-gray-700 mr-2 self-center">Applications:</span>
+                  <span className="text-sm font-medium text-foreground mr-2 self-center">Applications:</span>
                   <button
                     onClick={() => handleApplicationChange('')}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                       ${!selectedApplication
                         ? 'bg-purple-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                   >
                     All Applications
@@ -245,7 +245,7 @@ export default function KnowledgeBaseContent() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-200
                         ${selectedApplication === application
                           ? 'bg-purple-500 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                     >
                       {application}
@@ -260,11 +260,11 @@ export default function KnowledgeBaseContent() {
       <div className="container mx-auto px-4 py-12">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : filteredArticles.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">No articles found matching your criteria.</p>
+            <p className="text-muted-foreground">No articles found matching your criteria.</p>
           </div>
         ) : (
           <>
@@ -273,7 +273,7 @@ export default function KnowledgeBaseContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Popular Articles */}
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Articles</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Popular Articles</h2>
                   <div className="space-y-4">
                     {filteredArticles
                       .filter(article => article.isPopular)
@@ -282,33 +282,33 @@ export default function KnowledgeBaseContent() {
                         <a
                           key={article.id}
                           href={`/knowledge-base/${article.slug}`}
-                          className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-yellow-50 to-white border border-yellow-100 hover:border-yellow-200 hover:shadow-md transition-all duration-300"
+                          className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-yellow-50 to-card dark:from-yellow-500/10 dark:to-card border border-yellow-100 dark:border-yellow-500/20 hover:border-yellow-200 dark:hover:border-yellow-500/40 hover:shadow-md transition-all duration-300"
                         >
-                          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
-                            <span className="text-yellow-600 text-xl">⭐</span>
+                          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-yellow-100 dark:bg-yellow-500/15 flex items-center justify-center">
+                            <span className="text-yellow-600 dark:text-yellow-400 text-xl">⭐</span>
                           </div>
                           <div className="flex-grow min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300">
                                 {article.category}
                               </span>
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-500/15 dark:text-yellow-300">
                                 Popular
                               </span>
                               {article.applications && article.applications.length > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                                   {article.applications[0]}
                                   {article.applications.length > 1 && ` +${article.applications.length - 1}`}
                                 </span>
                               )}
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-yellow-600 transition-colors duration-300 truncate">
+                            <h3 className="text-lg font-semibold text-foreground group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 truncate">
                               {article.title}
                             </h3>
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                               {article.excerpt || (article.content ? article.content.substring(0, 100) + '...' : '')}
                             </p>
-                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                               <span className="flex items-center">
                                 <span className="text-yellow-500 mr-1">⏱️</span>
                                 {article.readTime} min read
@@ -322,7 +322,7 @@ export default function KnowledgeBaseContent() {
 
                 {/* Featured Articles */}
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Articles</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Featured Articles</h2>
                   <div className="space-y-4">
                     {filteredArticles
                       .filter(article => article.isFeatured)
@@ -331,33 +331,33 @@ export default function KnowledgeBaseContent() {
                         <a
                           key={article.id}
                           href={`/knowledge-base/${article.slug}`}
-                          className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-white border border-purple-100 hover:border-purple-200 hover:shadow-md transition-all duration-300"
+                          className="group flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-card dark:from-purple-500/10 dark:to-card border border-purple-100 dark:border-purple-500/20 hover:border-purple-200 dark:hover:border-purple-500/40 hover:shadow-md transition-all duration-300"
                         >
-                          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                            <span className="text-purple-600 text-xl">✨</span>
+                          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-500/15 flex items-center justify-center">
+                            <span className="text-purple-600 dark:text-purple-400 text-xl">✨</span>
                           </div>
                           <div className="flex-grow min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                                 {article.category}
                               </span>
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                                 Featured
                               </span>
                               {article.applications && article.applications.length > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                                   {article.applications[0]}
                                   {article.applications.length > 1 && ` +${article.applications.length - 1}`}
                                 </span>
                               )}
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-purple-600 transition-colors duration-300 truncate">
+                            <h3 className="text-lg font-semibold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 truncate">
                               {article.title}
                             </h3>
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                               {article.excerpt || (article.content ? article.content.substring(0, 100) + '...' : '')}
                             </p>
-                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                               <span className="flex items-center">
                                 <span className="text-purple-500 mr-1">⏱️</span>
                                 {article.readTime} min read
@@ -373,32 +373,32 @@ export default function KnowledgeBaseContent() {
 
             {/* All Articles */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">All Articles</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-6">All Articles</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedArticles.map((article) => (
                   <a
                     key={article.id}
                     href={`/knowledge-base/${article.slug}`}
-                    className="group p-6 rounded-xl glass-card hover:border-indigo-500/50 transition-all duration-300"
+                    className="group p-6 rounded-xl glass-card hover:border-primary/50 transition-all duration-300"
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
                         {article.category}
                       </span>
                       {article.applications && article.applications.length > 0 && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
                           {article.applications[0]}
                           {article.applications.length > 1 && ` +${article.applications.length - 1}`}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-semibold mb-3 text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                    <h3 className="text-xl font-semibold mb-3 text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                       {article.title}
                     </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
                       {article.excerpt || (article.content ? article.content.substring(0, 150) + '...' : '')}
                     </p>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <span className="text-indigo-500">⏱️</span>
                       <span className="ml-2">{article.readTime} min read</span>
                     </div>
@@ -412,17 +412,17 @@ export default function KnowledgeBaseContent() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     Previous
                   </button>
-                  <span className="px-4 py-2 text-sm text-gray-600">
+                  <span className="px-4 py-2 text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="px-4 py-2 rounded-lg text-sm font-medium bg-muted text-muted-foreground hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     Next
                   </button>
