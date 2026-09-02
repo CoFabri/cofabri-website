@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy, Handshake } from 'lucide-react';
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
+  { name: 'Partners', href: '/partners', icon: Handshake },
   { name: 'Roadmap', href: '/roadmaps', icon: TrendingUp },
   { name: 'Changelog', href: '/changelog', icon: Sparkles },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
