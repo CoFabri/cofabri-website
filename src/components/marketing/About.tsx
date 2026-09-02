@@ -38,13 +38,13 @@ const About = () => {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div>
             <p className="text-lg leading-[1.6] text-muted-foreground">
-              CoFabri is a software studio — not a single product, a portfolio of them. Each app
+              CoFabri is a software studio — not a single app, a portfolio of them. Each app
               solves one problem for one kind of business, built and maintained by a small team
               that ships fast and stays close to the people using it.
             </p>
             <p className="mt-5 text-lg leading-[1.6] text-muted-foreground">
               Most of what we build starts in-house. Some of it starts with an operator who
-              already knows an industry cold — we build the product, they bring the customers,
+              already knows an industry cold — we build the app, they bring the customers,
               and we share what it earns.
             </p>
             <p className="mt-5 text-lg leading-[1.6] text-foreground">
