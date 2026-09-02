@@ -1,38 +1,31 @@
 import { Metadata } from 'next';
 import { getSystemStatus } from '@/lib/airtable';
+import { getApps } from '@/lib/api-client';
 import { StatusPageContent } from '@/components/marketing/StatusPageContent';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'System Status',
-  description: 'Check the real-time status of all CoFabri services and applications. Monitor uptime, performance, and any ongoing issues.',
-  keywords: ['system status', 'uptime', 'service status', 'monitoring', 'downtime', 'performance', 'availability'],
+  title: 'Status',
+  description: 'Live status for every CoFabri service. Updated automatically, and by a human when something needs saying.',
+  keywords: ['system status', 'uptime', 'service status', 'monitoring', 'downtime', 'incidents'],
   openGraph: {
-    title: 'System Status | CoFabri',
-    description: 'Check the real-time status of all CoFabri services and applications.',
+    title: 'Status | CoFabri',
+    description: 'Live status for every CoFabri service. Updated automatically, and by a human when something needs saying.',
     url: 'https://cofabri.com/status',
-    images: [
-      {
-        url: '/images/placeholder.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'CoFabri System Status',
-      },
-    ],
   },
   twitter: {
-    title: 'System Status | CoFabri',
-    description: 'Check the real-time status of all CoFabri services and applications.',
+    title: 'Status | CoFabri',
+    description: 'Live status for every CoFabri service. Updated automatically, and by a human when something needs saying.',
   },
   alternates: {
-    canonical: 'https://cofabri.com/status',
+    canonical: '/status',
   },
 };
 
 export default async function StatusPage() {
-  const statuses = await getSystemStatus();
+  const [statuses, apps] = await Promise.all([getSystemStatus(), getApps()]);
 
-  return <StatusPageContent initialStatuses={statuses} />;
-} 
+  return <StatusPageContent initialStatuses={statuses} apps={apps} />;
+}
