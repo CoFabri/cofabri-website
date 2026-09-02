@@ -28,14 +28,14 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
   return (
     <>
       <StructuredData type="breadcrumb" data={structuredData} />
-      <nav className={`flex items-center space-x-2 text-sm text-gray-600 ${className}`} aria-label="Breadcrumb">
+      <nav className={`flex items-center space-x-2 text-sm text-muted-foreground ${className}`} aria-label="Breadcrumb">
         {breadcrumbItems.map((item, index) => (
           <div key={item.href} className="flex items-center">
             {index > 0 && (
-              <ChevronRightIcon className="h-4 w-4 text-gray-400 mx-2" />
+              <ChevronRightIcon className="h-4 w-4 text-ink-faint mx-2" />
             )}
             {index === breadcrumbItems.length - 1 ? (
-              <span className="text-gray-900 font-medium" aria-current="page">
+              <span className="text-foreground font-medium" aria-current="page">
                 {index === 0 ? (
                   <HomeIcon className="h-4 w-4" />
                 ) : (
@@ -45,7 +45,7 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
             ) : (
               <Link
                 href={item.href}
-                className="hover:text-blue-600 transition-colors duration-200 flex items-center"
+                className="hover:text-primary transition-colors duration-200 flex items-center"
               >
                 {index === 0 ? (
                   <HomeIcon className="h-4 w-4" />
