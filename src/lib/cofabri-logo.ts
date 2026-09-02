@@ -1,18 +1,32 @@
 // src/lib/cofabri-logo.ts
 //
-// Server-only resolution + fetch logic for the CoFabri parent-brand logo.
-// Never imported from a 'use client' file — the fetch here relies on
-// running in Node (no CORS restriction), which is the whole reason this
-// exists instead of fetching from the browser. See CofabriLogo.tsx for why.
+// Resolution logic for the CoFabri parent-brand logo. Points at pre-rasterized
+// PNG masters on the brand-asset CDN — the same masters cofabri-core already
+// consumes via next/image (see e.g. its email-signature template, which
+// reuses cofabri-lockup-light-sm-1856.png directly). Deliberately NOT the SVG
+// masters at the same host: those still carry live <text font-family="...">
+// for "Co"/"Fabri" instead of outlined paths, and inlining that text (via a
+// server fetch + dangerouslySetInnerHTML) rendered wrong on real iOS Safari —
+// the font-family fallback list on the "Fabri" glyph doesn't resolve there,
+// even after fixing the dead "Poppins-Bold" alias, and even though the exact
+// same markup renders fine in desktop-WebKit and simulated-iPhone testing.
+// cofabri-core sidesteps the whole class of bug by never asking the browser
+// to shape text inside the logo asset at all; this does the same.
 
 const HOST = 'https://files.cofabri.com/logos/cofabri';
 
 /** Locked by the brand guidelines (464 × 200 box). Do not round. */
 export const LOCKUP_RATIO = 464 / 200;
-/** Mark masters are square, native viewBox 100 × 100. */
+/** Mark masters are square. */
 export const MARK_RATIO = 1;
 /** Clear space as a fraction of rendered height, all four sides. */
 export const CLEAR_SPACE = 0.22;
+
+/** Intrinsic width of every lockup PNG master, for next/image's width/height props. */
+const LOCKUP_PNG_WIDTH = 1856;
+const LOCKUP_PNG_HEIGHT = 800;
+/** Intrinsic size of the square mark PNG master. */
+const MARK_PNG_SIZE = 1024;
 
 export type CofabriLogoTone =
   | 'auto'
@@ -24,37 +38,6 @@ export type CofabriLogoTone =
 export type CofabriLogoVariant = 'auto' | 'mark';
 export type Cut = 'lockup' | 'lockup-sm' | 'mark' | 'mark-small';
 export type ResolvedTone = Exclude<CofabriLogoTone, 'auto'>;
-
-const ASSETS: Record<Cut, Record<ResolvedTone, string>> = {
-  lockup: {
-    light: 'cofabri-lockup-light.svg',
-    dark: 'cofabri-lockup-dark.svg',
-    'mono-ink': 'cofabri-lockup-mono-ink.svg',
-    'mono-white': 'cofabri-lockup-mono-white.svg',
-    'mono-black': 'cofabri-lockup-mono-black.svg',
-  },
-  'lockup-sm': {
-    light: 'cofabri-lockup-light-sm.svg',
-    dark: 'cofabri-lockup-dark-sm.svg',
-    'mono-ink': 'cofabri-lockup-mono-ink.svg',
-    'mono-white': 'cofabri-lockup-mono-white.svg',
-    'mono-black': 'cofabri-lockup-mono-black.svg',
-  },
-  mark: {
-    light: 'cofabri-mark-light.svg',
-    dark: 'cofabri-mark-dark.svg',
-    'mono-ink': 'cofabri-mark-mono-ink.svg',
-    'mono-white': 'cofabri-mark-mono-white.svg',
-    'mono-black': 'cofabri-mark-mono-ink.svg', // no mono-black mark master
-  },
-  'mark-small': {
-    light: 'cofabri-mark-small.svg',
-    dark: 'cofabri-mark-small.svg', // two-layer cut has no light/dark split
-    'mono-ink': 'cofabri-mark-mono-ink.svg',
-    'mono-white': 'cofabri-mark-mono-white.svg',
-    'mono-black': 'cofabri-mark-mono-ink.svg',
-  },
-};
 
 /**
  * The size ladder lives here and nowhere else. Selection is by RENDERED
@@ -69,104 +52,48 @@ export function pickCofabriCut(height: number, variant: CofabriLogoVariant): Cut
   return height < 40 ? 'mark-small' : 'mark';
 }
 
-export function cofabriAssetUrl(cut: Cut, tone: ResolvedTone): string {
-  return `${HOST}/${ASSETS[cut][tone]}`;
+interface PngAsset {
+  src: string;
+  width: number;
+  height: number;
 }
 
-/**
- * Strip the XML prolog/doctype/comments/<title>/<metadata> (the caller
- * supplies the accessible name via aria-label, so a nested <title> would
- * duplicate it; <metadata> carries C2PA provenance data that serves no
- * purpose once inlined and is pure dead weight in every page's HTML), and
- * drop the intrinsic width/height so the wrapper owns sizing. Also strips
- * <script> tags and inline event handler attributes as defense-in-depth —
- * the source is the organization's own asset CDN, so this isn't guarding
- * against an active threat, but the cost is near zero. Fills and
- * fill-rule="evenodd" are never touched — the gap between shell and core
- * is a real knockout, and rewriting fills would defeat it.
- *
- * The master SVGs set the "Fabri" glyph's font-family to
- * `"Poppins-Bold, Poppins"` — "Poppins-Bold" is never registered by the
- * page's @font-face (only "Poppins" weight 700 is imported), so it's a dead
- * alias. On iOS Safari specifically, an SVG <text> font-family list whose
- * first entry never resolves fails to fall through to the second, valid
- * entry (unlike ordinary CSS text, where the same list falls back
- * correctly) — the wordmark's second glyph silently renders in the system
- * fallback serif instead of Poppins, while "Co" (a single-name font-family)
- * is unaffected. Dropping the dead alias here fixes it at the one place
- * every cut/tone passes through, without touching the hosted masters.
- */
-function normalizeSvg(svg: string): string {
-  return svg
-    .replace(/<\?xml[\s\S]*?\?>/g, '')
-    .replace(/<!DOCTYPE[\s\S]*?>/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<title[\s\S]*?<\/title>/gi, '')
-    .replace(/<metadata[\s\S]*?<\/metadata>/gi, '')
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/\son[a-z]+="[^"]*"/gi, '')
-    .replace(/font-family="Poppins-Bold,\s*Poppins"/gi, 'font-family="Poppins"')
-    .replace(/<svg\b([^>]*)>/i, (_m, attrs: string) =>
-      `<svg${attrs.replace(/\s(?:width|height)="[^"]*"/gi, '')} style="display:block;width:100%;height:100%">`,
-    )
-    .trim();
-}
+// Only combinations backed by a verified-good PNG master on the CDN.
+// mark-small has no dedicated master — mark-1024 downscales cleanly at the
+// sizes mark-small is ever rendered at, so it reuses the mark entry.
+// Mono tones exist only for the lockup cuts (no mono mark master); a caller
+// asking for a mark + mono-* combination gets null and the empty-placeholder
+// fallback, same as a fetch failure would have produced under the old system.
+const LOCKUP_TONE_FILES: Record<ResolvedTone, string | null> = {
+  light: 'cofabri-lockup-light-1856.png',
+  dark: 'cofabri-lockup-dark-1856.png',
+  'mono-ink': 'cofabri-lockup-mono-ink-1856.png',
+  'mono-white': 'cofabri-lockup-mono-white-1856.png',
+  'mono-black': 'cofabri-lockup-mono-black-1856.png',
+};
+const LOCKUP_SM_TONE_FILES: Record<ResolvedTone, string | null> = {
+  light: 'cofabri-lockup-light-sm-1856.png',
+  dark: 'cofabri-lockup-dark-sm-1856.png',
+  'mono-ink': 'cofabri-lockup-mono-ink-1856.png',
+  'mono-white': 'cofabri-lockup-mono-white-1856.png',
+  'mono-black': 'cofabri-lockup-mono-black-1856.png',
+};
+const MARK_TONE_FILES: Record<ResolvedTone, string | null> = {
+  light: 'mark-1024-light.png',
+  dark: 'mark-1024-dark.png',
+  'mono-ink': null,
+  'mono-white': null,
+  'mono-black': null,
+};
 
-/**
- * Namespace every id in the fragment. Two logos on one page is a brand
- * misuse, but header + footer both mounted is the normal case, and
- * duplicate ids make clipPath/mask/gradient references resolve to whichever
- * copy the browser saw first — one logo silently loses its knockout.
- */
-export function namespaceIds(svg: string, prefix: string): string {
-  const ids = new Set<string>();
-  for (const m of svg.matchAll(/\sid="([^"]+)"/g)) ids.add(m[1]);
-  let out = svg;
-  for (const id of ids) {
-    const esc = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    out = out
-      .replace(new RegExp(`(\\sid=")${esc}(")`, 'g'), `$1${prefix}-${id}$2`)
-      .replace(new RegExp(`url\\(#${esc}\\)`, 'g'), `url(#${prefix}-${id})`)
-      .replace(new RegExp(`(\\s(?:xlink:)?href=")#${esc}(")`, 'g'), `$1#${prefix}-${id}$2`);
+export function cofabriPngAsset(cut: Cut, tone: ResolvedTone): PngAsset | null {
+  if (cut === 'mark' || cut === 'mark-small') {
+    const file = MARK_TONE_FILES[tone];
+    if (!file) return null;
+    // mark-1024-*.png lives at the host root, not under /png/.
+    return { src: `${HOST}/${file}`, width: MARK_PNG_SIZE, height: MARK_PNG_SIZE };
   }
-  return out;
-}
-
-/**
- * Module-level promise cache, keyed by URL. Runs only on the server (Node
- * fetch, not subject to browser CORS) — Next's fetch cache also dedupes
- * this across requests, but this cache additionally dedupes within a single
- * render when a header + footer both request the same URL in one pass.
- * Note: this in-memory cache never expires once a fetch succeeds, so a
- * long-lived warm server instance keeps serving the first version it ever
- * fetched until the process restarts — `revalidate: 3600` governs Next's
- * own fetch cache, which a warm instance with an already-resolved promise
- * here never re-consults. A design-team asset update reaches NEW server
- * instances within the hour; an existing warm instance needs a restart.
- */
-const svgCache = new Map<string, Promise<string>>();
-const failedAt = new Map<string, number>();
-const FAILURE_COOLDOWN_MS = 30_000;
-
-export function loadCofabriSvg(url: string): Promise<string> {
-  const lastFailure = failedAt.get(url);
-  if (lastFailure && Date.now() - lastFailure < FAILURE_COOLDOWN_MS) {
-    return Promise.reject(new Error(`CofabriLogo: ${url} recently failed, cooling down`));
-  }
-  let pending = svgCache.get(url);
-  if (!pending) {
-    pending = fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(3000) })
-      .then((res) => {
-        if (!res.ok) throw new Error(`CofabriLogo: ${url} -> ${res.status}`);
-        return res.text();
-      })
-      .then(normalizeSvg)
-      .catch((err) => {
-        svgCache.delete(url);
-        failedAt.set(url, Date.now());
-        throw err;
-      });
-    svgCache.set(url, pending);
-  }
-  return pending;
+  const file = (cut === 'lockup' ? LOCKUP_TONE_FILES : LOCKUP_SM_TONE_FILES)[tone];
+  if (!file) return null;
+  return { src: `${HOST}/png/${file}`, width: LOCKUP_PNG_WIDTH, height: LOCKUP_PNG_HEIGHT };
 }

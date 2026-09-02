@@ -1,10 +1,9 @@
 import * as React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   pickCofabriCut,
-  cofabriAssetUrl,
-  loadCofabriSvg,
-  namespaceIds,
+  cofabriPngAsset,
   LOCKUP_RATIO,
   MARK_RATIO,
   CLEAR_SPACE,
@@ -27,9 +26,11 @@ export interface CofabriLogoProps {
   className?: string;
 }
 
-let instanceCounter = 0;
+function Placeholder({ width, height }: { width: number; height: number }) {
+  return <span role="img" aria-label="CoFabri" style={{ display: 'block', width, height, flex: 'none' }} />;
+}
 
-export default async function CofabriLogo({
+export default function CofabriLogo({
   height,
   variant = 'auto',
   tone = 'auto',
@@ -41,74 +42,58 @@ export default async function CofabriLogo({
   const ratio = cut.startsWith('mark') ? MARK_RATIO : LOCKUP_RATIO;
   const width = Math.round(height * ratio);
   const pad = Math.ceil(height * CLEAR_SPACE * (clearSpace === 'dense' ? 0.5 : 1));
-  // Scoped per render, not per request — fine, since it only has to be
-  // unique across logos mounted in the same document, not across requests.
-  const scope = `cofabri-${(instanceCounter++).toString(36)}`;
 
   let art: React.ReactNode;
   if (tone === 'auto') {
-    try {
-      const [lightRaw, darkRaw] = await Promise.all([
-        loadCofabriSvg(cofabriAssetUrl(cut, 'light')),
-        loadCofabriSvg(cofabriAssetUrl(cut, 'dark')),
-      ]);
-      const lightHtml = namespaceIds(lightRaw, `${scope}-light`);
-      const darkHtml = namespaceIds(darkRaw, `${scope}-dark`);
-      art = (
+    const light = cofabriPngAsset(cut, 'light');
+    const dark = cofabriPngAsset(cut, 'dark');
+    art =
+      light && dark ? (
         <>
-          <span
-            role="img"
-            aria-label="CoFabri"
+          <Image
+            src={light.src}
+            alt="CoFabri"
+            width={light.width}
+            height={light.height}
             className="block dark:hidden"
             style={{ width, height, flex: 'none' }}
-            dangerouslySetInnerHTML={{ __html: lightHtml }}
+            priority
           />
-          <span
-            role="img"
-            aria-label="CoFabri"
+          <Image
+            src={dark.src}
+            alt="CoFabri"
+            width={dark.width}
+            height={dark.height}
             className="hidden dark:block"
             style={{ width, height, flex: 'none' }}
-            dangerouslySetInnerHTML={{ __html: darkHtml }}
+            priority
           />
         </>
+      ) : (
+        <Placeholder width={width} height={height} />
       );
-    } catch (error) {
-      console.error(
-        `Failed to load CoFabri logo (cut: ${cut}):`,
-        error instanceof Error ? error.message : String(error)
-      );
-      // Render empty placeholder to prevent layout shift without showing broken logo
-      art = <span role="img" aria-label="CoFabri" style={{ display: 'block', width, height, flex: 'none' }} />;
-    }
   } else {
-    try {
-      const raw = await loadCofabriSvg(cofabriAssetUrl(cut, tone));
-      const html = namespaceIds(raw, scope);
-      art = (
-        <span
-          role="img"
-          aria-label="CoFabri"
-          style={{ display: 'block', width, height, flex: 'none' }}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      );
-    } catch (error) {
-      console.error(
-        `Failed to load CoFabri logo (cut: ${cut}, tone: ${tone}):`,
-        error instanceof Error ? error.message : String(error)
-      );
-      // Render empty placeholder to prevent layout shift without showing broken logo
-      art = <span role="img" aria-label="CoFabri" style={{ display: 'block', width, height, flex: 'none' }} />;
-    }
+    const asset = cofabriPngAsset(cut, tone);
+    art = asset ? (
+      <Image
+        src={asset.src}
+        alt="CoFabri"
+        width={asset.width}
+        height={asset.height}
+        style={{ display: 'block', width, height, flex: 'none' }}
+        priority
+      />
+    ) : (
+      <Placeholder width={width} height={height} />
+    );
   }
 
   const wrapperStyle: React.CSSProperties = { padding: pad, lineHeight: 0 };
 
-  // The link carries the href and nothing else — no aria-label, so the
-  // accessible name still resolves to "CoFabri" from the artwork itself.
   return (
     <span className={className ? `inline-flex ${className}` : 'inline-flex'} style={wrapperStyle}>
       {href ? (
+        // No aria-label here — the accessible name comes from the Image's own alt text.
         <Link href={href} className="inline-flex">
           {art}
         </Link>
