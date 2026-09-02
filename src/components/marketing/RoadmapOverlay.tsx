@@ -3,7 +3,7 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
-import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { roadmapStatusPillClasses } from '@/lib/roadmap-display';
 
 interface RoadmapOverlayProps {
   isOpen: boolean;
@@ -47,128 +47,59 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
 
   if (!isOpen) return null;
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'released':
-        return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
-      case 'in progress':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300';
-      case 'delayed':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300';
-      case 'planned':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'released':
-        return <CheckCircleIcon className="w-6 h-6 text-green-500" />;
-      case 'in progress':
-        return <ClockIcon className="w-6 h-6 text-blue-500 animate-spin-slow" />;
-      case 'delayed':
-        return <ExclamationCircleIcon className="w-6 h-6 text-orange-500" />;
-      case 'planned':
-        return <ClockIcon className="w-6 h-6 text-gray-500" />;
-      case 'cancelled':
-        return <ExclamationCircleIcon className="w-6 h-6 text-red-500" />;
-      default:
-        return <ClockIcon className="w-6 h-6 text-gray-500" />;
-    }
-  };
-
-  const getReleaseTypeColor = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case 'major':
-        return 'bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300';
-      case 'minor':
-        return 'bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300';
-      case 'patch':
-        return 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/15 dark:text-gray-300';
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity animate-in fade-in duration-200"
+      <div
+        className="fixed inset-0 bg-black/50 transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="relative w-full max-w-4xl bg-card rounded-2xl shadow-2xl max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
+          className="relative max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border">
-            <div className="flex items-center gap-4">
-              {getStatusIcon(roadmap.status)}
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">{roadmap.name}</h2>
+          <div className="flex items-center justify-between gap-4 border-b border-border p-6">
+            <div>
+              <div className="mb-2.5 flex flex-wrap items-center gap-2.5">
+                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${roadmapStatusPillClasses(roadmap.status)}`}>
+                  {roadmap.status}
+                </span>
                 {roadmap.application && (
-                  <div className="mt-1">
-                    {roadmap.applicationUrl ? (
-                      <a
-                        href={roadmap.applicationUrl.startsWith('http') ? roadmap.applicationUrl : `https://${roadmap.applicationUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-sm text-accent-foreground hover:text-accent-hover
-                        bg-accent hover:bg-accent/70 px-2.5 py-1 rounded-md transition-colors duration-200"
-                      >
-                        {roadmap.application}
-                        <svg className="ml-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    ) : (
-                      <span className="inline-flex text-sm text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
-                        {roadmap.application}
-                      </span>
-                    )}
-                  </div>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
+                    {roadmap.application}
+                  </span>
                 )}
               </div>
+              <h2 className="m-0 text-2xl font-semibold tracking-[-0.02em] text-foreground">{roadmap.name}</h2>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-ink-faint hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              className="flex-shrink-0 rounded-lg p-2 text-ink-faint transition-colors hover:bg-muted hover:text-foreground"
             >
-              <XMarkIcon className="w-6 h-6" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-            {/* Description */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-foreground mb-2">Description</h3>
-              <p className="text-foreground leading-relaxed">{roadmap.description}</p>
-            </div>
+          <div className="max-h-[calc(90vh-104px)] overflow-y-auto p-6">
+            <p className="m-0 text-base leading-relaxed text-ink-body">{roadmap.description}</p>
 
-            {/* Features & Changes */}
+            {/* Features & Changes — only populated once cofabri-api exposes this field */}
             {roadmap.featuresAndChanges && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-3">Features & Changes</h3>
-                <div className="bg-muted rounded-lg p-4">
-                  <div className="text-foreground space-y-2">
+              <div className="mt-6">
+                <h3 className="mb-3 text-sm font-semibold text-foreground">Features &amp; changes</h3>
+                <div className="rounded-lg border border-border bg-muted p-4">
+                  <div className="space-y-2 text-sm text-ink-body">
                     {roadmap.featuresAndChanges.split('\n').map((item: string, index: number) => {
                       const trimmedItem = item.trim();
                       if (!trimmedItem) return null;
 
-                      // Check for indentation (sub-bullets)
                       const originalIndentation = item.length - item.trimStart().length;
                       const isSubBullet = originalIndentation > 0;
-
-                      // Remove bullet points and clean up
                       const cleanedItem = trimmedItem.replace(/^[-•*]\s*/, '');
 
                       return (
@@ -178,9 +109,7 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
                           </span>
                           <span
                             className="flex-grow leading-relaxed"
-                            dangerouslySetInnerHTML={{
-                              __html: roadmapMarkdownToHtml(cleanedItem)
-                            }}
+                            dangerouslySetInnerHTML={{ __html: roadmapMarkdownToHtml(cleanedItem) }}
                           />
                         </div>
                       );
@@ -190,53 +119,30 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
               </div>
             )}
 
-            {/* Release Notes */}
+            {/* Release notes — only populated once cofabri-api exposes this field */}
             {roadmap.releaseNotes && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-foreground mb-3">Release Notes</h3>
-                <div className="bg-accent rounded-lg p-4">
+              <div className="mt-6">
+                <h3 className="mb-3 text-sm font-semibold text-foreground">Release notes</h3>
+                <div className="rounded-lg border border-accent bg-accent p-4">
                   <div
-                    className="text-accent-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: releaseNotesMarkdownToHtml(roadmap.releaseNotes)
-                    }}
+                    className="leading-relaxed text-accent-foreground"
+                    dangerouslySetInnerHTML={{ __html: releaseNotesMarkdownToHtml(roadmap.releaseNotes) }}
                   />
                 </div>
               </div>
             )}
 
-            {/* Metadata */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Status</h4>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(roadmap.status)}
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(roadmap.status)}`}>
-                    {roadmap.status}
-                  </span>
-                </div>
-              </div>
-
-              {roadmap.releaseType && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Release Type</h4>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getReleaseTypeColor(roadmap.releaseType)}`}>
-                    {roadmap.releaseType}
-                  </span>
-                </div>
-              )}
-
+            <div className="mt-6 flex flex-wrap gap-x-8 gap-y-4 border-t border-border pt-6">
               {roadmap.milestone && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Milestone</h4>
-                  <p className="text-foreground">{roadmap.milestone}</p>
+                  <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">Milestone</div>
+                  <div className="text-sm text-foreground">{roadmap.milestone}</div>
                 </div>
               )}
-
               {roadmap.launchDate && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Launch Date</h4>
-                  <p className="text-foreground">{new Date(roadmap.launchDate).toLocaleDateString()}</p>
+                  <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">Released</div>
+                  <div className="text-sm text-foreground">{new Date(roadmap.launchDate).toLocaleDateString()}</div>
                 </div>
               )}
             </div>
@@ -245,4 +151,4 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
       </div>
     </div>
   );
-} 
+}

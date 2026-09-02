@@ -16,6 +16,22 @@ export function roadmapStatusPillClasses(status: string): string {
   }
 }
 
+export function roadmapStatusDotClasses(status: string): string {
+  switch (status) {
+    case 'Released':
+      return 'bg-success';
+    case 'In Progress':
+      return 'bg-primary';
+    case 'Delayed':
+      return 'bg-warning';
+    case 'Cancelled':
+      return 'bg-danger';
+    case 'Planned':
+    default:
+      return 'bg-ink-disabled';
+  }
+}
+
 export function formatRoadmapWhen(feature: Pick<RoadmapFeature, 'releasedDate' | 'milestone'>): string {
   if (feature.releasedDate) {
     return new Date(feature.releasedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

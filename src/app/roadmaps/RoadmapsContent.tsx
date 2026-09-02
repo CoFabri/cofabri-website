@@ -1,144 +1,186 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import ProductRoadmap from '@/components/marketing/ProductRoadmap';
-import GradientHeading from '@/components/marketing/GradientHeading';
+import { useEffect, useMemo, useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { RoadmapFeature } from '@/lib/api-client';
+import type { App, RoadmapFeature } from '@/lib/api-client';
+import ProductRoadmap from '@/components/marketing/ProductRoadmap';
+import PageHero from '@/components/marketing/PageHero';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
 interface DropdownProps {
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   placeholder: string;
-  className?: string;
 }
 
-function Dropdown({ value, onChange, options, placeholder, className = '' }: DropdownProps) {
+function Dropdown({ value, onChange, options, placeholder }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const selectedOption = options.find(opt => opt.value === value)?.label || placeholder;
+  const selectedLabel = options.find((opt) => opt.value === value)?.label || placeholder;
 
   return (
-    <div className={`relative ${className}`}>
+    <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 rounded-xl border-2 border-border
-          bg-card text-foreground font-medium hover:border-primary/60 focus:border-primary focus:ring-2
-          focus:ring-primary/20 focus:outline-none transition-all duration-200 cursor-pointer
-          shadow-sm hover:shadow-md flex items-center justify-between"
+        className="flex h-11 min-w-[180px] items-center justify-between gap-3 rounded-lg border border-border-strong px-3.5 text-[15px] text-ink-body transition-colors hover:border-ink-faint"
       >
-        <span className={value ? 'text-foreground' : 'text-muted-foreground'}>{selectedOption}</span>
-        <ChevronDownIcon
-          className={`h-5 w-5 text-ink-faint transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`}
-        />
+        <span>{selectedLabel}</span>
+        <ChevronDownIcon className={`h-4 w-4 flex-shrink-0 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-[1001] w-full mt-1 bg-card rounded-xl shadow-lg border border-border
-          max-h-60 overflow-auto py-1">
-          {options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-              className={`w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground
-                transition-colors duration-200 flex items-center justify-between
-                ${value === option.value ? 'bg-accent text-accent-foreground font-medium' : 'text-foreground'}`}
-            >
-              <span>{option.label}</span>
-              {value === option.value && (
-                <svg className="h-4 w-4 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
+        <>
+          <button
+            type="button"
+            aria-hidden
+            tabIndex={-1}
+            className="fixed inset-0 z-10 cursor-default"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 z-20 mt-1.5 max-h-60 w-full min-w-[180px] overflow-auto rounded-lg border border-border bg-card py-1 shadow-lg">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`block w-full px-3.5 py-2 text-left text-[15px] transition-colors hover:bg-muted ${
+                  value === option.value ? 'font-semibold text-foreground' : 'text-ink-body'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
+const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled'];
+
+// Roadmap items can reference an app_id cofabri-api's /apps endpoint no longer
+// (or doesn't yet) return — fall back to a title-cased version of the id
+// rather than showing it lowercase next to real app names.
+function displayAppName(id: string, appNames: Record<string, string>): string {
+  if (appNames[id]) return appNames[id];
+  return id.charAt(0).toUpperCase() + id.slice(1);
+}
+
 export default function RoadmapsContent() {
   const [selectedApp, setSelectedApp] = useState<string>('');
-  // Release type filtering is disabled: RoadmapFeature.releaseType has no backing
-  // column in cofabri-api (a known, separately-tracked schema gap) and is always
-  // an empty string, so a "Release Type" filter would only ever return zero
-  // results. selectedReleaseType stays '' and is passed through to ProductRoadmap
-  // unused so its filtering logic remains a harmless no-op.
-  const [selectedReleaseType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [applications, setApplications] = useState<string[]>([]);
-  const [statuses] = useState<string[]>(['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled']);
+  const [appNames, setAppNames] = useState<Record<string, string>>({});
+  const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>([]);
 
   useEffect(() => {
-    async function fetchApplications() {
+    async function fetchFilterData() {
       try {
-        const response = await fetch('/api/roadmaps', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch roadmap features');
+        const [roadmapRes, appsRes] = await Promise.all([
+          fetch('/api/roadmaps', { cache: 'no-store' }),
+          fetch('/api/apps', { cache: 'no-store' }),
+        ]);
+
+        if (roadmapRes.ok) {
+          const features = (await roadmapRes.json()) as RoadmapFeature[];
+          setAllFeatures(features);
+          setApplications(Array.from(new Set(features.map((f) => f.application).filter((a): a is string => !!a))));
         }
-        
-        const features = await response.json() as RoadmapFeature[];
-        const uniqueApps = Array.from(new Set(features.map(f => f.application).filter((app): app is string => !!app)));
-        setApplications(uniqueApps);
+
+        if (appsRes.ok) {
+          const apps = (await appsRes.json()) as App[];
+          setAppNames(Object.fromEntries(apps.map((a) => [a.id, a.name])));
+        }
       } catch (error) {
-        console.error('Error fetching applications:', error);
+        console.error('Error fetching roadmap filter data:', error);
       }
     }
 
-    fetchApplications();
+    fetchFilterData();
   }, []);
 
-  return (
-    <div className="min-h-screen">
-      <GradientHeading
-        title="Product Roadmaps & Changelog"
-        subtitle="See what's coming next and track our progress in making our apps even better"
-        extraContent={
-          <div className="relative z-[2] w-full max-w-4xl mx-auto mt-12">
-            <div className="flex flex-wrap justify-center gap-6">
-              <Dropdown
-                value={selectedApp}
-                onChange={setSelectedApp}
-                options={[
-                  { value: '', label: 'All Applications' },
-                  ...applications.map(app => ({ value: app, label: app }))
-                ]}
-                placeholder="All Applications"
-                className="w-56"
-              />
+  const counts = useMemo(
+    () => ({
+      shipped: allFeatures.filter((f) => f.status === 'Released').length,
+      inProgress: allFeatures.filter((f) => f.status === 'In Progress').length,
+      next: allFeatures.filter((f) => f.status === 'Planned' || f.status === 'Delayed').length,
+    }),
+    [allFeatures]
+  );
 
-              <Dropdown
-                value={selectedStatus}
-                onChange={setSelectedStatus}
-                options={[
-                  { value: '', label: 'All Statuses' },
-                  ...statuses.map(status => ({ value: status, label: status }))
-                ]}
-                placeholder="All Statuses"
-                className="w-56"
-              />
+  return (
+    <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
+      <div className="mb-14">
+        <Breadcrumbs items={[{ name: 'Roadmaps', href: '/roadmaps' }]} />
+      </div>
+
+      <PageHero
+        eyebrow="Roadmap"
+        title="Built in the open."
+        subtitle="Shipped, slipping, or still an argument. Everything we're working on, updated as it changes."
+        right={
+          allFeatures.length > 0 ? (
+            <div className="flex gap-6 sm:gap-8">
+              <div className="text-right">
+                <div className="text-[32px] font-semibold leading-none tracking-[-0.03em] text-success">{counts.shipped}</div>
+                <div className="mt-1.5 text-[13px] text-ink-faint">Shipped</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[32px] font-semibold leading-none tracking-[-0.03em] text-primary">{counts.inProgress}</div>
+                <div className="mt-1.5 text-[13px] text-ink-faint">In progress</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[32px] font-semibold leading-none tracking-[-0.03em] text-foreground">{counts.next}</div>
+                <div className="mt-1.5 text-[13px] text-ink-faint">Up next</div>
+              </div>
             </div>
-          </div>
+          ) : undefined
         }
       />
-      <div className="container mx-auto px-4">
-        <ProductRoadmap 
-          selectedApp={selectedApp}
-          selectedReleaseType={selectedReleaseType}
-          selectedStatus={selectedStatus}
+
+      <div className="mt-11 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-8">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedApp('')}
+            className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
+              selectedApp === ''
+                ? 'bg-foreground text-background'
+                : 'border border-border-strong text-ink-body hover:border-ink-faint'
+            }`}
+          >
+            All apps
+          </button>
+          {applications.map((app) => (
+            <button
+              key={app}
+              type="button"
+              onClick={() => setSelectedApp(app)}
+              className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
+                selectedApp === app
+                  ? 'bg-foreground text-background'
+                  : 'border border-border-strong text-ink-body hover:border-ink-faint'
+              }`}
+            >
+              {displayAppName(app, appNames)}
+            </button>
+          ))}
+        </div>
+
+        <Dropdown
+          value={selectedStatus}
+          onChange={setSelectedStatus}
+          placeholder="All statuses"
+          options={[{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
         />
       </div>
+
+      <ProductRoadmap selectedApp={selectedApp} selectedStatus={selectedStatus} appNames={appNames} />
     </div>
   );
 }
