@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Testimonials from '@/components/marketing/Testimonials';
 import FeaturedApp from '@/components/marketing/FeaturedApp';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import { Card } from '@/components/ui/card';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -110,12 +111,10 @@ export default function AppsPage() {
 
       {/* Newsletter Section */}
       <div className="container mx-auto px-4">
-        <section className="mt-24">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 py-20">
-            <div className="container mx-auto px-4">
-              <NewsletterSignup />
-            </div>
-          </div>
+        <section className="mt-24 py-20">
+          <Card className="max-w-2xl mx-auto p-8 md:p-10">
+            <NewsletterSignup />
+          </Card>
         </section>
       </div>
     </div>
