@@ -153,14 +153,22 @@ export default function AppsPageContent() {
                       ))}
                   </ul>
                 </div>
-                <Link
-                  href={actionHref(featured)}
-                  target={featured.status !== 'In Development' ? '_blank' : undefined}
-                  rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
-                  className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
-                >
-                  {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowUpRight className="h-3.5 w-3.5" />}
-                </Link>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href={actionHref(featured)}
+                    target={featured.status !== 'In Development' ? '_blank' : undefined}
+                    rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
+                    className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
+                  >
+                    {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowUpRight className="h-3.5 w-3.5" />}
+                  </Link>
+                  <Link
+                    href={`/apps/${featured.id}`}
+                    className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border-strong px-[22px] py-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-muted"
+                  >
+                    Learn more
+                  </Link>
+                </div>
               </div>
               <div className="flex items-center justify-center bg-muted p-9">
                 {featured.screenshot ? (
@@ -188,11 +196,9 @@ export default function AppsPageContent() {
           {filteredRows.length > 0 && (
             <div className="mt-2">
               {filteredRows.map((app) => (
-                <a
+                <Link
                   key={app.id}
-                  href={actionHref(app)}
-                  target={app.status !== 'In Development' ? '_blank' : undefined}
-                  rel={app.status !== 'In Development' ? 'noopener noreferrer' : undefined}
+                  href={`/apps/${app.id}`}
                   className="grid grid-cols-1 gap-2 rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors hover:bg-muted sm:grid-cols-[minmax(180px,260px)_1fr_auto_auto] sm:items-center sm:gap-8"
                 >
                   <div>
@@ -206,9 +212,9 @@ export default function AppsPageContent() {
                     {app.status}
                   </div>
                   <div className="justify-self-start text-[15px] font-semibold text-ink-muted sm:justify-self-end">
-                    {actionLabel(app)} →
+                    Details →
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           )}
