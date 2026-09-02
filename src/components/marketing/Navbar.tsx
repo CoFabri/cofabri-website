@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
 
 const navigation = [
@@ -59,7 +58,7 @@ function ThemeToggle() {
   );
 }
 
-const Navbar = () => {
+const Navbar = ({ logo }: { logo: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -73,9 +72,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
       <TooltipProvider delayDuration={200}>
       <nav className="max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex items-center justify-between gap-6">
-        <Link href="/" className="flex items-center flex-shrink-0">
-          <Logo size="nav" noLink />
-        </Link>
+        <div className="flex items-center flex-shrink-0">{logo}</div>
 
         <ul className="hidden lg:flex items-center gap-1">
           {navigation.map((item) => {

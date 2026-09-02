@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/marketing/Navbar";
+import CofabriLogo from "@/components/marketing/CofabriLogo";
 import Footer from "@/components/marketing/Footer";
 import SitewideBanner from "@/components/marketing/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
@@ -34,12 +35,16 @@ export const metadata: Metadata = {
   classification: 'Business Software',
   icons: {
     icon: [
-      { url: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/favicon.svg', type: 'image/svg+xml' },
+      { url: 'https://files.cofabri.com/logos/cofabri/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/favicon-64.png', sizes: '64x64', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: 'https://files.cofabri.com/logos/cofabri/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png', sizes: '512x512' },
+      { url: 'https://files.cofabri.com/logos/cofabri/apple-touch-icon-180.png', sizes: '180x180' },
     ],
-    shortcut: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png',
+    shortcut: 'https://files.cofabri.com/logos/cofabri/favicon-32.png',
   },
   manifest: '/manifest.json',
   formatDetection: {
@@ -103,8 +108,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="https://files.cofabri.com/logos/cofabri-core/icon-512.png" sizes="any" />
-        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri-core/icon-512.png" />
+        <link rel="icon" href="https://files.cofabri.com/logos/cofabri/favicon.svg" sizes="any" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri/apple-touch-icon-180.png" />
         <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>
@@ -123,7 +128,7 @@ export default function RootLayout({
               "copyrightYear": new Date().getFullYear()
             }}
           />
-          <Navbar />
+          <Navbar logo={<CofabriLogo height={56} clearSpace="dense" href="/" />} />
           <SitewideBanner />
           <main className="flex-grow">
             {children}

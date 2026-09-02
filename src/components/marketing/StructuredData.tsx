@@ -14,7 +14,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "@type": "Organization",
           "name": "CoFabri",
           "url": "https://cofabri.com",
-          "logo": "https://cofabri.com/logo.png",
+          "logo": "https://files.cofabri.com/logos/cofabri/icon-512.png",
           "description": "CoFabri is a software studio operating a portfolio of independent apps across industries.",
           "sameAs": [
             "https://twitter.com/cofabri",
@@ -63,7 +63,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             "name": "CoFabri",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://cofabri.com/logo.png"
+              "url": "https://files.cofabri.com/logos/cofabri/icon-512.png"
             }
           },
           "datePublished": data.datePublished,
