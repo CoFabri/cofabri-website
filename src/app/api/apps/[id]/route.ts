@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getApp, getTestimonials } from '@/lib/api-client';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
-
-const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
 
 interface AppData {
   betaSpotsTotal: number;
@@ -19,35 +16,6 @@ interface AppData {
   }>;
 }
 
-async function fetchFromAirtable(endpoint: string) {
-  try {
-    const response = await fetch(`${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error('Airtable API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-        endpoint
-      });
-      throw new Error(`Airtable API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Airtable response:', { endpoint, data });
-    return data;
-  } catch (error) {
-    console.error('Error in fetchFromAirtable:', error);
-    throw error;
-  }
-}
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -55,31 +23,32 @@ export async function GET(
   try {
     const { id } = await params;
     console.log('Fetching app data for ID:', id);
-    
+
     // Fetch app data
-    const appResponse = await fetchFromAirtable(`Apps/${id}`);
-    console.log('Raw app response:', appResponse);
-    
-    if (!appResponse || !appResponse.fields) {
+    const app = await getApp(id);
+    console.log('Raw app response:', app);
+
+    if (!app) {
       throw new Error('Invalid app data response');
     }
-    
-    // Fetch approved testimonials only
-    const testimonialsResponse = await fetchFromAirtable(
-      `Beta Statements?filterByFormula=AND({App Record ID}='${id}',{Status}='Approved')&fields[]=ID&fields[]=Statement`
-    );
-    
-    const testimonials = testimonialsResponse.records?.map((record: any) => ({
-      ID: String(record.fields.ID),
-      Statement: record.fields.Statement
-    })) || [];
+
+    // Fetch approved testimonials for this app only
+    const allTestimonials = await getTestimonials();
+    const testimonials = allTestimonials
+      .filter((t) => t.isActive && t.apps.includes(id))
+      .map((t) => ({
+        ID: t.id,
+        Statement: t.content,
+      }));
 
     const response: AppData = {
-      betaSpotsTotal: appResponse.fields['Beta Spots Total'] || 0,
-      betaSpotsFilled: appResponse.fields['Beta Spots Filled'] || 0,
-      betaDescription: appResponse.fields['Beta Description'] || '',
-      status: appResponse.fields['Status'] || 'Coming Soon',
-      name: appResponse.fields['Name'] || 'Unknown App',
+      // Beta spot counts are not yet available from the new content API;
+      // defaulting to 0/empty until that data model gap is resolved.
+      betaSpotsTotal: 0,
+      betaSpotsFilled: 0,
+      betaDescription: '',
+      status: app.status || 'Coming Soon',
+      name: app.name || 'Unknown App',
       testimonials
     };
 
@@ -92,4 +61,4 @@ export async function GET(
       { status: 500 }
     );
   }
-} 
+}

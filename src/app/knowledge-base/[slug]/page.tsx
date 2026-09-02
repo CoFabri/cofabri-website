@@ -1,4 +1,4 @@
-import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/airtable';
+import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/api-client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpenIcon, ClockIcon } from '@heroicons/react/24/outline';

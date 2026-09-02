@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { App } from '@/lib/airtable';
+import { App } from '@/lib/api-client';
 import confetti from 'canvas-confetti';
 import AppPreviewCard from './AppPreviewCard';
 

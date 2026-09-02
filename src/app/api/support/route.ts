@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 
-const AIRTABLE_API_KEY = process.env.AIRTABLE_SUPPORT_PERSONAL_ACCESS_TOKEN;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_SUPPORT_BASE_ID;
-const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_SUPPORT_TABLE_NAME || 'Ticket Submissions';
-const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
+// cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
+const SUPPORTED_LANGUAGE_PREFERENCES = new Set(['english', 'spanish']);
+function toApiLanguagePreference(languagePreference?: string): string | undefined {
+  const normalized = languagePreference?.trim().toLowerCase();
+  return normalized && SUPPORTED_LANGUAGE_PREFERENCES.has(normalized) ? normalized : undefined;
+}
+
+// Maps the form's subject category to cofabri-api's subject_type enum
+// ('support_help' | 'feature_request'), while 'subject' itself stays a free-text label.
+function toApiSubjectType(subject: string): string | undefined {
+  if (subject === 'support') return 'support_help';
+  if (subject === 'feature') return 'feature_request';
+  return undefined;
+}
+
+function toApiSubjectLabel(subject: string): string {
+  if (subject === 'support') return 'Support/Help';
+  if (subject === 'feature') return 'Feature Request';
+  return subject;
+}
 
 // Character limits (must match client-side limits)
 const FIRST_NAME_MAX_LENGTH = 50;
@@ -39,33 +54,17 @@ export async function POST(request: Request) {
     const description = formData.get('description') as string;
     const turnstileToken = formData.get('turnstileToken') as string;
     
-    // Parse applications array
+    // Parse applications array (cofabri-api's support endpoint only accepts a single
+    // app_id, so we forward the first selected application, if any)
     const applicationsArray = applications ? JSON.parse(applications) : [];
-    
-    // Convert app IDs to app names for the support base
-    let applicationNames: string[] = [];
-    if (applicationsArray.length > 0) {
-      try {
-        // Fetch app names from the main apps API
-        const appsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/apps`);
-        if (appsResponse.ok) {
-          const apps = await appsResponse.json();
-          applicationNames = applicationsArray
-            .map((appId: string) => {
-              const app = apps.find((a: any) => a.id === appId);
-              return app ? app.name : appId; // Fallback to ID if app not found
-            })
-            .filter((name: string) => name);
-        }
-      } catch (error) {
-        console.error('Failed to fetch app names:', error);
-        // Fallback to using the IDs as strings
-        applicationNames = applicationsArray;
-      }
-    }
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !phone || !preferredContactMethod || !subject || !description) {
+    // Note: phone is intentionally not required here — cofabri-api's
+    // /web/forms/support endpoint has no column to persist it (a separate,
+    // cross-repo schema gap), so it would be misleading to block submission
+    // on a value that's silently discarded. The form still collects it (it
+    // may be useful in logs) but does not require it.
+    if (!firstName || !lastName || !email || !preferredContactMethod || !subject || !description) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -169,114 +168,49 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check if Airtable credentials are available
-    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-      console.error('Airtable support credentials not configured - API Key or Base ID missing');
+    // Check if cofabri-api credentials are available
+    if (!process.env.COFABRI_API_BASE_URL || !process.env.COFABRI_API_KEY) {
+      console.error('cofabri-api credentials not configured');
       return NextResponse.json(
         { error: 'Support form service temporarily unavailable' },
         { status: 503 }
       );
     }
 
-    console.log('Using Airtable configuration:', {
-      baseId: AIRTABLE_BASE_ID,
-      tableName: AIRTABLE_TABLE_NAME,
-      hasApiKey: !!AIRTABLE_API_KEY
-    });
-
-    // Handle file uploads if any
+    // Note: screenshots are accepted by this form but cofabri-api's /web/forms/support
+    // endpoint has no field to persist attachment URLs, so they are not uploaded or sent.
     const screenshots = formData.getAll('screenshots') as File[];
-    let screenshotAttachments: Array<{url: string, filename: string}> = [];
-
     if (screenshots.length > 0) {
-      console.log('Screenshots received:', screenshots.map(file => file.name));
-      
-      // Upload files to Vercel Blob
-      for (const file of screenshots) {
-        try {
-          // Check file size (limit to 10MB per file)
-          if (file.size > 10 * 1024 * 1024) {
-            console.warn(`File ${file.name} is too large (${file.size} bytes), skipping`);
-            continue;
-          }
-          
-          // Validate file type
-          const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
-          if (!allowedTypes.includes(file.type)) {
-            console.warn(`File ${file.name} has unsupported type: ${file.type}, skipping`);
-            continue;
-          }
-          
-          // Upload to Vercel Blob
-          const blob = await put(file.name, file, {
-            access: 'public',
-            addRandomSuffix: true
-          });
-          
-          screenshotAttachments.push({
-            url: blob.url,
-            filename: file.name
-          });
-          
-          console.log(`Successfully uploaded ${file.name} to Vercel Blob: ${blob.url}`);
-        } catch (error) {
-          console.error(`Error uploading file ${file.name}:`, error);
-        }
-      }
+      console.log('Screenshots received but not persisted (unsupported by cofabri-api):', screenshots.map(file => file.name));
     }
 
-    // Create record in Airtable Support Tickets table
-    const airtableData = {
-      fields: {
-        'First Name': firstName,
-        'Last Name': lastName,
-        'Language Preference': languagePreference || 'English',
-        'Company/Organization': companyOrganization || '',
-        'Preferred Contact Method': preferredContactMethod === 'email' ? 'Email' : 
-                                   preferredContactMethod === 'phone' ? 'Phone' : 
-                                   preferredContactMethod === 'any' ? 'Any' : preferredContactMethod,
-        'Email': email,
-        'Phone': phone,
-        'Application(s)': applicationNames.length > 0 ? applicationNames.join(', ') : '',
-        'Subject': subject === 'support' ? 'Support/Help' : 
-                  subject === 'feature' ? 'Feature Request' : subject,
-        'Description': description,
-        'Screenshots': screenshotAttachments
-      }
-    };
+    // Submit to cofabri-api, which persists the support ticket in Supabase
+    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/support`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        subject: toApiSubjectLabel(subject),
+        description,
+        app_id: applicationsArray[0],
+        subject_type: toApiSubjectType(subject),
+        preferred_contact_method: preferredContactMethod || undefined,
+        company_organization: companyOrganization || undefined,
+        language_preference: toApiLanguagePreference(languagePreference),
+      }),
+    });
 
-    const response = await fetch(
-      `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(airtableData),
-      }
-    );
+    if (!apiRes.ok) {
+      const errorBody = await apiRes.json().catch(() => null);
+      console.error('cofabri-api support submission failed:', apiRes.status, errorBody);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error('Airtable API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-        submittedData: {
-          firstName,
-          lastName,
-          email,
-          phone,
-          subject,
-          languagePreference,
-          applications: applicationsArray,
-          applicationNames
-        }
-      });
-      
-      // Log the submission for manual processing if Airtable fails
-      console.log('Support form submission (Airtable failed):', {
+      // Log the submission for manual processing if the API call fails
+      console.log('Support form submission (cofabri-api failed):', {
         firstName,
         lastName,
         email,
@@ -288,15 +222,15 @@ export async function POST(request: Request) {
         screenshots: screenshots.map(f => f.name),
         timestamp: new Date().toISOString()
       });
-      
+
       return NextResponse.json(
         { error: 'Failed to save support ticket. Please try again later.' },
-        { status: 500 }
+        { status: 502 }
       );
     }
 
-    const result = await response.json();
-    console.log('Support form submission saved to Airtable:', {
+    const result = await apiRes.json();
+    console.log('Support form submission saved via cofabri-api:', {
       recordId: result.id,
       firstName,
       lastName,
@@ -310,9 +244,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { 
+      {
         message: 'Support ticket submitted successfully',
-        recordId: result.id 
+        recordId: result.id
       },
       { status: 200 }
     );

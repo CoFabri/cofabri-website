@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
 import SectionHeading from './SectionHeading';
 import TestimonialPreviewCard from './TestimonialPreviewCard';
-import { Testimonial, getTestimonials } from '@/lib/airtable';
+import { Testimonial, getTestimonials } from '@/lib/api-client';
 
 interface TestimonialsProps {
   appId?: string;

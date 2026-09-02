@@ -47,15 +47,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Block access to preview routes without proper authentication
-  if (pathname.startsWith('/preview/') && !pathname.startsWith('/preview/login')) {
-    // Check if this is a preview route with Airtable record ID
-    if (pathname.includes('/rec')) {
-      // Return 404 for preview routes with record IDs to prevent indexing
-      return new NextResponse('Not Found', { status: 404 });
-    }
-  }
-
   // Create response
   let response = NextResponse.next();
 

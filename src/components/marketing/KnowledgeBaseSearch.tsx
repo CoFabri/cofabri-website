@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { KnowledgeBaseArticle } from '@/lib/airtable';
+import { KnowledgeBaseArticle } from '@/lib/api-client';
 
 interface KnowledgeBaseSearchProps {
   onSearch: (query: string) => void;

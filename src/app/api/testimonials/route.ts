@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getTestimonials } from '@/lib/airtable';
+import { getTestimonials } from '@/lib/api-client';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';

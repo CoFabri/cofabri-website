@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { KnowledgeBaseArticle } from '@/lib/airtable';
-import { getKnowledgeBaseArticles } from '@/lib/airtable';
+import { KnowledgeBaseArticle } from '@/lib/api-client';
+import { getKnowledgeBaseArticles } from '@/lib/api-client';
 import SectionHeading from '@/components/marketing/SectionHeading';
 
 export default function KnowledgeBase() {

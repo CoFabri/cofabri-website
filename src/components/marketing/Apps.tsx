@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { App } from '@/lib/airtable';
+import { App } from '@/lib/api-client';
 import AppPreviewCard from './AppPreviewCard';
 import AppsCelebration from './AppsCelebration';
 

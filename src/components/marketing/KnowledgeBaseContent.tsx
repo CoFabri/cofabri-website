@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { KnowledgeBaseArticle } from '@/lib/airtable';
+import { KnowledgeBaseArticle } from '@/lib/api-client';
 import { KnowledgeBaseSearch } from './KnowledgeBaseSearch';
 import AnimatedGradient from './AnimatedGradient';
 

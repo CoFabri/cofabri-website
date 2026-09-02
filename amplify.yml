@@ -27,5 +27,5 @@ frontend:
         - key: 'X-XSS-Protection'
           value: '1; mode=block'
   env:
-    AIRTABLE_PERSONAL_ACCESS_TOKEN: ${AIRTABLE_PERSONAL_ACCESS_TOKEN}
-    AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
+    COFABRI_API_BASE_URL: ${COFABRI_API_BASE_URL}
+    COFABRI_API_KEY: ${COFABRI_API_KEY}

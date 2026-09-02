@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 
-const AIRTABLE_API_KEY = process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_API_URL = 'https://api.airtable.com/v0';
+// cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
+// The contact form offers many more languages, so anything else is left unset rather
+// than sent through and rejected by the API.
+const SUPPORTED_LANGUAGE_PREFERENCES = new Set(['english', 'spanish']);
+function toApiLanguagePreference(languagePreference?: string): string | undefined {
+  const normalized = languagePreference?.trim().toLowerCase();
+  return normalized && SUPPORTED_LANGUAGE_PREFERENCES.has(normalized) ? normalized : undefined;
+}
 
 // Character limits (must match client-side limits)
 const FIRST_NAME_MAX_LENGTH = 50;
@@ -130,60 +135,38 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check if Airtable credentials are available
-    if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
-      console.error('Airtable credentials not configured');
+    // Check if cofabri-api credentials are available
+    if (!process.env.COFABRI_API_BASE_URL || !process.env.COFABRI_API_KEY) {
+      console.error('cofabri-api credentials not configured');
       return NextResponse.json(
         { error: 'Contact form service temporarily unavailable' },
         { status: 503 }
       );
     }
 
-    // Create record in Airtable Contact Submissions table
-    const airtableData = {
-      fields: {
-        'First Name': firstName,
-        'Last Name': lastName,
-        'Email': email,
-        'Subject': subject,
-        'Message': message,
-        'Language Preference': languagePreference || 'English',
-        'Status': 'New',
-        // Related App(s) is a linked record field, so we send an array of record IDs
-        ...(relatedApp && { 'Related App(s)': [relatedApp] })
-      }
-    };
+    // Submit to cofabri-api, which persists the contact submission in Supabase
+    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        subject,
+        message,
+        language_preference: toApiLanguagePreference(languagePreference),
+      }),
+    });
 
-    const response = await fetch(
-      `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/Contact%20Submissions`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(airtableData),
-      }
-    );
+    if (!apiRes.ok) {
+      const errorBody = await apiRes.json().catch(() => null);
+      console.error('cofabri-api contact submission failed:', apiRes.status, errorBody);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error('Airtable API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-        submittedData: {
-          firstName,
-          lastName,
-          email,
-          subject,
-          languagePreference,
-          relatedApp
-        }
-      });
-      
-      // Log the submission for manual processing if Airtable fails
-      console.log('Contact form submission (Airtable failed):', {
+      // Log the submission for manual processing if the API call fails
+      console.log('Contact form submission (cofabri-api failed):', {
         firstName,
         lastName,
         email,
@@ -193,15 +176,15 @@ export async function POST(request: Request) {
         relatedApp,
         timestamp: new Date().toISOString()
       });
-      
+
       return NextResponse.json(
         { error: 'Failed to save contact submission. Please try again later.' },
-        { status: 500 }
+        { status: 502 }
       );
     }
 
-    const result = await response.json();
-    console.log('Contact form submission saved to Airtable:', {
+    const result = await apiRes.json();
+    console.log('Contact form submission saved via cofabri-api:', {
       recordId: result.id,
       firstName,
       lastName,
@@ -213,9 +196,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      { 
+      {
         message: 'Contact form submitted successfully',
-        recordId: result.id 
+        recordId: result.id
       },
       { status: 200 }
     );

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ProductRoadmap from '@/components/marketing/ProductRoadmap';
 import GradientHeading from '@/components/marketing/GradientHeading';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { RoadmapFeature } from '@/lib/airtable';
+import { RoadmapFeature } from '@/lib/api-client';
 
 interface DropdownProps {
   value: string;
@@ -64,10 +64,14 @@ function Dropdown({ value, onChange, options, placeholder, className = '' }: Dro
 
 export default function RoadmapsContent() {
   const [selectedApp, setSelectedApp] = useState<string>('');
-  const [selectedReleaseType, setSelectedReleaseType] = useState<string>('');
+  // Release type filtering is disabled: RoadmapFeature.releaseType has no backing
+  // column in cofabri-api (a known, separately-tracked schema gap) and is always
+  // an empty string, so a "Release Type" filter would only ever return zero
+  // results. selectedReleaseType stays '' and is passed through to ProductRoadmap
+  // unused so its filtering logic remains a harmless no-op.
+  const [selectedReleaseType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [applications, setApplications] = useState<string[]>([]);
-  const [releaseTypes] = useState<string[]>(['Major', 'Minor', 'Patch']);
   const [statuses] = useState<string[]>(['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled']);
 
   useEffect(() => {
@@ -111,17 +115,6 @@ export default function RoadmapsContent() {
                   ...applications.map(app => ({ value: app, label: app }))
                 ]}
                 placeholder="All Applications"
-                className="w-56"
-              />
-
-              <Dropdown
-                value={selectedReleaseType}
-                onChange={setSelectedReleaseType}
-                options={[
-                  { value: '', label: 'All Release Types' },
-                  ...releaseTypes.map(type => ({ value: type, label: type }))
-                ]}
-                placeholder="All Release Types"
                 className="w-56"
               />
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import { RoadmapFeature } from '@/lib/airtable';
+import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import AnimatedGradient from '@/components/marketing/AnimatedGradient';

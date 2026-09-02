@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
-import { App } from '@/lib/airtable';
+import { App } from '@/lib/api-client';
 
 interface AppsScrollCelebrationProps {
   apps: App[];
