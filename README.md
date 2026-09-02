@@ -88,7 +88,7 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 - **Styling**: Tailwind CSS
 - **Icons**: Heroicons
 - **Animations**: Framer Motion
-- **Content Management**: Airtable
+- **Content Management**: Supabase
 - **Social Media**: Twitter API, Instagram API, LinkedIn API
 - **Analytics**: Google Analytics
 - **Email**: Nodemailer
@@ -121,15 +121,8 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    # HighLevel Chat Widget
    NEXT_PUBLIC_HIGHLEVEL_WIDGET_URL=your_highlevel_widget_url_here
 
-   # Airtable Form
-   NEXT_PUBLIC_AIRTABLE_FORM_ID=your_airtable_form_id_here
-
    # Base URL
    NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
-   # Airtable Configuration
-   AIRTABLE_PERSONAL_ACCESS_TOKEN=your_airtable_token
-   AIRTABLE_BASE_ID=your_base_id
 
    # X (Twitter) API Credentials
    TWITTER_API_KEY=your_twitter_api_key
@@ -159,11 +152,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    # Cloudflare Turnstile (for spam protection)
    NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key_here
    TURNSTILE_SECRET_KEY=your_turnstile_secret_key_here
-
-   # Support Form Airtable Configuration
-   AIRTABLE_SUPPORT_PERSONAL_ACCESS_TOKEN=your_support_airtable_token
-   AIRTABLE_SUPPORT_BASE_ID=your_support_base_id
-   AIRTABLE_SUPPORT_TABLE_NAME=Ticket Submissions
 
    ```
 
@@ -228,9 +216,11 @@ cofabri/
 
 ## Content Management
 
-### Airtable Setup
+### Content Database (Supabase)
 
-1. Create an Airtable base with the following tables:
+The content management system has been migrated from Airtable to Supabase for improved performance and flexibility.
+
+1. Database tables:
    - Knowledge Base
    - Roadmap
    - Status
@@ -238,6 +228,7 @@ cofabri/
    - Authors
    - Sitewide Banners
    - Launches
+   - Legal Documents
 
 2. Required fields for each table:
 

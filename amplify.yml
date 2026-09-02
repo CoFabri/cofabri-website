@@ -26,6 +26,3 @@ frontend:
           value: 'DENY'
         - key: 'X-XSS-Protection'
           value: '1; mode=block'
-  env:
-    AIRTABLE_PERSONAL_ACCESS_TOKEN: ${AIRTABLE_PERSONAL_ACCESS_TOKEN}
-    AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
