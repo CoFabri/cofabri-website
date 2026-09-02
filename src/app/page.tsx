@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
+import About from '@/components/marketing/About';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
 import LiveChat from '@/components/marketing/LiveChat';
@@ -36,6 +37,7 @@ export default function Home() {
       <main>
         <Hero />
         <HomepageApps />
+        <About />
         <CompactRoadmap />
         <FAQ />
         <LiveChat />

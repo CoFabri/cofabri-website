@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -35,37 +37,32 @@ export default function CookieConsent() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50 p-4">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            We use cookies and similar technologies to analyze site traffic and personalize content.
-            This helps us provide a better experience for you.
-            <span className="block mt-1">
-              <button
-                onClick={() => window.open('/legal', '_blank')}
-                className="text-primary hover:text-accent-hover underline text-sm"
-              >
-                Learn more about our privacy policy
-              </button>
-            </span>
-          </p>
+    <div className="fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:left-6 sm:bottom-6 sm:max-w-sm">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-[0_24px_60px_-20px_rgba(16,22,27,.22)]">
+        <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+          Cookies
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <button
-            onClick={denyAnalytics}
-            className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-surface-hover rounded-lg transition-colors duration-200"
+        <p className="text-[15px] leading-[1.55] text-foreground">
+          We use cookies to analyze site traffic and personalize content. This helps us provide a
+          better experience for you.{' '}
+          <Link
+            href="/legal"
+            target="_blank"
+            className="font-medium text-primary underline underline-offset-2 hover:text-accent-hover"
           >
-            Decline
-          </button>
-          <button
-            onClick={acceptAnalytics}
-            className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-accent-hover rounded-lg transition-colors duration-200"
-          >
+            Learn more
+          </Link>
+          .
+        </p>
+        <div className="mt-4 flex items-center gap-2.5">
+          <Button size="sm" onClick={acceptAnalytics}>
             Accept
-          </button>
+          </Button>
+          <Button size="sm" variant="ghost" onClick={denyAnalytics}>
+            Decline
+          </Button>
         </div>
       </div>
     </div>
   );
-} 
+}

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
+import About from '@/components/marketing/About';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
 import LiveChat from '@/components/marketing/LiveChat';
@@ -29,6 +30,7 @@ export default function HomeContent() {
       )}
       <Hero />
       <HomepageApps />
+      <About />
       <CompactRoadmap />
       <FAQ />
       <LiveChat />
