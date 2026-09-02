@@ -5,16 +5,16 @@ import RevealSection from './RevealSection';
 import { clearHydrationCaches } from '@/lib/utils';
 
 const highlights = [
-  'Industry-leading automation and AI features',
-  'Frequent updates to improve every app',
-  'Fast, real support from the people who built it',
+  'Every app maintained by the people who built it',
+  'Frequent, real updates — not annual overhauls',
+  'Support from humans, not a ticket queue',
 ];
 
 const whyChoose = [
-  'Proven track record of fast, effective deployments',
-  'AI-powered automation built for real-world use cases',
-  'Modular SaaS apps that grow with your business',
-  'Transparent support and continuous improvements',
+  'A track record across industries, not just one',
+  'Each app built to do one job, not everything',
+  'Direct access to the people who ship it',
+  'Straightforward pricing, no lock-in',
 ];
 
 const About = () => {
@@ -31,26 +31,24 @@ const About = () => {
             About us
           </div>
           <h2 className="m-0 text-[32px] leading-[1.1] tracking-[-0.03em] font-semibold text-foreground sm:text-[42px]">
-            Smart, scalable technology — without the complexity.
+            One studio. Every industry.
           </h2>
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
           <div>
             <p className="text-lg leading-[1.6] text-muted-foreground">
-              CoFabri helps modern businesses unlock their potential through automation, AI-enhanced
-              tools, and intuitive software. Whether you&rsquo;re a solo founder or an established
-              enterprise, our growing suite of apps is built to streamline operations, reduce
-              inefficiencies, and spark meaningful growth.
+              CoFabri is a software studio — not a single product, a portfolio of them. Each app
+              solves one problem for one kind of business, built and maintained by a small team
+              that ships fast and stays close to the people using it.
             </p>
             <p className="mt-5 text-lg leading-[1.6] text-muted-foreground">
-              With deep expertise in software development and business process optimization, we
-              create elegant, no-code and low-code solutions that simplify complexity and deliver
-              measurable results. Every product is built to be modular, easy to adopt, and backed by
-              ongoing support.
+              Most of what we build starts in-house. Some of it starts with an operator who
+              already knows an industry cold — we build the product, they bring the customers,
+              and we share what it earns.
             </p>
             <p className="mt-5 text-lg leading-[1.6] text-foreground">
-              We&rsquo;re not just a software provider — we&rsquo;re your technology partner.
+              We&rsquo;re not chasing every idea — we&rsquo;re picking the ones worth doing well.
             </p>
 
             <ul className="mt-8 border-t border-border">
@@ -66,8 +64,7 @@ const About = () => {
           <div className="rounded-xl border border-border bg-card p-8">
             <h3 className="m-0 text-xl font-semibold text-foreground">Our mission</h3>
             <p className="mt-3 text-muted-foreground">
-              To empower businesses with intelligent technology solutions that drive performance,
-              efficiency, and long-term success — without the traditional complexity.
+              To build software worth trusting — one industry, one problem, at a time.
             </p>
 
             <div className="mt-7 border-t border-border pt-7">
