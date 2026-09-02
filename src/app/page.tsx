@@ -14,18 +14,18 @@ export const dynamic = 'force-dynamic';
 // Generate metadata for the homepage
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'CoFabri — Small software that does one thing well.',
+    title: 'CoFabri — We don\'t build platforms. We build answers.',
     description: 'CoFabri is a software studio building a portfolio of focused apps — each one solves a single problem and stays out of your way.',
     alternates: {
       canonical: 'https://cofabri.com/',
     },
     openGraph: {
-      title: 'CoFabri — Small software that does one thing well.',
+      title: 'CoFabri — We don\'t build platforms. We build answers.',
       description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
       url: 'https://cofabri.com/',
     },
     twitter: {
-      title: 'CoFabri — Small software that does one thing well.',
+      title: 'CoFabri — We don\'t build platforms. We build answers.',
       description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
     },
   };

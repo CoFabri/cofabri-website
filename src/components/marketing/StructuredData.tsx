@@ -38,7 +38,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "@type": "WebSite",
           "name": "CoFabri",
           "url": "https://cofabri.com",
-          "description": "CoFabri — small software that does one thing well.",
+          "description": "CoFabri — we don't build platforms, we build answers.",
           "potentialAction": {
             "@type": "SearchAction",
             "target": "https://cofabri.com/knowledge-base?search={search_term_string}",

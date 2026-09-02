@@ -84,9 +84,9 @@ const Hero = () => {
             </span>
           </div>
           <h1 className="m-0 text-[40px] font-semibold leading-[1.05] tracking-[-0.035em] text-balance text-foreground sm:text-6xl lg:text-[76px] lg:leading-[1.02]">
-            Small software that
+            We don&apos;t build platforms.
             <br />
-            does one thing well.
+            We build answers.
           </h1>
           <p className="mt-8 max-w-[560px] text-lg leading-[1.55] text-muted-foreground md:text-xl">
             We build focused SaaS apps for operators. Each one solves a single
