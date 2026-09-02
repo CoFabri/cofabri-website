@@ -2,7 +2,7 @@ import React from 'react';
 
 interface PageHeroProps {
   eyebrow: string;
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   right?: React.ReactNode;
   className?: string;
