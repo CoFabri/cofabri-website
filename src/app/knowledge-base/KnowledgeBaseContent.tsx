@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import GradientHeading from '@/components/ui/GradientHeading';
+import GradientHeading from '@/components/marketing/GradientHeading';
 import { KnowledgeBaseArticle } from '@/lib/airtable';
 
 export default function KnowledgeBaseContent() {

@@ -145,7 +145,7 @@ export default function SitewideBanner() {
 
   return (
     <div 
-      className={`fixed top-16 left-0 right-0 ${getBannerStyles()} border-b transition-all duration-300 ${
+      className={`fixed top-[68px] left-0 right-0 ${getBannerStyles()} border-b transition-all duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
       style={{ zIndex: 40 }}

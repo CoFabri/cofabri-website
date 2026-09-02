@@ -10,8 +10,8 @@ import {
   PhoneIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import GradientHeading from '@/components/ui/GradientHeading';
-import SupportForm from '@/components/ui/SupportForm';
+import GradientHeading from '@/components/marketing/GradientHeading';
+import SupportForm from '@/components/marketing/SupportForm';
 
 export default function SupportPageContent() {
   return (

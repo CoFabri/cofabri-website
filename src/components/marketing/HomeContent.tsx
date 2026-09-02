@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Hero from '@/components/ui/Hero';
-import HomepageApps from '@/components/ui/HomepageApps';
-import About from '@/components/ui/About';
-import Testimonials from '@/components/ui/Testimonials';
-import CompactRoadmap from '@/components/ui/CompactRoadmap';
-import FAQ from '@/components/ui/FAQ';
-import NewsletterSignup from '@/components/ui/NewsletterSignup';
-import LiveChat from '@/components/ui/LiveChat';
+import Hero from '@/components/marketing/Hero';
+import HomepageApps from '@/components/marketing/HomepageApps';
+import About from '@/components/marketing/About';
+import Testimonials from '@/components/marketing/Testimonials';
+import CompactRoadmap from '@/components/marketing/CompactRoadmap';
+import FAQ from '@/components/marketing/FAQ';
+import NewsletterSignup from '@/components/marketing/NewsletterSignup';
+import LiveChat from '@/components/marketing/LiveChat';
 
 export default function HomeContent() {
   const searchParams = useSearchParams();

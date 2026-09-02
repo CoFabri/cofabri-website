@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import Contact from '@/components/ui/Contact';
-import GradientHeading from '@/components/ui/GradientHeading';
-import Breadcrumbs from '@/components/ui/Breadcrumbs';
+import Contact from '@/components/marketing/Contact';
+import GradientHeading from '@/components/marketing/GradientHeading';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';

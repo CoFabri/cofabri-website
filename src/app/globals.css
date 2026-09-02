@@ -1,29 +1,95 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary: #007bff;
-  --secondary: #6c757d;
-  --accent: #007bff;
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.625rem;
+  --background: #FAFBFC;
+  --foreground: #14171A;
+  --card: #FFFFFF;
+  --card-foreground: #14171A;
+  --popover: #FFFFFF;
+  --popover-foreground: #14171A;
+  --primary: #007BFF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F5F7;
+  --secondary-foreground: #14171A;
+  --muted: #F3F5F7;
+  --muted-foreground: #5B6472;
+  --accent: #EAF3FF;
+  --accent-foreground: #007BFF;
+  --destructive: #D6482B;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E8EC;
+  --input: #E5E8EC;
+  --ring: #007BFF;
+}
+
+.dark {
+  --background: #0B0D10;
+  --foreground: #F2F4F6;
+  --card: #14171C;
+  --card-foreground: #F2F4F6;
+  --popover: #14171C;
+  --popover-foreground: #F2F4F6;
+  --primary: #2B96FF;
+  --primary-foreground: #06111F;
+  --secondary: #111418;
+  --secondary-foreground: #F2F4F6;
+  --muted: #111418;
+  --muted-foreground: #97A0AC;
+  --accent: #12233A;
+  --accent-foreground: #2B96FF;
+  --destructive: #E97A62;
+  --destructive-foreground: #06111F;
+  --border: #262A31;
+  --input: #262A31;
+  --ring: #2B96FF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
+
+:root {
   --primary-gradient: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   --neon-glow: 0 0 20px rgba(0, 123, 255, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(0, 123, 255, 0.2);
-  --foreground-rgb: 23, 23, 23;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 249, 250, 251;
 }
 
 @layer base {
-  html {
-    font-family: 'Poppins', sans-serif;
-  }
-
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight;
     line-height: 1.2;
@@ -46,17 +112,41 @@
   }
 
   body {
-    @apply bg-white text-gray-900;
-    background-image: 
-      radial-gradient(circle at 50% 50%, rgba(0, 123, 255, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 0% 0%, rgba(0, 86, 179, 0.05) 0%, transparent 50%);
-    color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-      to bottom,
-      rgb(var(--background-start-rgb)),
-      rgb(var(--background-end-rgb))
-    );
+    @apply bg-background text-foreground;
   }
+}
+
+/* Touch-Friendly Button/Link base (defined as a @utility so it can be
+   composed with @apply from other component classes below, per the
+   Tailwind v4 custom-utility API). */
+@utility touch-button {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  @apply transition-all duration-200 ease-out;
+  @apply active:scale-95 active:opacity-80;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply select-none;
+  /* Prevent text selection on touch */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+@utility touch-link {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  @apply transition-all duration-200 ease-out;
+  @apply active:scale-95 active:opacity-80;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  @apply select-none;
+  /* Prevent text selection on touch */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 @layer components {
@@ -68,16 +158,8 @@
     @apply rounded-lg shadow-lg p-6 bg-white;
   }
   
-  .btn-primary {
-    @apply bg-[var(--accent)] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-200;
-  }
-  
-  .btn-secondary {
-    @apply bg-[var(--secondary)] text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-200;
-  }
-
   .glass-card {
-    @apply backdrop-blur-lg bg-opacity-80 border border-opacity-20;
+    @apply backdrop-blur-lg border;
     background: var(--glass-bg);
     border-color: var(--glass-border);
     box-shadow: var(--neon-glow);
@@ -99,22 +181,6 @@
 
   .hover-glow:hover {
     box-shadow: var(--neon-glow);
-  }
-
-  /* Touch-Friendly Button Classes */
-  .touch-button {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-    @apply transition-all duration-200 ease-out;
-    @apply active:scale-95 active:opacity-80;
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-    @apply select-none;
-    /* Prevent text selection on touch */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 
   .touch-button-primary {
@@ -144,22 +210,6 @@
     @apply text-gray-600 hover:text-gray-900;
     @apply hover:bg-gray-100 active:bg-gray-200;
     @apply focus:ring-2 focus:ring-blue-500 focus:ring-offset-1;
-  }
-
-  /* Touch-Friendly Link Classes */
-  .touch-link {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-    @apply transition-all duration-200 ease-out;
-    @apply active:scale-95 active:opacity-80;
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-    @apply select-none;
-    /* Prevent text selection on touch */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
   }
 
   .touch-link-nav {
@@ -348,7 +398,7 @@
   }
 
   .hover-badge {
-    @apply transition-all duration-200 hover:bg-opacity-80;
+    @apply transition-all duration-200;
   }
 
   .hover-icon {
@@ -501,34 +551,6 @@
   }
 }
 
-  .futuristic-button {
-  @apply px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold;
-  @apply transition-all duration-300;
-  @apply relative overflow-hidden;
-  @apply border border-indigo-500/50;
-  @apply shadow-lg shadow-indigo-500/20;
-}
-
-.futuristic-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: 0.5s;
-}
-
-.futuristic-button:hover::before {
-  left: 100%;
-}
-
 /* Modern Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -585,12 +607,6 @@
 }
 
 @layer utilities {
-  .animated-gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
-    background-size: 200% auto;
-    animation: gradient 3s ease infinite;
-  }
-
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
@@ -617,7 +633,7 @@
 }
 
 .glass-card {
-  @apply backdrop-blur-lg bg-opacity-80 border border-opacity-20;
+  @apply backdrop-blur-lg border;
   background: var(--glass-bg);
   border-color: var(--glass-border);
   box-shadow: var(--neon-glow);

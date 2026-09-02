@@ -152,7 +152,7 @@ export function StatusPageContent({ initialStatuses }: StatusPageContentProps) {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <h1 className="text-5xl md:text-6xl font-bold mb-8 animated-gradient-text">
+          <h1 className="text-5xl md:text-6xl font-bold mb-8 text-foreground">
             System Status
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">

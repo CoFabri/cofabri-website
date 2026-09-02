@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/ui/Navbar";
-import Footer from "@/components/ui/Footer";
-import SitewideBanner from "@/components/ui/SitewideBanner";
+import Navbar from "@/components/marketing/Navbar";
+import Footer from "@/components/marketing/Footer";
+import SitewideBanner from "@/components/marketing/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
-import Analytics from "@/components/ui/Analytics";
-import CookieConsent from "@/components/ui/CookieConsent";
-import StructuredData from "@/components/ui/StructuredData";
+import Analytics from "@/components/marketing/Analytics";
+import CookieConsent from "@/components/marketing/CookieConsent";
+import StructuredData from "@/components/marketing/StructuredData";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
@@ -108,7 +106,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="https://files.cofabri.com/images/cofabri-favicon.jpg" sizes="any" />
         <link rel="icon" href="https://files.cofabri.com/images/cofabri-favicon.jpg" type="image/jpeg" sizes="32x32" />
@@ -116,30 +114,32 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>
-      <body className={inter.className}>
-        <StructuredData 
-          type="organization" 
-          data={{
-            "foundingDate": "2024",
-            "industry": "Software Development",
-            "numberOfEmployees": "10-50"
-          }}
-        />
-        <StructuredData 
-          type="website" 
-          data={{
-            "inLanguage": "en-US",
-            "copyrightYear": new Date().getFullYear()
-          }}
-        />
-        <Navbar />
-        <SitewideBanner />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <MarketingPopupWrapper />
-        <CookieConsent />
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <StructuredData
+            type="organization"
+            data={{
+              "foundingDate": "2024",
+              "industry": "Software Development",
+              "numberOfEmployees": "10-50"
+            }}
+          />
+          <StructuredData
+            type="website"
+            data={{
+              "inLanguage": "en-US",
+              "copyrightYear": new Date().getFullYear()
+            }}
+          />
+          <Navbar />
+          <SitewideBanner />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+          <MarketingPopupWrapper />
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   );

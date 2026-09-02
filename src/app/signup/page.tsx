@@ -2,12 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import GradientHeading from '@/components/ui/GradientHeading';
+import GradientHeading from '@/components/marketing/GradientHeading';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SparklesIcon, RocketLaunchIcon, StarIcon, HeartIcon, CheckCircleIcon, UserGroupIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import AnimatedGradient from '@/components/ui/AnimatedGradient';
-import SparkleButton from '@/components/ui/SparkleButton';
+import AnimatedGradient from '@/components/marketing/AnimatedGradient';
+import { Button } from '@/components/ui/button';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -179,7 +179,7 @@ function SignupPageContent() {
                 <span className="text-sm font-medium">Coming Soon</span>
               </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animated-gradient-text">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
               Be the First to Experience {appData?.name}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
@@ -422,13 +422,13 @@ function SignupPageContent() {
                             If approved, your statement will appear on this waitlist page
                           </p>
                         </div>
-                        <SparkleButton
+                        <Button
                           type="submit"
                           disabled={isSubmitting || !interestLevel}
-                          className="w-full bg-indigo-600 text-white rounded-lg py-3 px-6 font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full"
                         >
                           {isSubmitting ? 'Submitting...' : 'Join Waitlist'}
-                        </SparkleButton>
+                        </Button>
                       </form>
                     </div>
                   )}

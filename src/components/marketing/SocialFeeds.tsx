@@ -37,7 +37,7 @@ const SocialFeeds = ({ xPosts, linkedinPosts, instagramPosts }: SocialFeedsProps
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4 animated-gradient-text">Social Updates</h2>
+          <h2 className="text-4xl font-bold mb-4 text-foreground">Social Updates</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Stay connected with us on social media for the latest news and updates.
           </p>

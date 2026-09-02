@@ -1,12 +1,12 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Apps from '@/components/ui/Apps';
-import NewsletterSignup from '@/components/ui/NewsletterSignup';
-import GradientHeading from '@/components/ui/GradientHeading';
+import Apps from '@/components/marketing/Apps';
+import NewsletterSignup from '@/components/marketing/NewsletterSignup';
+import GradientHeading from '@/components/marketing/GradientHeading';
 import Link from 'next/link';
-import Testimonials from '@/components/ui/Testimonials';
-import FeaturedApp from '@/components/ui/FeaturedApp';
-import Breadcrumbs from '@/components/ui/Breadcrumbs';
+import Testimonials from '@/components/marketing/Testimonials';
+import FeaturedApp from '@/components/marketing/FeaturedApp';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -64,7 +64,7 @@ export default function AppsPage() {
         <section className="py-24">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <h2 className="text-4xl font-bold animated-gradient-text">Resources & Support</h2>
+              <h2 className="text-4xl font-bold text-foreground">Resources & Support</h2>
               <p className="mt-4 text-lg text-gray-600">Everything you need to get started and succeed with our apps</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">

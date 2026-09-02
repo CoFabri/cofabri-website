@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ProductRoadmap from '@/components/ui/ProductRoadmap';
-import GradientHeading from '@/components/ui/GradientHeading';
+import ProductRoadmap from '@/components/marketing/ProductRoadmap';
+import GradientHeading from '@/components/marketing/GradientHeading';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { RoadmapFeature } from '@/lib/airtable';
 

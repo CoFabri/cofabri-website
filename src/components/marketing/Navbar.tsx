@@ -1,0 +1,127 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import {
+  Home, LayoutGrid, TrendingUp, BookOpen, LifeBuoy, Mail,
+  Menu, Sun, Moon, ArrowRight,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import Logo from './Logo';
+import StatusIndicator from './StatusIndicator';
+
+const navigation = [
+  { name: 'Home', href: '/', icon: Home },
+  { name: 'Apps', href: '/apps', icon: LayoutGrid },
+  { name: 'Roadmaps', href: '/roadmaps', icon: TrendingUp },
+  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
+  { name: 'Support', href: '/support', icon: LifeBuoy },
+  { name: 'Contact', href: '/contact', icon: Mail },
+];
+
+function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="h-9 w-9" />;
+
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      aria-label="Toggle dark mode"
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+    >
+      {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
+  );
+}
+
+const Navbar = () => {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (!pathname) return false;
+    if (href === '/') return pathname === href;
+    return pathname.startsWith(href);
+  };
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-sm">
+      <nav className="max-w-6xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+        <Link href="/" className="flex items-center flex-shrink-0">
+          <Logo size="nav" noLink />
+        </Link>
+
+        <ul className="hidden lg:flex items-center gap-7 text-sm">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  className={`inline-flex items-center gap-1.5 transition-colors ${
+                    isActive(item.href) ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-[15px] w-[15px]" />
+                  {item.name}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+          <StatusIndicator />
+          <ThemeToggle />
+          <Button asChild size="sm">
+            <Link href="/apps">
+              Explore Apps
+              <ArrowRight className="h-[15px] w-[15px] transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2 lg:hidden">
+          <StatusIndicator />
+          <ThemeToggle />
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" aria-label="Open menu">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetTitle className="sr-only">Navigation</SheetTitle>
+              <div className="flex flex-col gap-1 mt-8">
+                {navigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-base transition-colors ${
+                        isActive(item.href) ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <Icon className="h-[18px] w-[18px]" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </nav>
+    </header>
+  );
+};
+
+export default Navbar;

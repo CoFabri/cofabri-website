@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { KnowledgeBaseArticle } from '@/lib/airtable';
 import { getKnowledgeBaseArticles } from '@/lib/airtable';
-import SectionHeading from '@/components/ui/SectionHeading';
+import SectionHeading from '@/components/marketing/SectionHeading';
 
 export default function KnowledgeBase() {
   const [articles, setArticles] = useState<KnowledgeBaseArticle[]>([]);

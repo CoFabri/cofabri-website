@@ -4,7 +4,7 @@ import type { App } from '@/lib/airtable';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import ExpandableText from './ExpandableText';
-import SparkleButton from './SparkleButton';
+import { Button } from '@/components/ui/button';
 
 interface AppPreviewCardProps {
   app: App;
@@ -125,12 +125,9 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
 
           {/* Action Button */}
           {app.status === 'In Development' ? (
-            <SparkleButton
-              href={`/signup?appId=${app.id}`}
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Join Waitlist
-            </SparkleButton>
+            <Button asChild>
+              <Link href={`/signup?appId=${app.id}`}>Join Waitlist</Link>
+            </Button>
           ) : app.url ? (
             <Link
               href={app.url.startsWith('http') ? app.url : `https://${app.url}`}

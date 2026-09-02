@@ -1,14 +1,14 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import Hero from '@/components/ui/Hero';
-import HomepageApps from '@/components/ui/HomepageApps';
-import About from '@/components/ui/About';
-import Testimonials from '@/components/ui/Testimonials';
-import CompactRoadmap from '@/components/ui/CompactRoadmap';
-import FAQ from '@/components/ui/FAQ';
-import NewsletterSignup from '@/components/ui/NewsletterSignup';
-import LiveChat from '@/components/ui/LiveChat';
-import HomeContent from '@/components/ui/HomeContent';
+import Hero from '@/components/marketing/Hero';
+import HomepageApps from '@/components/marketing/HomepageApps';
+import About from '@/components/marketing/About';
+import Testimonials from '@/components/marketing/Testimonials';
+import CompactRoadmap from '@/components/marketing/CompactRoadmap';
+import FAQ from '@/components/marketing/FAQ';
+import NewsletterSignup from '@/components/marketing/NewsletterSignup';
+import LiveChat from '@/components/marketing/LiveChat';
+import HomeContent from '@/components/marketing/HomeContent';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
