@@ -53,7 +53,7 @@ const Footer = () => {
     <footer className="border-t border-border py-9">
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-5 flex-wrap">
         <Link href="/" className="flex items-center">
-          <Logo size="footer" />
+          <Logo size="footer" noLink />
         </Link>
 
         <ul className="flex items-center gap-5 flex-wrap text-sm">
