@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { animate, useInView, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import HeroAurora from './HeroAurora';
-import type { App, RoadmapFeature } from '@/lib/api-client';
-import { shippedInLastNDays } from '@/lib/roadmap-display';
+import type { App, KnowledgeBaseArticle, RoadmapFeature } from '@/lib/api-client';
 
 function MetricCount({ target, suffix }: { target: number; suffix: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,6 +34,7 @@ function MetricCount({ target, suffix }: { target: number; suffix: string }) {
 const Hero = () => {
   const [apps, setApps] = useState<App[]>([]);
   const [roadmap, setRoadmap] = useState<RoadmapFeature[]>([]);
+  const [kbArticles, setKbArticles] = useState<KnowledgeBaseArticle[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -45,12 +45,14 @@ const Hero = () => {
 
     async function fetchMetrics() {
       try {
-        const [appsRes, roadmapRes] = await Promise.all([
+        const [appsRes, roadmapRes, kbRes] = await Promise.all([
           fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
           fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
+          fetch('/api/knowledge-base', { cache: 'no-store', headers: noCacheHeaders }),
         ]);
         if (appsRes.ok) setApps(await appsRes.json());
         if (roadmapRes.ok) setRoadmap(await roadmapRes.json());
+        if (kbRes.ok) setKbArticles(await kbRes.json());
       } catch (err) {
         console.error('Error fetching hero metrics:', err);
       } finally {
@@ -62,11 +64,12 @@ const Hero = () => {
   }, []);
 
   const liveAppCount = apps.filter((a) => a.status === 'Live').length;
-  const shippedLast30Days = shippedInLastNDays(roadmap, 30);
+  const shippedToDate = roadmap.filter((f) => f.status === 'Released').length;
 
   const metrics = [
     { target: liveAppCount, suffix: '', label: 'Apps live' },
-    { target: shippedLast30Days, suffix: '', label: 'Features shipped, last 30 days' },
+    { target: shippedToDate, suffix: '', label: 'Features shipped to date' },
+    { target: kbArticles.length, suffix: '', label: 'Knowledge base articles' },
   ];
 
   return (
@@ -99,7 +102,7 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-2 divide-x divide-border border-t border-border md:mt-24">
+        <div className="mt-16 grid grid-cols-3 divide-x divide-border border-t border-border md:mt-24">
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-7 first:pl-0">
               <div className="text-[28px] font-semibold tracking-[-0.03em] text-foreground sm:text-[34px]">

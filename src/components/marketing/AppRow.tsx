@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import type { App, RoadmapFeature } from '@/lib/api-client';
-import { statusPillClasses, statusDotClasses, markPalette, deriveTagline, appMomentum } from '@/lib/app-display';
+import { statusPillClasses, statusDotClasses, markPalette, appMomentum } from '@/lib/app-display';
 
 interface AppRowProps {
   app: App;
@@ -11,13 +11,12 @@ interface AppRowProps {
 }
 
 export default function AppRow({ app, roadmap, href }: AppRowProps) {
-  const tagline = deriveTagline(app);
   const momentum = appMomentum(app, roadmap);
 
   return (
     <Link
       href={href}
-      className="block rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors hover:bg-muted md:grid md:grid-cols-[40px_1fr_112px_200px_20px] md:items-center md:gap-6"
+      className="group block rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors duration-200 hover:bg-muted md:grid md:grid-cols-[40px_1fr_112px_200px_20px] md:items-start md:gap-6"
     >
       <div className="flex items-center gap-4 md:contents">
         {app.faviconUrl ? (
@@ -34,7 +33,7 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
             <span className="text-lg font-semibold tracking-[-0.015em]">{app.name}</span>
             <span className={`block h-1.5 w-1.5 flex-shrink-0 rounded-full ${statusDotClasses(app.status)}`} />
           </div>
-          {tagline && <div className="mt-1 text-[15px] text-muted-foreground">{tagline}</div>}
+          {app.description && <div className="mt-1 text-[15px] leading-[1.5] text-muted-foreground">{app.description}</div>}
         </div>
       </div>
       <div className="mt-3 flex items-center gap-3 md:contents">
@@ -46,7 +45,7 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
           <div className="mt-1 text-sm leading-snug text-ink-body">{momentum}</div>
         </div>
       </div>
-      <ArrowRight className="hidden h-[17px] w-[17px] justify-self-end text-ink-disabled md:block" />
+      <ArrowRight className="hidden h-[17px] w-[17px] justify-self-end text-ink-disabled transition-transform duration-200 group-hover:translate-x-0.5 md:block" />
     </Link>
   );
 }

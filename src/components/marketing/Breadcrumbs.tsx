@@ -36,7 +36,7 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
                 {item.name}
               </span>
             ) : (
-              <Link href={item.href} className="text-ink-faint transition-colors hover:text-foreground">
+              <Link href={item.href} className="text-ink-faint transition-colors duration-200 hover:text-foreground">
                 {item.name}
               </Link>
             )}

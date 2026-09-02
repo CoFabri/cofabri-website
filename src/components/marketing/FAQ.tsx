@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import RevealSection from './RevealSection';
+import StructuredData from './StructuredData';
 import {
   Accordion,
   AccordionContent,
@@ -40,6 +41,7 @@ const faqs = [
 const FAQ = () => {
   return (
     <RevealSection className="py-24 md:py-28 bg-background">
+      <StructuredData type="faqPage" data={{ items: faqs }} />
       <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[320px_1fr] md:gap-20">
           <div>

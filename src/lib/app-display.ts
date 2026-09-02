@@ -42,16 +42,6 @@ export function markPalette(id: string): string {
   return MARK_PALETTES[hash % MARK_PALETTES.length];
 }
 
-// Interim stand-in for a future apps.tagline field: first sentence of the
-// long-form description, truncated to a word boundary.
-export function deriveTagline(app: App): string | null {
-  if (!app.description) return null;
-  const firstSentence = app.description.trim().split(/(?<=[.!?])\s/)[0].replace(/[.!?]+$/, '');
-  if (firstSentence.length <= 72) return firstSentence;
-  const truncated = firstSentence.slice(0, 72);
-  return `${truncated.slice(0, truncated.lastIndexOf(' '))}…`;
-}
-
 const QUARTER_MS = 90 * 24 * 60 * 60 * 1000;
 
 export function appMomentum(app: App, roadmap: RoadmapFeature[]): string {

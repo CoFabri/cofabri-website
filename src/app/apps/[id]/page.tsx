@@ -8,9 +8,7 @@ import { getApp, getRoadmapFeatures } from '@/lib/api-client';
 import { actionHref, actionLabel, statusPillClasses } from '@/lib/app-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
-
-// Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
+import StructuredData from '@/components/marketing/StructuredData';
 
 interface AppDetailPageProps {
   params: Promise<{ id: string }>;
@@ -88,6 +86,16 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <StructuredData
+        type="softwareApplication"
+        data={{
+          name: app.name,
+          description: app.description,
+          url: app.url ? `https://${hostname(app.url)}` : `https://cofabri.com/apps/${app.id}`,
+          image: app.screenshot,
+          applicationCategory: app.category,
+        }}
+      />
       <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
         <div className="mb-14">
           <Breadcrumbs items={[{ name: 'Apps', href: '/apps' }, { name: app.name, href: `/apps/${app.id}` }]} />

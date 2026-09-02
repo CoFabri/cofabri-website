@@ -693,6 +693,14 @@
 }
 
 /* Animations */
+/* CoreLoader ("Breathe") — nested-mark breathing animation. Durations,
+   easing, stagger and rest scales are invariants; see components/ui/core-loader.tsx. */
+@keyframes cf-shell { 0%,100% { transform: scale(1);   } 50% { transform: scale(.90); } }
+@keyframes cf-void  { 0%,100% { transform: scale(.70); } 50% { transform: scale(.60); } }
+@keyframes cf-core  { 0%,100% { transform: scale(.36); } 50% { transform: scale(.24); } }
+@keyframes cf-void2 { 0%,100% { transform: scale(.44); } 50% { transform: scale(.33); } }
+@keyframes cf-fade  { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -929,5 +937,12 @@ main {
   .hero-aurora-b,
   .hero-aurora-c {
     animation: none;
+  }
+
+  .cf-core-loader path {
+    animation: none !important;
+  }
+  .cf-core-loader {
+    animation: cf-fade 1.6s ease-in-out infinite;
   }
 }

@@ -9,27 +9,23 @@ import CookieConsent from "@/components/marketing/CookieConsent";
 import StructuredData from "@/components/marketing/StructuredData";
 import { ThemeProvider } from "@/components/theme-provider";
 
-// Force dynamic rendering for the entire app
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export const metadata: Metadata = {
   title: {
-    default: "CoFabri - SaaS Apps for Modern Businesses",
+    default: "CoFabri - A Software Studio Building a Portfolio of Independent Apps",
     template: "%s | CoFabri"
   },
   description: "CoFabri builds and operates a portfolio of independent SaaS apps across industries, and partners with the industry operators who know those markets best to build new ones.",
   keywords: [
-    'SaaS', 
-    'software development', 
-    'AI', 
-    'cloud solutions', 
-    'business automation',
-    'productivity tools',
-    'business software',
-    'web applications',
-    'enterprise software',
-    'digital transformation'
+    'software studio',
+    'SaaS studio',
+    'venture studio',
+    'co-build a SaaS product',
+    'software development partnership',
+    'equity partnership software',
+    'build and operate SaaS',
+    'CoFabri',
   ],
   authors: [{ name: 'CoFabri Team' }],
   creator: 'CoFabri',
@@ -57,22 +53,22 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://cofabri.com',
     siteName: 'CoFabri',
-    title: 'CoFabri - SaaS Apps for Real Business Needs',
-    description: 'CoFabri builds innovative SaaS applications that solve real business challenges. Discover our suite of productivity tools and AI-powered solutions.',
+    title: 'CoFabri - A Software Studio Building a Portfolio of Independent Apps',
+    description: 'We build and operate a portfolio of independent SaaS apps across industries, and co-build new ones with the industry operators who know those markets best.',
     images: [
       {
         url: '/images/placeholder.jpg',
         width: 1200,
         height: 630,
-        alt: 'CoFabri - SaaS Apps for Real Business Needs',
+        alt: 'CoFabri - A Software Studio Building a Portfolio of Independent Apps',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CoFabri - SaaS Apps for Real Business Needs',
-    description: 'CoFabri builds innovative SaaS applications that solve real business challenges.',
+    title: 'CoFabri - A Software Studio Building a Portfolio of Independent Apps',
+    description: 'We build and operate a portfolio of independent SaaS apps across industries, and co-build new ones with the industry operators who know those markets best.',
     images: ['/images/placeholder.jpg'],
     creator: '@cofabri',
     site: '@cofabri',
@@ -88,11 +84,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-    yahoo: 'your-yahoo-verification-code',
-  },
+  // No `verification` block: the prior one shipped literal placeholder
+  // strings ("your-google-verification-code") which render as a real,
+  // wrong meta tag rather than failing loudly. Add this back with real
+  // Search Console / Bing verification codes once you have them, or skip
+  // it entirely if verification is done via DNS TXT record instead.
   other: {
     'msapplication-TileColor': '#3B82F6',
     'theme-color': '#3B82F6',

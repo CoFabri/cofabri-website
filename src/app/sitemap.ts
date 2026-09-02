@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next'
+import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://cofabri.com'
-  
+
   // Static pages
   const staticPages = [
     {
@@ -15,6 +16,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/apps`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/partners`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
       priority: 0.9,
     },
     {
@@ -61,28 +68,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  // Try to fetch dynamic content for sitemap
-  let dynamicPages: MetadataRoute.Sitemap = [];
-  
-  try {
-    // Fetch knowledge base articles
-    const kbResponse = await fetch(`${baseUrl}/api/knowledge-base`, {
-      next: { revalidate: 3600 } // Cache for 1 hour
-    });
-    
-    if (kbResponse.ok) {
-      const articles: { slug: string; lastModified?: string }[] = await kbResponse.json();
-      const articlePages = articles.map((article) => ({
-        url: `${baseUrl}/knowledge-base/${article.slug}`,
-        lastModified: new Date(article.lastModified || Date.now()),
-        changeFrequency: 'monthly' as const,
-        priority: 0.6,
-      }));
-      dynamicPages = [...dynamicPages, ...articlePages];
-    }
-  } catch (error) {
-    console.error('Error fetching dynamic content for sitemap:', error);
-  }
+  // Fetch dynamic content directly through the shared API client (not an
+  // HTTP round-trip to this site's own /api routes) — avoids depending on
+  // this deployment's own base URL resolving correctly at sitemap-build time.
+  const [apps, articles] = await Promise.all([
+    getApps().catch(() => []),
+    getKnowledgeBaseArticles().catch(() => []),
+  ])
 
-  return [...staticPages, ...dynamicPages];
+  const appPages: MetadataRoute.Sitemap = apps.map((app) => ({
+    url: `${baseUrl}/apps/${app.id}`,
+    lastModified: new Date(app.releaseDate || app.launchDate || Date.now()),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }))
+
+  const articlePages: MetadataRoute.Sitemap = articles.map((article) => ({
+    url: `${baseUrl}/knowledge-base/${article.slug}`,
+    lastModified: new Date(article.lastUpdated || article.publishedAt || Date.now()),
+    changeFrequency: 'monthly' as const,
+    priority: 0.6,
+  }))
+
+  return [...staticPages, ...appPages, ...articlePages]
 }

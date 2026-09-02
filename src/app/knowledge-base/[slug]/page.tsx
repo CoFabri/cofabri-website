@@ -6,9 +6,6 @@ import { Metadata } from 'next';
 import { marked } from 'marked';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
-// Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
-
 marked.setOptions({
   breaks: true,
   gfm: true,

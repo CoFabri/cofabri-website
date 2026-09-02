@@ -7,6 +7,7 @@ import type { App, RoadmapFeature } from '@/lib/api-client';
 import ProductRoadmap from '@/components/marketing/ProductRoadmap';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import RevealSection from '@/components/marketing/RevealSection';
 import { displayAppName } from '@/lib/roadmap-display';
 
 interface DropdownProps {
@@ -65,14 +66,28 @@ function Dropdown({ value, onChange, options, placeholder }: DropdownProps) {
 
 const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled'];
 
-export default function RoadmapsContent() {
+interface RoadmapsContentProps {
+  initialFeatures: RoadmapFeature[];
+  initialAppNames: Record<string, string>;
+}
+
+export default function RoadmapsContent({ initialFeatures, initialAppNames }: RoadmapsContentProps) {
   const [selectedApp, setSelectedApp] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [applications, setApplications] = useState<string[]>([]);
-  const [appNames, setAppNames] = useState<Record<string, string>>({});
-  const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>([]);
+  const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
+  const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>(initialFeatures);
 
+  const applications = useMemo(
+    () => Array.from(new Set(allFeatures.map((f) => f.application).filter((a): a is string => !!a))),
+    [allFeatures]
+  );
+
+  // Server already fetched this page's data (see roadmaps/page.tsx) so the
+  // initial HTML has real content for crawlers — this only runs as a
+  // client-side recovery path if that server fetch came back empty.
   useEffect(() => {
+    if (initialFeatures.length > 0) return;
+
     async function fetchFilterData() {
       try {
         const [roadmapRes, appsRes] = await Promise.all([
@@ -83,7 +98,6 @@ export default function RoadmapsContent() {
         if (roadmapRes.ok) {
           const features = (await roadmapRes.json()) as RoadmapFeature[];
           setAllFeatures(features);
-          setApplications(Array.from(new Set(features.map((f) => f.application).filter((a): a is string => !!a))));
         }
 
         if (appsRes.ok) {
@@ -96,6 +110,7 @@ export default function RoadmapsContent() {
     }
 
     fetchFilterData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialFeatures is a mount-time snapshot, not a reactive dependency
   }, []);
 
   const counts = useMemo(
@@ -179,7 +194,9 @@ export default function RoadmapsContent() {
         </div>
       </div>
 
-      <ProductRoadmap selectedApp={selectedApp} selectedStatus={selectedStatus} appNames={appNames} />
+      <RevealSection>
+        <ProductRoadmap selectedApp={selectedApp} selectedStatus={selectedStatus} appNames={appNames} initialFeatures={allFeatures} />
+      </RevealSection>
     </div>
   );
 }

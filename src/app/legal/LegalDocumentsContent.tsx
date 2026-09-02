@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { CoreLoader } from '@/components/ui/core-loader';
 import { LegalDocument } from '@/lib/api-client';
 import { filterPillClasses } from '@/lib/filter-pill';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
+import RevealSection from '@/components/marketing/RevealSection';
 
 const DOCUMENTS_PER_PAGE = 6;
 
@@ -160,9 +162,10 @@ export default function LegalDocumentsContent() {
         </div>
       )}
 
+      <RevealSection>
       {isLoading ? (
         <div className="mt-16 flex justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+          <CoreLoader size={40} />
         </div>
       ) : filteredDocuments.length === 0 ? (
         <div className="mt-16 text-center text-muted-foreground">No documents found matching those filters.</div>
@@ -215,7 +218,7 @@ export default function LegalDocumentsContent() {
                   href={doc.documentUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
+                  className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"
                 >
                   {card}
                 </a>
@@ -263,6 +266,7 @@ export default function LegalDocumentsContent() {
           )}
         </>
       )}
+      </RevealSection>
     </div>
   );
 }

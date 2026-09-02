@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   LayoutGrid, TrendingUp, BookOpen, LifeBuoy,
-  Menu, Sun, Moon, Monitor, ArrowRight,
+  Menu, Sun, Moon, Monitor, AppWindow,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -105,7 +105,7 @@ const Navbar = () => {
             <TooltipTrigger asChild>
               <Button asChild size="icon" aria-label="Explore apps">
                 <Link href="/apps">
-                  <ArrowRight className="h-4 w-4" />
+                  <AppWindow className="h-4 w-4" />
                 </Link>
               </Button>
             </TooltipTrigger>

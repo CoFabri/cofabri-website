@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { App, RoadmapFeature } from '@/lib/api-client';
+import { CoreLoader } from '@/components/ui/core-loader';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RoadmapOverlay from '@/components/marketing/RoadmapOverlay';
@@ -52,18 +53,32 @@ function groupByMonth(features: RoadmapFeature[]): MonthGroup[] {
   return sorted;
 }
 
-export default function ChangelogContent() {
+interface ChangelogContentProps {
+  initialShipped: RoadmapFeature[];
+  initialAppNames: Record<string, string>;
+}
+
+export default function ChangelogContent({ initialShipped, initialAppNames }: ChangelogContentProps) {
   const searchParams = useSearchParams();
   const [selectedApp, setSelectedApp] = useState<string>('');
-  const [applications, setApplications] = useState<string[]>([]);
-  const [appNames, setAppNames] = useState<Record<string, string>>({});
-  const [shipped, setShipped] = useState<RoadmapFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
+  const [shipped, setShipped] = useState<RoadmapFeature[]>(initialShipped);
+  // Server already fetched this page's data (see changelog/page.tsx) so the
+  // initial HTML has real content for crawlers — this only stays "loading"
+  // if that server fetch came back empty, as a client-side recovery path.
+  const [isLoading, setIsLoading] = useState(initialShipped.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<RoadmapFeature | null>(null);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
+  const applications = useMemo(
+    () => Array.from(new Set(shipped.map((f) => f.application).filter((a): a is string => !!a))),
+    [shipped]
+  );
+
   useEffect(() => {
+    if (initialShipped.length > 0) return;
+
     async function fetchData() {
       try {
         const [roadmapRes, appsRes] = await Promise.all([
@@ -73,11 +88,7 @@ export default function ChangelogContent() {
 
         if (roadmapRes.ok) {
           const features = (await roadmapRes.json()) as RoadmapFeature[];
-          const released = features.filter((f) => f.status === 'Released');
-          setShipped(released);
-          setApplications(
-            Array.from(new Set(released.map((f) => f.application).filter((a): a is string => !!a)))
-          );
+          setShipped(features.filter((f) => f.status === 'Released'));
         }
 
         if (appsRes.ok) {
@@ -93,6 +104,7 @@ export default function ChangelogContent() {
     }
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialShipped is a mount-time snapshot, not a reactive dependency
   }, []);
 
   // Deep link to a single entry via ?expand=<id>
@@ -176,7 +188,7 @@ export default function ChangelogContent() {
 
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+          <CoreLoader size={40} />
         </div>
       ) : error ? (
         <div className="py-16 text-center">

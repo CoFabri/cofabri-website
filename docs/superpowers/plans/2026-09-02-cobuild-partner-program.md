@@ -1009,7 +1009,7 @@ git commit -m "feat: add /api/partners route proxying to cofabri-api"
 - Modify: `src/components/marketing/PageHero.tsx` (widen the `title` prop type from `string` to `React.ReactNode` so it can render `CoBuildWordmark` alongside plain text)
 
 **Interfaces:**
-- Consumes: `PageHero` (widened in Step 1), `Breadcrumbs`, `CoBuildWordmark` (Task 4), `PartnerForm` (Task 5).
+- Consumes: `PageHero` (widened in Step 1), `Breadcrumbs`, `CoBuildWordmark` (Task 4), `PartnerForm` (Task 5), `StructuredData`'s `'service'` type (added 2026-09-02 in the SEO/technical-audit pass — already present in `src/components/marketing/StructuredData.tsx` by the time this plan runs; if it isn't, add the case shown in that file's git history before Step 3).
 - Produces: the `/partners` route, linked from Task 8 (homepage section) and Task 9 (footer nav).
 
 - [ ] **Step 1: Widen `PageHero`'s `title` prop**
@@ -1054,7 +1054,17 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Co-Build',
   description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',
-  keywords: ['partnership', 'co-build', 'industry partner', 'equity partnership'],
+  // Keywords chosen against the venture-studio / technical-co-founder search
+  // space, not generic "partnership" terms — see the 2026-09-02 SEO strategy
+  // doc's Co-Build section for the full reasoning and competitive framing.
+  keywords: [
+    'co-build a SaaS product',
+    'software development partnership',
+    'equity partnership software',
+    'partner with a software studio',
+    'technical co-founder alternative',
+    'industry partner',
+  ],
   alternates: {
     canonical: '/partners',
   },
@@ -1093,6 +1103,7 @@ import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
 import CoBuildWordmark from './CoBuildWordmark';
 import PartnerForm from './PartnerForm';
+import StructuredData from './StructuredData';
 
 const STEPS = [
   {
@@ -1112,6 +1123,15 @@ const STEPS = [
 export default function PartnersPageContent() {
   return (
     <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
+      <StructuredData
+        type="service"
+        data={{
+          name: 'Co-Build',
+          description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',
+          serviceType: 'SaaS co-build partnership',
+          audienceType: 'Industry operators with a customer base',
+        }}
+      />
       <div className="mb-14">
         <Breadcrumbs items={[{ name: 'Co-Build', href: '/partners' }]} />
       </div>

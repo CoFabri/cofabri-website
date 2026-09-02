@@ -5,7 +5,10 @@ async function apiFetch<T>(path: string): Promise<T> {
   if (!COFABRI_API_BASE_URL) {
     throw new Error('COFABRI_API_BASE_URL is not configured');
   }
-  const res = await fetch(`${COFABRI_API_BASE_URL}${path}`, { cache: 'no-store' });
+  // 5-minute ISR window: CMS-driven marketing content doesn't need per-request
+  // freshness, and this is what lets every page reading through this client
+  // render statically/incrementally instead of force-dynamic on every request.
+  const res = await fetch(`${COFABRI_API_BASE_URL}${path}`, { next: { revalidate: 300 } });
   if (!res.ok) {
     throw new Error(`cofabri-api error on ${path}: ${res.status} ${res.statusText}`);
   }
@@ -167,19 +170,10 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
   };
 }
 
-// CertiFi Central was sunset and no longer appears in /api/apps, but its KB articles
-// are still served by the content API (they have no `applications` link to filter on
-// cleanly) — hide them here by title until the source data is cleaned up.
-const RETIRED_ARTICLE_TITLE_PATTERN = /certifi central/i;
-
-function isRetiredArticle(article: KnowledgeBaseArticle): boolean {
-  return RETIRED_ARTICLE_TITLE_PATTERN.test(article.title);
-}
-
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base');
-    return rows.map(mapKbArticle).filter((article) => !isRetiredArticle(article));
+    return rows.map(mapKbArticle);
   } catch (error) {
     console.error('Error fetching knowledge base articles:', error);
     return [];
@@ -189,8 +183,7 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
 export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
   try {
     const row = await apiFetch<KbArticleRow>(`/web/content/knowledge-base/${encodeURIComponent(slug)}`);
-    const article = mapKbArticle(row);
-    return isRetiredArticle(article) ? null : article;
+    return mapKbArticle(row);
   } catch (error) {
     console.error('Error fetching knowledge base article:', error);
     return null;
@@ -207,7 +200,7 @@ export async function getKnowledgeBaseArticlesBySlugs(slugs: string[]): Promise<
 export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base?featured=true');
-    return rows.map(mapKbArticle).filter((article) => !isRetiredArticle(article)).slice(0, 6);
+    return rows.map(mapKbArticle).slice(0, 6);
   } catch (error) {
     console.error('Error fetching featured knowledge base articles:', error);
     return [];
@@ -345,82 +338,6 @@ export async function getLegalDocument(id: string): Promise<LegalDocument | null
   } catch (error) {
     console.error('Error fetching legal document:', error);
     return null;
-  }
-}
-
-export interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  company: string;
-  content: string;
-  rating: number;
-  image: string;
-  isActive: boolean;
-  order: number;
-  createdAt: string;
-  apps: string[];
-  featured: boolean;
-}
-
-interface TestimonialRow {
-  id: string;
-  name: string;
-  role_position: string | null;
-  company: string | null;
-  content: string | null;
-  rating: number | null;
-  profile_image_url: string | null;
-  is_active: boolean;
-  is_featured: boolean;
-  created_at: string;
-  apps?: string[];
-}
-
-function mapTestimonial(row: TestimonialRow): Testimonial {
-  return {
-    id: row.id,
-    name: row.name,
-    role: row.role_position || '',
-    company: row.company || '',
-    content: row.content || '',
-    rating: row.rating || 0,
-    image: row.profile_image_url || '/images/placeholder.jpg',
-    isActive: row.is_active,
-    order: 0,
-    createdAt: row.created_at,
-    apps: row.apps || [],
-    featured: row.is_featured,
-  };
-}
-
-export async function getTestimonials(randomCount?: number): Promise<Testimonial[]> {
-  try {
-    const rows = await apiFetch<TestimonialRow[]>('/web/content/testimonials');
-    const testimonials = rows.map(mapTestimonial);
-
-    if (randomCount && randomCount > 0) {
-      const featured = testimonials.filter((t) => t.featured);
-      const nonFeatured = testimonials.filter((t) => !t.featured);
-      const shuffle = (arr: Testimonial[]) => {
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      };
-      const shuffledFeatured = shuffle([...featured]);
-      const shuffledNonFeatured = shuffle([...nonFeatured]);
-      if (shuffledFeatured.length >= randomCount) {
-        return shuffledFeatured.slice(0, randomCount);
-      }
-      return [...shuffledFeatured, ...shuffledNonFeatured].slice(0, randomCount);
-    }
-
-    return testimonials;
-  } catch (error) {
-    console.error('Error fetching testimonials:', error);
-    return [];
   }
 }
 

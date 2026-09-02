@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import { useSearchParams } from 'next/navigation';
 import { roadmapStatusPillClasses, roadmapStatusDotClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
+import { CoreLoader } from '@/components/ui/core-loader';
 import RoadmapOverlay from './RoadmapOverlay';
 
 // Helper function to parse quarter and year from milestone string
@@ -27,17 +28,45 @@ export const compareMilestones = (a: string, b: string) => {
   return milestoneB.quarter - milestoneA.quarter;
 };
 
+function groupByMilestone(
+  features: RoadmapFeature[],
+  selectedApp: string,
+  selectedStatus: string
+): { title: string; features: RoadmapFeature[] }[] {
+  const groups = features.reduce((acc: { title: string; features: RoadmapFeature[] }[], feature) => {
+    if (selectedApp && feature.application !== selectedApp) return acc;
+    if (selectedStatus && feature.status !== selectedStatus) return acc;
+
+    const milestone = acc.find((m) => m.title === feature.milestone);
+    if (milestone) {
+      milestone.features.push(feature);
+    } else {
+      acc.push({ title: feature.milestone, features: [feature] });
+    }
+    return acc;
+  }, []);
+
+  groups.sort((a, b) => compareMilestones(a.title, b.title));
+  return groups;
+}
+
 interface ProductRoadmapProps {
   selectedApp: string;
   selectedStatus: string;
   appNames: Record<string, string>;
+  initialFeatures: RoadmapFeature[];
 }
 
-export default function ProductRoadmap({ selectedApp, selectedStatus, appNames }: ProductRoadmapProps) {
+export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, initialFeatures }: ProductRoadmapProps) {
   const searchParams = useSearchParams();
-  const [features, setFeatures] = useState<RoadmapFeature[]>([]);
-  const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [features, setFeatures] = useState<RoadmapFeature[]>(initialFeatures);
+  const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>(() =>
+    groupByMilestone(initialFeatures, selectedApp, selectedStatus)
+  );
+  // Server already fetched this page's data (see roadmaps/page.tsx) so the
+  // initial HTML has real content for crawlers — this only stays "loading"
+  // if that server fetch came back empty, as a client-side recovery path.
+  const [isLoading, setIsLoading] = useState(initialFeatures.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<RoadmapFeature | null>(null);
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -76,22 +105,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames }
 
         const roadmapFeatures = (await response.json()) as RoadmapFeature[];
         setFeatures(roadmapFeatures);
-
-        const groupedMilestones = roadmapFeatures.reduce((acc: { title: string; features: RoadmapFeature[] }[], feature) => {
-          if (selectedApp && feature.application !== selectedApp) return acc;
-          if (selectedStatus && feature.status !== selectedStatus) return acc;
-
-          const milestone = acc.find((m) => m.title === feature.milestone);
-          if (milestone) {
-            milestone.features.push(feature);
-          } else {
-            acc.push({ title: feature.milestone, features: [feature] });
-          }
-          return acc;
-        }, []);
-
-        groupedMilestones.sort((a, b) => compareMilestones(a.title, b.title));
-        setMilestones(groupedMilestones);
+        setMilestones(groupByMilestone(roadmapFeatures, selectedApp, selectedStatus));
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching roadmap:', err);
@@ -112,7 +126,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames }
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+        <CoreLoader size={40} />
       </div>
     );
   }
@@ -148,7 +162,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames }
                 type="button"
                 id={`roadmap-feature-${item.id}`}
                 onClick={() => openFeature(item)}
-                className="flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors hover:bg-muted sm:items-center sm:gap-6 sm:rounded-lg sm:px-3 sm:-mx-3"
+                className="group flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors duration-200 hover:bg-muted sm:items-center sm:gap-6 sm:rounded-lg sm:px-3 sm:-mx-3"
               >
                 <span className={`mt-1.5 block h-[9px] w-[9px] flex-shrink-0 rounded-full sm:mt-0 ${roadmapStatusDotClasses(item.status)}`} />
                 <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
@@ -169,7 +183,9 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames }
                     </span>
                     <span className="font-mono text-xs text-ink-faint sm:hidden">{formatRoadmapWhen(item)}</span>
                   </div>
-                  <span className="hidden text-sm font-semibold text-ink-muted sm:block sm:flex-shrink-0">Details →</span>
+                  <span className="hidden text-sm font-semibold text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5 sm:block sm:flex-shrink-0">
+                    Details →
+                  </span>
                 </div>
               </button>
             ))}

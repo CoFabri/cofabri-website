@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import { CoreLoader } from '@/components/ui/core-loader';
 import ChangelogContent from './ChangelogContent';
-
-// Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
+import { getApps, getRoadmapFeatures } from '@/lib/api-client';
 
 export const metadata: Metadata = {
   title: 'Changelog',
@@ -23,16 +22,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
+  const [features, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
+  const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
+  const shipped = features.filter((f) => f.status === 'Released');
+
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+          <CoreLoader size={52} />
         </div>
       }
     >
-      <ChangelogContent />
+      <ChangelogContent initialShipped={shipped} initialAppNames={appNames} />
     </Suspense>
   );
 }

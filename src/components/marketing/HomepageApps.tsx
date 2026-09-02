@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { App, RoadmapFeature } from '@/lib/api-client';
 import type { SystemStatus } from '@/lib/airtable';
+import { CoreLoader } from '@/components/ui/core-loader';
 import confetti from 'canvas-confetti';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import RevealSection from './RevealSection';
 import AppRow from './AppRow';
-import { statusPillClasses, actionLabel, actionHref } from '@/lib/app-display';
+import { statusPillClasses, actionLabel, actionHref, appMomentum, markPalette } from '@/lib/app-display';
 import { shippedInLastNDays } from '@/lib/roadmap-display';
 
 interface HomepageAppsProps {
@@ -121,7 +122,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
       <section className="py-24 bg-background">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <div className="flex justify-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+            <CoreLoader size={40} />
           </div>
         </div>
       </section>
@@ -171,64 +172,69 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border md:grid-cols-2">
-          <div className="flex flex-col justify-between gap-9 border-b border-border p-9 md:border-b-0 md:border-r">
-            <div>
-              <div className="mb-5 flex items-center gap-2.5">
-                <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
-                  Featured
-                </span>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(featured.status)}`}>
-                  {featured.status}
-                </span>
-              </div>
-              <h3 className="m-0 text-2xl font-semibold tracking-[-0.025em] text-foreground sm:text-[30px]">
-                {featured.name}
-              </h3>
-              {featured.description && (
-                <p className="mt-3 max-w-[420px] text-[17px] leading-[1.6] text-muted-foreground">
-                  {featured.description}
-                </p>
+        <div className="rounded-2xl border border-border bg-card p-9">
+          <div className="flex flex-wrap items-start justify-between gap-7">
+            <div className="flex min-w-0 items-center gap-4">
+              {featured.faviconUrl ? (
+                <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border">
+                  <Image
+                    src={featured.faviconUrl}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    unoptimized={process.env.NODE_ENV === 'development'}
+                  />
+                </div>
+              ) : (
+                <div
+                  className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[14px] text-2xl font-bold tracking-[-0.02em] ${markPalette(featured.id)}`}
+                >
+                  {featured.name.charAt(0).toUpperCase()}
+                </div>
               )}
-              <ul className="mt-7 flex flex-col">
-                {[featured.feature1, featured.feature2, featured.feature3]
-                  .filter((f): f is string => !!f)
-                  .map((f, i) => (
-                    <li
-                      key={f}
-                      className="flex gap-3.5 border-t border-border py-3.5 text-[15px] text-foreground first:border-t-0"
-                    >
-                      <span className="pt-0.5 font-mono text-xs text-ink-faint">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-              </ul>
+              <div>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                    Featured
+                  </span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(featured.status)}`}>
+                    {featured.status}
+                  </span>
+                </div>
+                <h3 className="m-0 text-2xl font-semibold tracking-[-0.025em] text-foreground sm:text-[30px]">
+                  {featured.name}
+                </h3>
+              </div>
+            </div>
+            <div className="mt-1 w-full border-t border-border pt-4 text-left md:mt-0 md:w-auto md:flex-shrink-0 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-right">
+              <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-faint">Momentum</div>
+              <div className="mt-1 text-[15.5px] font-semibold text-foreground">{appMomentum(featured, roadmap)}</div>
+            </div>
+          </div>
+
+          {featured.description && (
+            <p className="mt-6 max-w-[640px] text-[16px] leading-[1.6] text-muted-foreground">{featured.description}</p>
+          )}
+
+          <div className="mt-7 flex flex-wrap items-end justify-between gap-7 border-t border-border pt-6">
+            <div className="flex flex-wrap gap-8">
+              {[featured.feature1, featured.feature2, featured.feature3]
+                .filter((f): f is string => !!f)
+                .map((f, i) => (
+                  <div key={f} className="max-w-[220px]">
+                    <span className="block font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="mt-1 block text-sm leading-[1.45] text-foreground">{f}</span>
+                  </div>
+                ))}
             </div>
             <Link
               href={actionHref(featured)}
               target={featured.status !== 'In Development' ? '_blank' : undefined}
               rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
-              className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
+              className="inline-flex w-fit flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
             >
               {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowUpRight className="h-3.5 w-3.5" />}
             </Link>
-          </div>
-
-          <div className="flex items-center justify-center bg-muted p-9">
-            {featured.screenshot ? (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[10px] border border-border">
-                <Image src={featured.screenshot} alt={featured.name} fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
-              </div>
-            ) : (
-              <div
-                className="flex aspect-[4/3] w-full items-center justify-center rounded-[10px] border border-border"
-                style={{ backgroundImage: 'repeating-linear-gradient(135deg, var(--surface) 0 9px, var(--surface-hover) 9px 18px)' }}
-              >
-                <span className="font-mono text-xs tracking-[0.04em] text-ink-faint">product shot — {featured.name}</span>
-              </div>
-            )}
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CoreLoader } from '@/components/ui/core-loader';
 
 interface NewsletterSignupProps {
   className?: string;
@@ -137,7 +138,14 @@ export default function NewsletterSignup({
           </div>
         </div>
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
+          {isSubmitting ? (
+            <>
+              <CoreLoader size={16} tone="inverted" />
+              Subscribing...
+            </>
+          ) : (
+            'Subscribe Now'
+          )}
         </Button>
       </form>
       {error && (

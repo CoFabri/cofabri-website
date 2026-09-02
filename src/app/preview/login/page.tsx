@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { CoreLoader } from '@/components/ui/core-loader';
 
 interface PreviewContent {
   id: string;
@@ -18,7 +19,7 @@ export default function LoginPreviewPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <CoreLoader size={52} />
       </div>
     }>
       <LoginPreviewContent />
@@ -76,7 +77,7 @@ function LoginPreviewContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <CoreLoader size={52} />
       </div>
     );
   }

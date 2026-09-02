@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import { CoreLoader } from '@/components/ui/core-loader';
 import KnowledgeBaseContent from './KnowledgeBaseContent';
-
-// Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
+import { getKnowledgeBaseArticles } from '@/lib/api-client';
 
 export const metadata: Metadata = {
   title: 'Knowledge Base',
@@ -23,14 +22,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function KnowledgeBasePage() {
+export default async function KnowledgeBasePage() {
+  const articles = await getKnowledgeBaseArticles();
+
   return (
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+        <CoreLoader size={52} />
       </div>
     }>
-      <KnowledgeBaseContent />
+      <KnowledgeBaseContent initialArticles={articles} />
     </Suspense>
   );
 } 

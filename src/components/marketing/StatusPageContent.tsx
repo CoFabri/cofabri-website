@@ -6,6 +6,7 @@ import { SystemStatus } from '@/lib/airtable';
 import type { App } from '@/lib/api-client';
 import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
+import RevealSection from './RevealSection';
 
 interface StatusPageContentProps {
   initialStatuses: SystemStatus[];
@@ -139,7 +140,7 @@ export function StatusPageContent({ initialStatuses, apps }: StatusPageContentPr
         }
       />
 
-      <div className="mt-11 overflow-hidden rounded-2xl border border-border">
+      <RevealSection className="mt-11 overflow-hidden rounded-2xl border border-border">
         <div className="flex items-center justify-between bg-muted px-7 py-5">
           <span className="text-[15px] font-semibold text-foreground">Services</span>
         </div>
@@ -165,10 +166,10 @@ export function StatusPageContent({ initialStatuses, apps }: StatusPageContentPr
             </span>
           </div>
         ))}
-      </div>
+      </RevealSection>
 
       {(openIncidents.length > 0 || resolvedIncidents.length > 0) && (
-        <>
+        <RevealSection>
           <h2 className="m-0 mt-[72px] mb-6 text-[32px] font-semibold tracking-[-0.025em] text-foreground">
             Recent incidents
           </h2>
@@ -206,7 +207,7 @@ export function StatusPageContent({ initialStatuses, apps }: StatusPageContentPr
               )}
             </div>
           ))}
-        </>
+        </RevealSection>
       )}
     </div>
   );

@@ -1,11 +1,10 @@
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import { CoreLoader } from '@/components/ui/core-loader';
 import Contact from '@/components/marketing/Contact';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
-
-// Force dynamic rendering for this page
-export const dynamic = 'force-dynamic';
+import RevealSection from '@/components/marketing/RevealSection';
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -38,9 +37,9 @@ function ContactPageContent() {
         subtitle="Sales questions, partnerships, or something that doesn't fit a support ticket."
       />
 
-      <div className="mt-14">
+      <RevealSection className="mt-14">
         <Contact />
-      </div>
+      </RevealSection>
     </div>
   );
 }
@@ -50,7 +49,7 @@ export default function ContactPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+          <CoreLoader size={52} />
         </div>
       }
     >

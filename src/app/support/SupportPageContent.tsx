@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import SupportForm from '@/components/marketing/SupportForm';
+import RevealSection from '@/components/marketing/RevealSection';
 
 const SUPPORT_CARDS = [
   {
@@ -38,21 +39,21 @@ export default function SupportPageContent() {
         subtitle="A real person replies within one business day. Check the three below first — they solve most things faster than we can."
       />
 
-      <div className="mt-11 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <RevealSection className="mt-11 grid grid-cols-1 gap-5 sm:grid-cols-3">
         {SUPPORT_CARDS.map((card) => (
           <Link
             key={card.title}
             href={card.href}
-            className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
+            className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"
           >
             <div className="text-lg font-semibold tracking-[-0.015em]">{card.title}</div>
             <p className="mt-2.5 text-[15px] leading-[1.55] text-ink-muted">{card.body}</p>
             <span className="mt-4 inline-block text-[15px] font-semibold text-primary">{card.action} →</span>
           </Link>
         ))}
-      </div>
+      </RevealSection>
 
-      <div className="mt-[72px] grid grid-cols-1 gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
+      <RevealSection className="mt-[72px] grid grid-cols-1 gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
         <div>
           <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
             Open a ticket
@@ -69,7 +70,7 @@ export default function SupportPageContent() {
           </div>
         </div>
         <SupportForm />
-      </div>
+      </RevealSection>
     </div>
   );
 }

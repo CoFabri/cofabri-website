@@ -20,14 +20,8 @@ Disallow: /api/preview/*/rec*
 # Disallow any URLs with Airtable record IDs
 Disallow: /*/rec*
 
-# Allow important pages
-Allow: /apps/
-Allow: /knowledge-base/
-Allow: /contact/
-Allow: /roadmaps/
-Allow: /status/
-Allow: /support/
-Allow: /legal/
+# Everything else is covered by the default "Allow: /" above — no need to
+# re-list individual pages.
 
 # Crawl delay (optional)
 Crawl-delay: 1

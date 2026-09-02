@@ -4,7 +4,6 @@ import {
   getKnowledgeBaseArticle,
   getRoadmapFeatures,
   getLegalDocument,
-  getTestimonials,
   getBanners,
   getMarketingPopupConfig,
 } from '@/lib/api-client';
@@ -13,15 +12,16 @@ import { getSystemStatus } from '@/lib/airtable';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
-// Content types that are not (yet) available for preview because api-client.ts
-// has no equivalent single-item/list function for them. `authors` is a known
-// gap: no getAuthors()/getAuthor() exists anywhere in api-client.ts, and the
-// old Airtable-based preview never had a dedicated rendering card for it
-// either. Surfacing a clear 404 here (rather than crashing) documents the gap
-// for a human to decide whether an authors preview is still needed and, if
-// so, whether a future task should add getAuthors()/getAuthor() to
-// api-client.ts.
-const UNAVAILABLE_TYPES = new Set(['authors']);
+// Content types that are not available for preview, and why. `authors` is a
+// known gap: no getAuthors()/getAuthor() exists anywhere in api-client.ts,
+// and the old Airtable-based preview never had a dedicated rendering card
+// for it either. `testimonial` is different — testimonials were removed
+// from both the app and the database entirely, so there's nothing left to
+// preview, permanently rather than pending future work.
+const UNAVAILABLE_TYPES: Record<string, string> = {
+  authors: 'Preview for content type "authors" is not available yet. api-client.ts has no getAuthors()/getAuthor() function — this is a known gap from the Airtable-to-Supabase migration.',
+  testimonial: 'Preview for content type "testimonial" is no longer available. Testimonials were removed from the app and the database.',
+};
 
 // Required fields per type, used to compute the "ready to post" state. Field
 // names match the properties actually present on the objects returned below
@@ -32,7 +32,6 @@ const requiredFieldsMap: Record<string, string[]> = {
   apps: ['name', 'description', 'status', 'category', 'url'],
   roadmap: ['name', 'description', 'status'],
   legal: ['title', 'documentType', 'status'],
-  testimonial: ['name', 'role', 'company', 'content', 'rating', 'image'],
   banner: ['title', 'message', 'bannerType'],
   marketing: ['title', 'content', 'buttonText', 'buttonLink'],
   popup: ['title', 'content', 'buttonText', 'buttonLink'],
@@ -47,14 +46,9 @@ export async function GET(
     const { type, id } = await params;
     console.log('Fetching preview for:', { type, id });
 
-    if (UNAVAILABLE_TYPES.has(type)) {
-      console.error(`Preview type "${type}" is not available: no matching api-client.ts function exists.`);
-      return NextResponse.json(
-        {
-          error: `Preview for content type "${type}" is not available yet. api-client.ts has no getAuthors()/getAuthor() function — this is a known gap from the Airtable-to-Supabase migration.`,
-        },
-        { status: 404 }
-      );
+    if (type in UNAVAILABLE_TYPES) {
+      console.error(`Preview type "${type}" is not available: ${UNAVAILABLE_TYPES[type]}`);
+      return NextResponse.json({ error: UNAVAILABLE_TYPES[type] }, { status: 404 });
     }
 
     let payload: Record<string, unknown> | null = null;
@@ -84,13 +78,6 @@ export async function GET(
       case 'legal': {
         const doc = await getLegalDocument(id);
         if (doc) payload = { ...doc, id: doc.id };
-        break;
-      }
-
-      case 'testimonial': {
-        const testimonials = await getTestimonials();
-        const testimonial = testimonials.find((t) => t.id === id) || null;
-        if (testimonial) payload = { ...testimonial, id: testimonial.id };
         break;
       }
 

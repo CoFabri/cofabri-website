@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { CoreLoader } from '@/components/ui/core-loader';
 import AppPreviewCard from '@/components/marketing/AppPreviewCard';
-import TestimonialPreviewCard from '@/components/marketing/TestimonialPreviewCard';
 import type { App } from '@/lib/api-client';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
@@ -13,11 +13,7 @@ interface PreviewContent {
   id: string;
   type: string;
   name?: string;
-  role?: string;
-  company?: string;
   content?: string;
-  rating?: number;
-  image?: string;
   description?: string;
   excerpt?: string;
   screenshot?: string;
@@ -127,7 +123,6 @@ export default function PreviewPage() {
           apps: ['name', 'description', 'status', 'category', 'url'],
           roadmap: ['name', 'description', 'status'],
           legal: ['title', 'documentType', 'status'],
-          testimonial: ['name', 'role', 'company', 'content', 'rating', 'image'],
           banner: ['title', 'message', 'bannerType'],
           marketing: ['title', 'content', 'buttonText', 'buttonLink'],
           popup: ['title', 'content', 'buttonText', 'buttonLink'],
@@ -149,13 +144,6 @@ export default function PreviewPage() {
           ],
           roadmap: ['milestone', 'releaseType', 'releasedDate', 'application', 'applicationUrl', 'featuresAndChanges', 'releaseNotes'],
           legal: ['description', 'version', 'lastUpdated', 'documentUrl', 'associatedApp', 'category', 'isPublic', 'tags'],
-          testimonial: [
-            'featured',
-            'order',
-            'apps',
-            'isActive',
-            'createdAt'
-          ],
           banner: ['linkUrl', 'linkText', 'backgroundColor', 'textColor', 'priority'],
           marketing: ['backgroundColor', 'textColor', 'buttonColor', 'position', 'delay', 'isEnabled'],
           popup: ['backgroundColor', 'textColor', 'buttonColor', 'position', 'delay', 'isEnabled'],
@@ -260,7 +248,7 @@ export default function PreviewPage() {
   if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <CoreLoader size={52} />
       </div>
     );
   }
@@ -747,34 +735,6 @@ export default function PreviewPage() {
                             </div>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* Testimonial Preview */}
-          {content.type === 'testimonial' && content.name && content.role && content.company && content.content && content.rating && content.image && (
-            <section className="bg-background">
-              <div className="container mx-auto px-4 py-12">
-                <div className="flex justify-center">
-                  <div className="w-full max-w-2xl">
-                    <div className="bg-card rounded-2xl shadow-sm overflow-hidden border border-border">
-                      <div className="p-6">
-                        <h2 className="text-lg font-semibold text-foreground mb-4">Testimonial Preview</h2>
-                        <TestimonialPreviewCard testimonial={{
-                          id: content.id,
-                          name: content.name,
-                          role: content.role,
-                          company: content.company,
-                          content: content.content,
-                          rating: content.rating,
-                          image: typeof content.image === 'string' && content.image
-                            ? content.image
-                            : '/images/placeholder.jpg'
-                        }} />
                       </div>
                     </div>
                   </div>

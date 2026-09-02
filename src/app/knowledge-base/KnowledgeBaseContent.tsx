@@ -5,10 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { CoreLoader } from '@/components/ui/core-loader';
 import { KnowledgeBaseArticle } from '@/lib/api-client';
 import { filterPillClasses } from '@/lib/filter-pill';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
+import RevealSection from '@/components/marketing/RevealSection';
+import StructuredData from '@/components/marketing/StructuredData';
 
 const ARTICLES_PER_PAGE = 6;
 
@@ -18,15 +21,22 @@ function formatDate(value: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function KnowledgeBaseContent() {
+interface KnowledgeBaseContentProps {
+  initialArticles: KnowledgeBaseArticle[];
+}
+
+export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [articles, setArticles] = useState<KnowledgeBaseArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [articles, setArticles] = useState<KnowledgeBaseArticle[]>(initialArticles);
+  // Server already fetched this page's data (see knowledge-base/page.tsx) so
+  // the initial HTML has real content for crawlers — this only stays "loading"
+  // if that server fetch came back empty, as a client-side recovery path.
+  const [isLoading, setIsLoading] = useState(initialArticles.length === 0);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Initialize from URL parameters
@@ -105,6 +115,12 @@ export default function KnowledgeBaseContent() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
+      {articles.length > 0 && (
+        <StructuredData
+          type="itemList"
+          data={{ items: articles.map((a) => ({ name: a.title, url: `https://cofabri.com/knowledge-base/${a.slug}` })) }}
+        />
+      )}
       <div className="mb-14">
         <Breadcrumbs items={[{ name: 'Knowledge base', href: '/knowledge-base' }]} />
       </div>
@@ -149,9 +165,10 @@ export default function KnowledgeBaseContent() {
         </div>
       )}
 
+      <RevealSection>
       {isLoading ? (
         <div className="mt-16 flex justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
+          <CoreLoader size={40} />
         </div>
       ) : filteredArticles.length === 0 ? (
         <div className="mt-16 text-center text-muted-foreground">No articles found matching those filters.</div>
@@ -162,7 +179,7 @@ export default function KnowledgeBaseContent() {
               <Link
                 key={article.id}
                 href={`/knowledge-base/${article.slug}`}
-                className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
+                className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"
               >
                 <div className="flex items-center gap-2.5">
                   {article.logoUrl && (
@@ -229,6 +246,7 @@ export default function KnowledgeBaseContent() {
           )}
         </>
       )}
+      </RevealSection>
     </div>
   );
 }

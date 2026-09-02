@@ -5,6 +5,7 @@ import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import RevealSection from './RevealSection';
+import { CoreLoader } from '@/components/ui/core-loader';
 
 interface Column {
   title: string;
@@ -45,7 +46,7 @@ export default function CompactRoadmap() {
       <section className="py-24 bg-muted">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <div className="flex justify-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
+            <CoreLoader size={40} surface="var(--muted)" />
           </div>
         </div>
       </section>
