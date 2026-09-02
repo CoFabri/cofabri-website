@@ -38,3 +38,11 @@ export function formatRoadmapWhen(feature: Pick<RoadmapFeature, 'releasedDate' |
   }
   return feature.milestone || 'TBD';
 }
+
+// Roadmap items can reference an app_id cofabri-api's /apps endpoint no longer
+// (or doesn't yet) return — fall back to a title-cased version of the id
+// rather than showing it lowercase next to real app names.
+export function displayAppName(id: string, appNames: Record<string, string>): string {
+  if (appNames[id]) return appNames[id];
+  return id.charAt(0).toUpperCase() + id.slice(1);
+}

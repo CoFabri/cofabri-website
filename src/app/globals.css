@@ -34,6 +34,16 @@
   --on-accent: #FFFFFF;
   --accent-tint: #EAF2FE;
 
+  /* aurora (decorative hero background only, not a semantic token) — built from the
+     real CoFabri palette: blue-700/blue-500/blue-300 from the Component Sheet's
+     Colour section, plus a single touch of --success. */
+  --aurora-1: #0847A0;
+  --aurora-2: var(--accent);
+  --aurora-3: #7FB2F5;
+  --aurora-opacity-a: 0.12;
+  --aurora-opacity-b: 0.1;
+  --aurora-opacity-c: 0.09;
+
   /* status */
   --success: #12A150;
   --warning: #D98212;
@@ -85,6 +95,16 @@
   --accent-hover: #83B8F8;
   --on-accent: #0B1B2B;
   --accent-tint: rgba(90, 160, 245, 0.14);
+
+  /* aurora (decorative hero background only, not a semantic token) — same real
+     swatches, dark-mode pairing: blue-700 stays as a deep note, --accent/--accent-hover
+     stand in for the mid/pale blue steps, --success for the one green touch. */
+  --aurora-1: #0847A0;
+  --aurora-2: var(--accent);
+  --aurora-3: var(--accent-hover);
+  --aurora-opacity-a: 0.3;
+  --aurora-opacity-b: 0.24;
+  --aurora-opacity-c: 0.2;
 
   /* status */
   --success: #3ECF7F;
@@ -567,7 +587,7 @@
   }
 
   .markdown-content ol {
-    counter-reset: list-item 1 !important;
+    counter-reset: list-item 0 !important;
   }
 
   .markdown-content ol li {
@@ -609,7 +629,7 @@
   }
 
   .prose .markdown-content ol {
-    counter-reset: list-item 1 !important;
+    counter-reset: list-item 0 !important;
   }
 
   .prose .markdown-content ol li {
@@ -619,6 +639,16 @@
   .markdown-content strong {
     font-weight: 600;
     color: var(--foreground);
+  }
+
+  .markdown-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .markdown-content a:hover {
+    color: var(--accent-hover);
   }
 
   .markdown-content h1, 
@@ -751,4 +781,153 @@
 
 main {
   min-height: 100vh;
+}
+
+/* Hero aurora background (decorative, homepage hero) */
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Elongated, rotated gradient ribbons (not circular blobs) so the effect reads as
+   flowing aurora curtains: color travels along the ribbon (flow) while the ribbon
+   itself gently rotates/stretches (wave). The two animations touch different
+   properties (background-position vs. transform) so they run concurrently without
+   conflicting. */
+.hero-aurora-curtain {
+  position: absolute;
+  left: -25%;
+  width: 150%;
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  filter: blur(70px);
+  will-change: transform, background-position;
+}
+
+.dark .hero-aurora-curtain {
+  mix-blend-mode: screen;
+}
+
+.hero-aurora-a {
+  top: -190px;
+  height: 260px;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    var(--aurora-1) 16%,
+    transparent 32%,
+    var(--aurora-3) 48%,
+    transparent 64%,
+    var(--aurora-2) 80%,
+    transparent 100%
+  );
+  opacity: var(--aurora-opacity-a);
+  transform: rotate(-8deg);
+  animation:
+    hero-aurora-flow-a 24s ease-in-out infinite alternate,
+    hero-aurora-wave-a 30s ease-in-out infinite alternate;
+}
+
+.hero-aurora-b {
+  top: -20px;
+  height: 200px;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    var(--aurora-2) 14%,
+    transparent 30%,
+    var(--aurora-1) 55%,
+    transparent 72%,
+    var(--aurora-3) 88%,
+    transparent 100%
+  );
+  opacity: var(--aurora-opacity-b);
+  transform: rotate(6deg);
+  animation:
+    hero-aurora-flow-b 28s ease-in-out infinite alternate,
+    hero-aurora-wave-b 36s ease-in-out infinite alternate;
+}
+
+.hero-aurora-c {
+  top: -270px;
+  height: 300px;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    var(--aurora-3) 12%,
+    transparent 28%,
+    var(--aurora-1) 46%,
+    transparent 62%,
+    var(--aurora-2) 84%,
+    transparent 100%
+  );
+  opacity: var(--aurora-opacity-c);
+  transform: rotate(-4deg);
+  animation:
+    hero-aurora-flow-c 32s ease-in-out infinite alternate,
+    hero-aurora-wave-c 42s ease-in-out infinite alternate;
+}
+
+@keyframes hero-aurora-flow-a {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes hero-aurora-flow-b {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 10% 50%;
+  }
+}
+
+@keyframes hero-aurora-flow-c {
+  0% {
+    background-position: 20% 50%;
+  }
+  100% {
+    background-position: 90% 50%;
+  }
+}
+
+@keyframes hero-aurora-wave-a {
+  0% {
+    transform: rotate(-7deg) translateY(0) scaleY(1);
+  }
+  100% {
+    transform: rotate(-11deg) translateY(26px) scaleY(1.15);
+  }
+}
+
+@keyframes hero-aurora-wave-b {
+  0% {
+    transform: rotate(4deg) translateY(0) scaleY(1);
+  }
+  100% {
+    transform: rotate(8deg) translateY(-20px) scaleY(1.1);
+  }
+}
+
+@keyframes hero-aurora-wave-c {
+  0% {
+    transform: rotate(-3deg) translateY(0) scaleY(0.95);
+  }
+  100% {
+    transform: rotate(-7deg) translateY(22px) scaleY(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora-a,
+  .hero-aurora-b,
+  .hero-aurora-c {
+    animation: none;
+  }
 }

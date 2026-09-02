@@ -22,6 +22,11 @@ interface FormData {
   statement?: string;
 }
 
+interface BetaStatement {
+  statement: string;
+  order: number;
+}
+
 interface AppData {
   betaSpotsTotal: number;
   betaSpotsFilled: number;
@@ -29,12 +34,7 @@ interface AppData {
   betaDescription: string;
   status: string;
   name: string;
-}
-
-interface Testimonial {
-  ID: string;
-  Company: string;
-  Statement: string;
+  betaStatements: BetaStatement[];
 }
 
 function SignupPageContent() {
@@ -50,10 +50,8 @@ function SignupPageContent() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appData, setAppData] = useState<AppData | null>(null);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasAppId, setHasAppId] = useState(false);
-  const [displayedTestimonials, setDisplayedTestimonials] = useState<Testimonial[]>([]);
 
   useEffect(() => {
     if (!searchParams) return;
@@ -69,33 +67,12 @@ function SignupPageContent() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (testimonials.length > 0) {
-      // Function to get random testimonials
-      const getRandomTestimonials = () => {
-        const shuffled = [...testimonials].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, 3);
-      };
-
-      // Set initial testimonials
-      setDisplayedTestimonials(getRandomTestimonials());
-
-      // Update testimonials every 10 seconds
-      const interval = setInterval(() => {
-        setDisplayedTestimonials(getRandomTestimonials());
-      }, 10000);
-
-      return () => clearInterval(interval);
-    }
-  }, [testimonials]);
-
   const fetchAppData = async (appId: string) => {
     try {
       const response = await fetch(`/api/apps/${appId}`);
       if (!response.ok) throw new Error('Failed to fetch app data');
       const data = await response.json();
       setAppData(data);
-      setTestimonials(data.testimonials || []);
     } catch (error) {
       console.error('Error fetching app data:', error);
     } finally {
@@ -235,7 +212,7 @@ function SignupPageContent() {
           <div className="bg-card rounded-3xl shadow-xl overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               {/* Left Side - Visuals */}
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 lg:p-12 text-white">
+              <div className="flex h-full flex-col justify-center bg-gradient-to-br from-blue-600 to-indigo-700 p-8 lg:p-12 text-white">
                 <div className="space-y-8">
                   <div className="space-y-4">
                     <h2 className="text-2xl font-semibold">Why Join?</h2>
@@ -267,22 +244,25 @@ function SignupPageContent() {
                     </ul>
                   </div>
 
-                  {/* Testimonials */}
-                  {displayedTestimonials.length > 0 && (
+                  {/* Approved beta statements from previous waitlist joiners on this app */}
+                  {appData && appData.betaStatements.length > 0 && (
                     <div className="mt-12">
-                      <h3 className="text-2xl font-bold text-white mb-6">What People Are Saying</h3>
+                      <h3 className="text-2xl font-bold text-white mb-6">From the waitlist</h3>
                       <div className="space-y-6">
-                        {displayedTestimonials.map((testimonial, index) => (
-                          <div 
-                            key={index} 
-                            className="bg-white/10 backdrop-blur-sm rounded-xl p-6 transform transition-all duration-500 hover:scale-105 hover:bg-white/15 relative"
-                          >
-                            <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">&quot;</div>
-                            <div className="flex-1">
-                              <p className="text-white/90 leading-relaxed italic text-lg">&quot;{testimonial.Statement}&quot;</p>
+                        {appData.betaStatements
+                          .slice()
+                          .sort((a, b) => a.order - b.order)
+                          .map((entry, index) => (
+                            <div
+                              key={index}
+                              className="bg-white/10 backdrop-blur-sm rounded-xl p-6 relative"
+                            >
+                              <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">&quot;</div>
+                              <div className="flex-1">
+                                <p className="text-white/90 leading-relaxed italic text-lg">&quot;{entry.statement}&quot;</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
                   )}

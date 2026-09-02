@@ -1,56 +1,34 @@
-import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs, KnowledgeBaseArticle } from '@/lib/api-client';
+import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/api-client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpenIcon, ClockIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 import { Metadata } from 'next';
-import AnimatedGradient from '@/components/marketing/AnimatedGradient';
-import BackButton from '@/components/marketing/BackButton';
 import { marked } from 'marked';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
-// Configure marked for safe HTML output
 marked.setOptions({
   breaks: true,
   gfm: true,
 });
 
-// Function to convert markdown to HTML
-async function convertMarkdownToHtml(markdown: string): Promise<string> {
-  try {
-    // Convert markdown to HTML
-    let html = await marked(markdown);
-    
-    // Add extra spacing for better readability
-    html = html
-      // Add spacing after paragraphs
-      .replace(/<\/p>\s*<p>/g, '</p>\n<p>')
-      // Add spacing after lists
-      .replace(/<\/ul>\s*<p>/g, '</ul>\n<p>')
-      .replace(/<\/ol>\s*<p>/g, '</ol>\n<p>')
-      // Add spacing before lists
-      .replace(/<p>\s*<ul>/g, '<p>\n<ul>')
-      .replace(/<p>\s*<ol>/g, '<p>\n<ol>')
-      // Ensure proper spacing around strong tags
-      .replace(/(<strong>.*?<\/strong>)/g, '<span class="font-semibold text-gray-900">$1</span>');
-    
-    return html;
-  } catch (error) {
-    console.error('Error converting markdown to HTML:', error);
-    return markdown; // Fallback to original text if conversion fails
-  }
+interface KnowledgeBaseArticlePageProps {
+  params: Promise<{ slug: string }>;
 }
 
-interface KnowledgeBaseArticlePageProps {
-  params: {
-    slug: string;
-  };
+function formatDate(value?: string): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps): Promise<Metadata> {
-  const article = await getKnowledgeBaseArticle(params.slug);
-  
+  const { slug } = await params;
+  const article = await getKnowledgeBaseArticle(slug);
+
   if (!article) {
     return {
       title: 'Article Not Found | Knowledge Base',
@@ -58,21 +36,23 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
     };
   }
 
+  const description = article.excerpt || article.content.slice(0, 160);
+
   return {
     title: `${article.title} | Knowledge Base`,
-    description: article.excerpt || article.content.substring(0, 160),
+    description,
     alternates: {
-      canonical: `https://cofabri.com/knowledge-base/${params.slug}`,
+      canonical: `https://cofabri.com/knowledge-base/${slug}`,
     },
     openGraph: {
       title: article.title,
-      description: article.excerpt || article.content.substring(0, 160),
+      description,
       type: 'article',
       publishedTime: article.publishedAt,
       modifiedTime: article.lastUpdated,
-      authors: [article.author],
+      authors: article.author ? [article.author] : undefined,
       tags: article.tags,
-      url: `https://cofabri.com/knowledge-base/${params.slug}`,
+      url: `https://cofabri.com/knowledge-base/${slug}`,
     },
     other: {
       'article:published_time': article.publishedAt,
@@ -82,211 +62,169 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
 }
 
 export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBaseArticlePageProps) {
-  const article = await getKnowledgeBaseArticle(params.slug);
+  const { slug } = await params;
+  const article = await getKnowledgeBaseArticle(slug);
 
   if (!article) {
     notFound();
   }
 
-  // Convert markdown to HTML
-  let htmlContent = '';
-  if (article.content) {
-    htmlContent = await convertMarkdownToHtml(article.content);
-  }
+  const htmlContent = article.content ? await marked(article.content) : '';
 
-  // Fetch related articles if relatedTopics exist
-  let relatedArticles: KnowledgeBaseArticle[] = [];
-  if (article.relatedTopics) {
-    // Handle both array and string formats
-    let topicSlugs: string[] = [];
-    if (Array.isArray(article.relatedTopics)) {
-      topicSlugs = article.relatedTopics;
-    } else if (typeof article.relatedTopics === 'string') {
-      // If it's a string, try to parse it as comma-separated values
-      topicSlugs = article.relatedTopics.split(',').map(slug => slug.trim()).filter(slug => slug.length > 0);
-    }
-    
-    // Filter out non-slug values and map common titles to slugs
-    const validSlugs = topicSlugs.filter(slug => {
-      // Check if it looks like a valid slug (lowercase, no spaces, alphanumeric + hyphens)
-      return /^[a-z0-9-]+$/.test(slug);
-    });
-    
-    // Map common titles to their actual slugs
-    const titleToSlugMap: { [key: string]: string } = {
-      'Knowledge Base Coming Soon': 'coming-soon',
-      'Welcome to CertiFi Central - Your Certification Exam Platform': 'welcome-certifi-central'
-    };
-    
-    // Add mapped slugs for any titles that were found
-    const mappedSlugs = topicSlugs
-      .filter(slug => !/^[a-z0-9-]+$/.test(slug)) // Get non-slug values
-      .map(title => titleToSlugMap[title])
-      .filter(slug => slug); // Remove undefined values
-    
-    const allSlugs = [...validSlugs, ...mappedSlugs];
-    
-    if (allSlugs.length > 0) {
-      relatedArticles = await getKnowledgeBaseArticlesBySlugs(allSlugs);
-    }
-  }
+  let relatedArticles = await (async () => {
+    if (!article.relatedTopics) return [];
+
+    const topicSlugs = Array.isArray(article.relatedTopics)
+      ? article.relatedTopics
+      : article.relatedTopics.split(',').map((s) => s.trim()).filter(Boolean);
+
+    const validSlugs = topicSlugs.filter((s) => /^[a-z0-9-]+$/.test(s));
+    if (validSlugs.length === 0) return [];
+
+    return getKnowledgeBaseArticlesBySlugs(validSlugs);
+  })();
+  relatedArticles = relatedArticles.filter((a) => a.slug !== article.slug);
+
+  const meta = (
+    [
+      { k: 'Category', v: article.category },
+      { k: 'Application', v: article.applications && article.applications.length > 0 ? article.applications.join(', ') : undefined },
+      { k: 'Author', v: article.author || undefined },
+      { k: 'Published', v: formatDate(article.publishedAt) },
+      { k: 'Last updated', v: formatDate(article.lastUpdated) },
+      { k: 'Read time', v: article.readTime > 0 ? `${article.readTime} min` : undefined },
+    ] as { k: string; v: string | undefined }[]
+  ).filter((row): row is { k: string; v: string } => !!row.v);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 bg-gradient-to-b from-muted to-background border-b border-border">
-        <AnimatedGradient />
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="relative z-20">
-              <BackButton />
+      <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
+        <div className="mb-14">
+          <Breadcrumbs
+            items={[
+              { name: 'Knowledge base', href: '/knowledge-base' },
+              { name: article.title, href: `/knowledge-base/${article.slug}` },
+            ]}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_360px] lg:gap-20">
+          <div>
+            <div className="mb-5 flex flex-wrap items-center gap-2.5">
+              {article.logoUrl && (
+                <Image
+                  src={article.logoUrl}
+                  alt=""
+                  width={64}
+                  height={20}
+                  className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
+                  unoptimized={process.env.NODE_ENV === 'development'}
+                />
+              )}
+              <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint">
+                {article.category}
+              </span>
             </div>
 
-                        <h1 className="text-5xl md:text-6xl font-bold mb-8 text-foreground">
+            <h1 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-[44px]">
               {article.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 text-muted-foreground mb-6">
-              <div className="flex items-center gap-x-2">
-                <BookOpenIcon className="h-5 w-5 text-primary" />
-                <span className="text-foreground">{article.author}</span>
-              </div>
-              {article.readTime && (
-                <div className="flex items-center gap-x-2">
-                  <ClockIcon className="h-5 w-5 text-primary" />
-                  <span>{article.readTime} min read</span>
-                </div>
-              )}
-              <div className="flex items-center gap-x-2">
-                <span className="text-muted-foreground">Published:</span>
-                <time dateTime={article.publishedAt} className="text-foreground">
-                  {new Date(article.publishedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </time>
-              </div>
-              <div className="flex items-center gap-x-2">
-                <span className="text-muted-foreground">Last Updated:</span>
-                <time dateTime={article.lastUpdated || article.publishedAt} className="text-foreground">
-                  {new Date(article.lastUpdated || article.publishedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </time>
-              </div>
-            </div>
+            {article.excerpt && (
+              <p className="mt-5 max-w-[640px] text-lg leading-[1.55] text-ink-muted sm:text-xl">{article.excerpt}</p>
+            )}
 
-            {/* Tags */}
             {article.tags && article.tags.length > 0 && (
-              <div className="mb-6 flex flex-wrap gap-2">
+              <div className="mt-6 flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground ring-1 ring-inset ring-primary/10"
+                    className="rounded-full border border-border px-2.5 py-1 text-xs font-medium text-ink-body"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
             )}
-
-            {/* Application Logo */}
-            {article.logoUrl && article.applications && article.applications.length > 0 && (
-              <img 
-                src={article.logoUrl} 
-                alt={`${article.applications[0]} Logo`}
-                className="h-8 w-auto object-contain"
-              />
-            )}
           </div>
-        </div>
-      </section>
 
-      {/* Content Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="prose prose-lg prose-blue max-w-none">
-              {article.content ? (
-                <div 
-                  className="text-foreground leading-relaxed markdown-content"
-                  dangerouslySetInnerHTML={{ __html: htmlContent }} 
-                  style={{
-                    '--tw-prose-body': '#374151',
-                    '--tw-prose-headings': '#111827',
-                    '--tw-prose-links': '#3b82f6',
-                    '--tw-prose-bold': '#111827',
-                    '--tw-prose-counters': '#6b7280',
-                    '--tw-prose-bullets': '#d1d5db',
-                    '--tw-prose-hr': '#e5e7eb',
-                    '--tw-prose-quotes': '#111827',
-                    '--tw-prose-quote-borders': '#e5e7eb',
-                    '--tw-prose-captions': '#6b7280',
-                    '--tw-prose-code': '#111827',
-                    '--tw-prose-pre-code': '#e5e7eb',
-                    '--tw-prose-pre-bg': '#1f2937',
-                    '--tw-prose-th-borders': '#d1d5db',
-                    '--tw-prose-td-borders': '#e5e7eb',
-                  } as React.CSSProperties}
-                />
-              ) : (
-                <div className="text-foreground leading-relaxed">
-                  <p>{article.excerpt || 'Content not available.'}</p>
+          {meta.length > 0 && (
+            <div className="w-full overflow-hidden rounded-xl border border-border">
+              {meta.map((row) => (
+                <div
+                  key={row.k}
+                  className="flex items-center justify-between gap-6 border-b border-border px-5 py-[15px] last:border-b-0"
+                >
+                  <span className="text-sm text-ink-faint">{row.k}</span>
+                  <span className="font-mono text-[13px] text-ink-body">{row.v}</span>
                 </div>
-              )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-14 max-w-[720px] border-t border-border pt-14">
+          {htmlContent ? (
+            <div
+              className="markdown-content text-[17px] leading-[1.7] text-foreground"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          ) : (
+            <p className="text-[17px] leading-[1.7] text-ink-muted">{article.excerpt || 'Content not available.'}</p>
+          )}
+        </div>
+
+        {relatedArticles.length > 0 && (
+          <div className="mt-[88px] border-t border-border pt-14">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
+                Related articles
+              </h2>
+              <Link
+                href="/knowledge-base"
+                className="border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                All articles →
+              </Link>
+            </div>
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedArticles.map((related) => (
+                <Link
+                  key={related.id}
+                  href={`/knowledge-base/${related.slug}`}
+                  className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
+                >
+                  <div className="flex items-center gap-2.5">
+                    {related.logoUrl && (
+                      <Image
+                        src={related.logoUrl}
+                        alt=""
+                        width={64}
+                        height={20}
+                        className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
+                        unoptimized={process.env.NODE_ENV === 'development'}
+                      />
+                    )}
+                    <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
+                      {related.category}
+                    </span>
+                  </div>
+                  <h3 className="m-0 mt-2.5 text-lg font-semibold leading-[1.35] tracking-[-0.015em] text-foreground">
+                    {related.title}
+                  </h3>
+                  {related.excerpt && (
+                    <p className="mt-2 line-clamp-3 text-[15px] leading-[1.55] text-ink-muted">{related.excerpt}</p>
+                  )}
+                  <div className="mt-4 flex gap-3.5 font-mono text-[11px] text-ink-disabled">
+                    {related.readTime > 0 && <span>{related.readTime} min read</span>}
+                    {related.lastUpdated && <span>{formatDate(related.lastUpdated)}</span>}
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Related Topics Section */}
-      <section className="py-16 bg-primary border-t border-accent-hover">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-primary-foreground mb-8">Related Topics</h2>
-            {relatedArticles.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedArticles.map((relatedArticle) => (
-                  <Link
-                    key={relatedArticle.id}
-                    href={`/knowledge-base/${relatedArticle.slug}`}
-                    className="group p-6 rounded-xl glass-card hover:border-indigo-500/50 transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
-                        {relatedArticle.category}
-                      </span>
-                      {relatedArticle.applications && relatedArticle.applications.length > 0 && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-500/15 dark:text-purple-300">
-                          {relatedArticle.applications[0]}
-                          {relatedArticle.applications.length > 1 && ` +${relatedArticle.applications.length - 1}`}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="text-xl font-semibold mb-3 text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-                      {relatedArticle.title}
-                    </h3>
-                    <p className="text-muted-foreground mb-4 line-clamp-3">
-                      {relatedArticle.excerpt || (relatedArticle.content ? relatedArticle.content.substring(0, 150) + '...' : '')}
-                    </p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <span className="text-indigo-500">⏱️</span>
-                      <span className="ml-2">{relatedArticle.readTime} min read</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-primary-foreground/80">No related topics available for this article.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+        )}
+      </div>
     </div>
   );
-} 
+}

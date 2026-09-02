@@ -169,9 +169,9 @@ export default function KnowledgeBaseContent() {
                     <Image
                       src={article.logoUrl}
                       alt=""
-                      width={20}
+                      width={64}
                       height={20}
-                      className="h-5 w-5 flex-shrink-0 rounded"
+                      className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
                       unoptimized={process.env.NODE_ENV === 'development'}
                     />
                   )}

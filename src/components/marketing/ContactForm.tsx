@@ -607,17 +607,7 @@ export default function ContactForm() {
             <SimpleDropdown
               options={[
                 { value: 'English', label: 'English' },
-                { value: 'Spanish', label: 'Spanish' },
-                { value: 'French', label: 'French' },
-                { value: 'German', label: 'German' },
-                { value: 'Italian', label: 'Italian' },
-                { value: 'Portuguese', label: 'Portuguese' },
-                { value: 'Chinese', label: 'Chinese' },
-                { value: 'Japanese', label: 'Japanese' },
-                { value: 'Korean', label: 'Korean' },
-                { value: 'Arabic', label: 'Arabic' },
-                { value: 'Russian', label: 'Russian' },
-                { value: 'Other', label: 'Other' }
+                { value: 'Spanish', label: 'Spanish' }
               ]}
               value={formData.languagePreference}
               onChange={handleLanguageChange}

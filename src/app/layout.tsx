@@ -38,12 +38,12 @@ export const metadata: Metadata = {
   classification: 'Business Software',
   icons: {
     icon: [
-      { url: 'https://files.cofabri.com/logos/cofabri-core/favicon.ico', sizes: 'any' },
+      { url: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
-      { url: 'https://files.cofabri.com/logos/cofabri-core/core-mark.png', sizes: '168x168' },
+      { url: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png', sizes: '512x512' },
     ],
-    shortcut: 'https://files.cofabri.com/logos/cofabri-core/favicon.ico',
+    shortcut: 'https://files.cofabri.com/logos/cofabri-core/icon-512.png',
   },
   manifest: '/manifest.json',
   formatDetection: {
@@ -107,8 +107,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="https://files.cofabri.com/logos/cofabri-core/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri-core/core-mark.png" />
+        <link rel="icon" href="https://files.cofabri.com/logos/cofabri-core/icon-512.png" sizes="any" />
+        <link rel="apple-touch-icon" href="https://files.cofabri.com/logos/cofabri-core/icon-512.png" />
         <link rel="manifest" href="/manifest.json" />
         <Analytics />
       </head>

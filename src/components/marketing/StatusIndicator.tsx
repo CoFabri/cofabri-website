@@ -3,10 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { SystemStatus } from '@/lib/airtable';
+import { buttonVariants } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 const getSeverityColor = (status: SystemStatus | null) => {
   if (!status) return 'bg-green-500';
-  
+
   // Use the same color logic as the status page
   switch (status.publicStatus) {
     case 'Investigating':
@@ -24,7 +27,7 @@ const getSeverityColor = (status: SystemStatus | null) => {
 
 const getStatusMessage = (status: SystemStatus | null) => {
   if (!status) return 'All systems operational';
-  
+
   switch (status.publicStatus) {
     case 'Investigating':
       return status.message ? `Investigating: ${status.message}` : 'Investigating';
@@ -63,12 +66,12 @@ export default function StatusIndicator() {
     return () => clearInterval(interval);
   }, []);
 
-  if (isLoading) return null;
+  if (isLoading) return <div className="h-9 w-9" />;
 
   // Find the most severe active status to determine the color
   const activeStatuses = statuses.filter(status => status.publicStatus !== 'Resolved');
   const hasActiveIssues = activeStatuses.length > 0;
-  
+
   // Get the most severe status for color (priority: Investigating > Identified > Monitoring)
   const getStatusPriority = (status: string) => {
     switch (status) {
@@ -78,11 +81,11 @@ export default function StatusIndicator() {
       default: return 0;
     }
   };
-  
+
   const mostSevereStatus = activeStatuses.reduce((prev, current) => {
     return getStatusPriority(current.publicStatus) > getStatusPriority(prev.publicStatus) ? current : prev;
   }, activeStatuses[0]);
-  
+
   const dotColor = hasActiveIssues ? getSeverityColor(mostSevereStatus) : 'bg-green-500';
   const label = hasActiveIssues ? mostSevereStatus.publicStatus : 'All systems normal';
   const message = hasActiveIssues
@@ -90,25 +93,25 @@ export default function StatusIndicator() {
     : 'All systems operational';
 
   return (
-    <Link
-      href="/status"
-      className="relative group inline-flex items-center gap-[7px] rounded-full border border-border px-[11px] py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:border-input hover:text-foreground"
-    >
-      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-        <span className={`block h-1.5 w-1.5 rounded-full ${dotColor}`} />
-        {hasActiveIssues && (
-          <span
-            className={`absolute inset-0 rounded-full ${dotColor} animate-ping opacity-75`}
-          />
-        )}
-      </span>
-      <span className="hidden whitespace-nowrap sm:inline">{label}</span>
-
-      {/* Tooltip */}
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-foreground text-background text-sm rounded-lg whitespace-normal max-w-xs w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden text-ellipsis">
-        <span className="block truncate">{message}</span>
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1.5 border-4 border-transparent border-b-foreground" />
-      </div>
-    </Link>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          href="/status"
+          aria-label={`Status: ${label}`}
+          className={cn(buttonVariants({ variant: 'outline', size: 'icon' }))}
+        >
+          <span className="relative flex h-2 w-2 flex-shrink-0">
+            <span className={`block h-2 w-2 rounded-full ${dotColor}`} />
+            {hasActiveIssues && (
+              <span className={`absolute inset-0 rounded-full ${dotColor} animate-ping opacity-75`} />
+            )}
+          </span>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p className="font-medium">{label}</p>
+        {hasActiveIssues && <p className="text-background/70">{message}</p>}
+      </TooltipContent>
+    </Tooltip>
   );
 }

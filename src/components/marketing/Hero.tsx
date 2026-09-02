@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import HeroAurora from './HeroAurora';
 
 const metrics = [
   { value: '10K+', label: 'Active users' },
@@ -14,7 +15,8 @@ const metrics = [
 const Hero = () => {
   return (
     <section className="relative overflow-hidden bg-background pt-24 pb-0 md:pt-[132px]">
-      <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
+      <HeroAurora />
+      <div className="relative z-10 mx-auto max-w-[1200px] px-6 sm:px-10">
         <div className="max-w-[880px]">
           <div className="mb-7 flex items-center gap-2.5">
             <span className="block h-px w-[22px] bg-ink-disabled" aria-hidden />

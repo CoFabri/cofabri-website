@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
 
@@ -40,14 +41,21 @@ function ThemeToggle() {
   };
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      aria-label={`Theme: ${current}. Click to change.`}
-      onClick={cycleTheme}
-    >
-      <ActiveIcon className="h-4 w-4" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={`Theme: ${current}. Click to change.`}
+          onClick={cycleTheme}
+        >
+          <ActiveIcon className="h-4 w-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="capitalize">
+        Theme: {current}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -63,6 +71,7 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+      <TooltipProvider delayDuration={200}>
       <nav className="max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center flex-shrink-0">
           <Logo size="nav" noLink />
@@ -92,12 +101,16 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
           <StatusIndicator />
           <ThemeToggle />
-          <Button asChild size="sm">
-            <Link href="/apps">
-              Explore Apps
-              <ArrowRight className="h-[15px] w-[15px] transition-transform group-hover:translate-x-0.5" />
-            </Link>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button asChild size="icon" aria-label="Explore apps">
+                <Link href="/apps">
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Explore Apps</TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
@@ -133,6 +146,7 @@ const Navbar = () => {
           </Sheet>
         </div>
       </nav>
+      </TooltipProvider>
     </header>
   );
 };

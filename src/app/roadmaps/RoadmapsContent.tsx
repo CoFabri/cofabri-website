@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import ProductRoadmap from '@/components/marketing/ProductRoadmap';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import { displayAppName } from '@/lib/roadmap-display';
 
 interface DropdownProps {
   value: string;
@@ -62,14 +64,6 @@ function Dropdown({ value, onChange, options, placeholder }: DropdownProps) {
 }
 
 const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled'];
-
-// Roadmap items can reference an app_id cofabri-api's /apps endpoint no longer
-// (or doesn't yet) return — fall back to a title-cased version of the id
-// rather than showing it lowercase next to real app names.
-function displayAppName(id: string, appNames: Record<string, string>): string {
-  if (appNames[id]) return appNames[id];
-  return id.charAt(0).toUpperCase() + id.slice(1);
-}
 
 export default function RoadmapsContent() {
   const [selectedApp, setSelectedApp] = useState<string>('');
@@ -172,12 +166,17 @@ export default function RoadmapsContent() {
           ))}
         </div>
 
-        <Dropdown
-          value={selectedStatus}
-          onChange={setSelectedStatus}
-          placeholder="All statuses"
-          options={[{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
-        />
+        <div className="flex items-center gap-4">
+          <Link href="/changelog" className="text-sm font-semibold text-ink-muted transition-colors hover:text-foreground">
+            Looking for what shipped? Changelog →
+          </Link>
+          <Dropdown
+            value={selectedStatus}
+            onChange={setSelectedStatus}
+            placeholder="All statuses"
+            options={[{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+          />
+        </div>
       </div>
 
       <ProductRoadmap selectedApp={selectedApp} selectedStatus={selectedStatus} appNames={appNames} />

@@ -3,11 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutGrid, TrendingUp, BookOpen, ScrollText, LifeBuoy } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy } from 'lucide-react';
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
   { name: 'Roadmaps', href: '/roadmaps', icon: TrendingUp },
+  { name: 'Changelog', href: '/changelog', icon: Sparkles },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
   { name: 'Legal', href: '/legal', icon: ScrollText },
   { name: 'Support', href: '/support', icon: LifeBuoy },
@@ -45,7 +46,7 @@ const Footer = () => {
         <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image
-              src="https://files.cofabri.com/logos/cofabri-core/core-mark.png"
+              src="https://files.cofabri.com/logos/cofabri-core/icon-512.png"
               alt="CoFabri"
               width={40}
               height={40}

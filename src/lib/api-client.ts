@@ -12,6 +12,11 @@ async function apiFetch<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export interface BetaStatement {
+  statement: string;
+  order: number;
+}
+
 export interface App {
   id: string;
   name: string;
@@ -28,6 +33,7 @@ export interface App {
   releaseDate?: string;
   domains?: string;
   featureOnWebsite?: boolean;
+  betaStatements?: BetaStatement[];
 }
 
 interface AppRow {
@@ -45,7 +51,9 @@ interface AppRow {
   launch_date: string | null;
   latest_release_date: string | null;
   featured_app: boolean;
-  beta_statements?: unknown[];
+  // Only present on the single-app endpoint (getApp); the list endpoint
+  // (getApps) never includes it.
+  beta_statements?: BetaStatement[];
 }
 
 function mapApp(row: AppRow): App {
@@ -65,6 +73,7 @@ function mapApp(row: AppRow): App {
     releaseDate: row.latest_release_date || undefined,
     domains: undefined,
     featureOnWebsite: row.featured_app,
+    betaStatements: row.beta_statements,
   };
 }
 
@@ -158,10 +167,19 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
   };
 }
 
+// CertiFi Central was sunset and no longer appears in /api/apps, but its KB articles
+// are still served by the content API (they have no `applications` link to filter on
+// cleanly) — hide them here by title until the source data is cleaned up.
+const RETIRED_ARTICLE_TITLE_PATTERN = /certifi central/i;
+
+function isRetiredArticle(article: KnowledgeBaseArticle): boolean {
+  return RETIRED_ARTICLE_TITLE_PATTERN.test(article.title);
+}
+
 export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base');
-    return rows.map(mapKbArticle);
+    return rows.map(mapKbArticle).filter((article) => !isRetiredArticle(article));
   } catch (error) {
     console.error('Error fetching knowledge base articles:', error);
     return [];
@@ -171,7 +189,8 @@ export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]
 export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
   try {
     const row = await apiFetch<KbArticleRow>(`/web/content/knowledge-base/${encodeURIComponent(slug)}`);
-    return mapKbArticle(row);
+    const article = mapKbArticle(row);
+    return isRetiredArticle(article) ? null : article;
   } catch (error) {
     console.error('Error fetching knowledge base article:', error);
     return null;
@@ -188,7 +207,7 @@ export async function getKnowledgeBaseArticlesBySlugs(slugs: string[]): Promise<
 export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
   try {
     const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base?featured=true');
-    return rows.slice(0, 6).map(mapKbArticle);
+    return rows.map(mapKbArticle).filter((article) => !isRetiredArticle(article)).slice(0, 6);
   } catch (error) {
     console.error('Error fetching featured knowledge base articles:', error);
     return [];
