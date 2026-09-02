@@ -14,19 +14,19 @@ export const dynamic = 'force-dynamic';
 // Generate metadata for the homepage
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'CoFabri - SaaS Apps for Modern Businesses',
-    description: 'Discover our suite of powerful SaaS applications designed to help your business grow and succeed. From productivity tools to AI-powered solutions, we build software that works.',
+    title: 'CoFabri — Small software that does one thing well.',
+    description: 'CoFabri is a software studio building a portfolio of focused apps — each one solves a single problem and stays out of your way.',
     alternates: {
       canonical: 'https://cofabri.com/',
     },
     openGraph: {
-      title: 'CoFabri - SaaS Apps for Modern Businesses',
-      description: 'Discover our suite of powerful SaaS applications designed to help your business grow and succeed.',
+      title: 'CoFabri — Small software that does one thing well.',
+      description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
       url: 'https://cofabri.com/',
     },
     twitter: {
-      title: 'CoFabri - SaaS Apps for Modern Businesses',
-      description: 'Discover our suite of powerful SaaS applications designed to help your business grow and succeed.',
+      title: 'CoFabri — Small software that does one thing well.',
+      description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
     },
   };
 }
