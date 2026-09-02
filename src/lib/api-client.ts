@@ -118,6 +118,8 @@ interface KbArticleRow {
   is_featured: boolean | null;
   tags: string[] | null;
   logo_url: string | null;
+  application_names?: string[];
+  related_topic_slugs?: string[];
 }
 
 function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
@@ -135,8 +137,9 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
     isPopular: row.is_popular || undefined,
     isFeatured: row.is_featured || undefined,
     tags: row.tags || [],
-    applications: [],
+    applications: row.application_names || [],
     logoUrl: row.logo_url || undefined,
+    relatedTopics: row.related_topic_slugs,
   };
 }
 
