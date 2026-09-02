@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import MarketingPopup from './MarketingPopup';
-import { MarketingPopupConfig } from '@/lib/airtable';
+import { MarketingPopupConfig } from '@/lib/api-client';
 
 export default function MarketingPopupWrapper() {
   const [config, setConfig] = useState<MarketingPopupConfig | null>(null);

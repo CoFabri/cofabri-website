@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { KnowledgeBaseArticle } from '@/lib/airtable';
+import { KnowledgeBaseArticle } from '@/lib/api-client';
 import { marked } from 'marked';
 import { useState, useEffect } from 'react';
 

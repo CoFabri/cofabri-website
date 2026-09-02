@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { SystemStatus } from '@/lib/airtable';
+import { SystemStatus } from '@/lib/api-client';
 import AnimatedGradient from './AnimatedGradient';
 
 interface StatusPageContentProps {

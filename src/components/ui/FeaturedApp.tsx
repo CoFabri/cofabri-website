@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { RocketLaunchIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { App } from '@/lib/airtable';
+import { App } from '@/lib/api-client';
 
 export default function FeaturedApp() {
   const [featuredApp, setFeaturedApp] = useState<App | null>(null);

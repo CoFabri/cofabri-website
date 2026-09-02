@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getLegalDocument } from '@/lib/airtable';
+import { getLegalDocument } from '@/lib/api-client';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';

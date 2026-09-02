@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getKnowledgeBaseArticle } from '@/lib/airtable';
+import { getKnowledgeBaseArticle } from '@/lib/api-client';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';

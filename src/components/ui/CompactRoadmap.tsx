@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon, ChevronRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { RoadmapFeature } from '@/lib/airtable';
+import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getStatusColor, getStatusIcon, getReleaseTypeColor } from './ProductRoadmap';
-import { getRoadmapFeatures } from '@/lib/airtable';
+import { getRoadmapFeatures } from '@/lib/api-client';
 import SectionHeading from './SectionHeading';
 
 export default function CompactRoadmap() {

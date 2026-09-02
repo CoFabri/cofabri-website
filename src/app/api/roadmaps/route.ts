@@ -1,4 +1,4 @@
-import { getRoadmapFeatures } from '@/lib/airtable';
+import { getRoadmapFeatures } from '@/lib/api-client';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route

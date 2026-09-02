@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ProductRoadmap from '@/components/ui/ProductRoadmap';
 import GradientHeading from '@/components/ui/GradientHeading';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { RoadmapFeature } from '@/lib/airtable';
+import { RoadmapFeature } from '@/lib/api-client';
 
 interface DropdownProps {
   value: string;

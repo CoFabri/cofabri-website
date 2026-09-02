@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { SystemStatus } from '@/lib/airtable';
+import { SystemStatus } from '@/lib/api-client';
 
 const getSeverityColor = (status: SystemStatus | null) => {
   if (!status) return 'bg-green-500';

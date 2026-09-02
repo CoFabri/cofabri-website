@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import GradientHeading from '@/components/ui/GradientHeading';
-import { KnowledgeBaseArticle } from '@/lib/airtable';
+import { KnowledgeBaseArticle } from '@/lib/api-client';
 
 export default function KnowledgeBaseContent() {
   const searchParams = useSearchParams();

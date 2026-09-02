@@ -1,4 +1,4 @@
-import { getKnowledgeBaseArticle } from '@/lib/airtable';
+import { getKnowledgeBaseArticle } from '@/lib/api-client';
 import { Metadata } from 'next';
 
 interface KnowledgeBaseArticlePageProps {

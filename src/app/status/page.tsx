@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus } from '@/lib/api-client';
 import { StatusPageContent } from '@/components/ui/StatusPageContent';
 
 // Force dynamic rendering for this page

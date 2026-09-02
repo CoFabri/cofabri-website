@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import GradientHeading from '@/components/ui/GradientHeading';
-import { LegalDocument } from '@/lib/airtable';
+import { LegalDocument } from '@/lib/api-client';
 
 export default function LegalDocumentsContent() {
   const searchParams = useSearchParams();
