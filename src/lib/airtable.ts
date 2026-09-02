@@ -605,70 +605,63 @@ export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
   }
 }
 
+// cofabri-core's /api/public/status response shape. Its incident objects
+// already match SystemStatus field-for-field (see cofabri-core's
+// app/api/public/status/route.ts, which capitalizes publicStatus/severity
+// on the way out to match this exact contract) — this function only needs
+// to fetch, unwrap, and default missing pieces, not remap field names.
+interface CofabriCorePublicStatusResponse {
+  services?: unknown[];
+  incidents?: Array<{
+    ticketId?: string;
+    title?: string;
+    publicStatus?: SystemStatus['publicStatus'];
+    severity?: SystemStatus['severity'];
+    message?: string;
+    'Created Date'?: string;
+    'Updated At'?: string;
+    'Resolved Date'?: string;
+    affectedServices?: string[];
+    application?: string;
+    updates?: string;
+  }>;
+}
+
 export async function getSystemStatus(): Promise<SystemStatus[]> {
   try {
-    const records = await fetchFromAirtable<{
-      'Ticket ID': string;
-      Title: string;
-      'Public Status': 'Investigating' | 'Identified' | 'Monitoring' | 'Resolved' | 'Private';
-      Severity: 'Critical' | 'High' | 'Medium' | 'Low';
-      Message: string;
-      'Created Date': string;
-      'Updated At': string;
-      'Resolved Date': string;
-      'Affected Services': string[];
-      Application: string;
-      Updates: string;
-    }>('System Status', {
-      sort: [{ field: 'Created Date', direction: 'desc' }]
-    });
+    const baseUrl = process.env.COFABRI_CORE_STATUS_API_URL;
+    const apiKey = process.env.COFABRI_CORE_STATUS_API_KEY;
+    if (!baseUrl || !apiKey) {
+      throw new Error('COFABRI_CORE_STATUS_API_URL / COFABRI_CORE_STATUS_API_KEY are not configured');
+    }
 
-    return records.filter(record => record.fields['Public Status'] !== 'Private').map(record => {
-      // Generate a fallback ticket ID if missing
-      const ticketId = record.fields['Ticket ID'] || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Generate a fallback title if missing
-      const title = record.fields.Title || `System Issue - ${record.fields['Public Status'] || 'Unknown Status'}`;
-      
-      // Use default status if missing ('Private' records are filtered before this point)
-      const publicStatus = (record.fields['Public Status'] || 'Monitoring') as SystemStatus['publicStatus'];
-      
-      // Use default severity if missing
-      const severity = record.fields.Severity || 'Medium';
-      
-      // Generate a fallback message if missing
-      const message = record.fields.Message || `We are currently ${publicStatus.toLowerCase()} a system issue. Our team is working to resolve this as quickly as possible.`;
-      
-      // Use current date if created date is missing
-      const createdDate = record.fields['Created Date'] || new Date().toISOString();
-      
-      // Use current date if updated date is missing
-      const updatedAt = record.fields['Updated At'] || new Date().toISOString();
-      
-      // Use empty string for resolved date if missing (will be populated when resolved)
-      const resolvedDate = record.fields['Resolved Date'] || '';
-      
-      // Use empty array if affected services is missing
-      const affectedServices = record.fields['Affected Services'] || [];
-      
-      // Use generic application name if missing
-      const application = record.fields.Application || 'CoFabri System';
-      
-      // Use empty string for updates if missing (no demo content)
-      const updates = record.fields.Updates || '';
+    const response = await fetch(baseUrl, {
+      headers: { 'x-api-key': apiKey },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) {
+      throw new Error(`cofabri-core status API returned ${response.status}`);
+    }
+
+    const data = (await response.json()) as CofabriCorePublicStatusResponse;
+
+    return (data.incidents ?? []).map(incident => {
+      const publicStatus = incident.publicStatus || 'Monitoring';
 
       return {
-        ticketId,
-        title,
+        ticketId: incident.ticketId || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: incident.title || `System Issue - ${publicStatus}`,
         publicStatus,
-        severity,
-        message,
-        'Created Date': createdDate,
-        'Updated At': updatedAt,
-        'Resolved Date': resolvedDate,
-        affectedServices,
-        application,
-        updates,
+        severity: incident.severity || 'Medium',
+        message:
+          incident.message ||
+          `We are currently ${publicStatus.toLowerCase()} a system issue. Our team is working to resolve this as quickly as possible.`,
+        'Created Date': incident['Created Date'] || new Date().toISOString(),
+        'Updated At': incident['Updated At'] || new Date().toISOString(),
+        'Resolved Date': incident['Resolved Date'] || '',
+        affectedServices: incident.affectedServices || [],
+        application: incident.application || 'CoFabri System',
+        updates: incident.updates || '',
       };
     });
   } catch (error) {
