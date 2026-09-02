@@ -7,7 +7,7 @@ import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy } from
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
-  { name: 'Roadmaps', href: '/roadmaps', icon: TrendingUp },
+  { name: 'Roadmap', href: '/roadmaps', icon: TrendingUp },
   { name: 'Changelog', href: '/changelog', icon: Sparkles },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
   { name: 'Legal', href: '/legal', icon: ScrollText },
