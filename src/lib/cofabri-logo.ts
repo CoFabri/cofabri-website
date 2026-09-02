@@ -84,6 +84,17 @@ export function cofabriAssetUrl(cut: Cut, tone: ResolvedTone): string {
  * against an active threat, but the cost is near zero. Fills and
  * fill-rule="evenodd" are never touched — the gap between shell and core
  * is a real knockout, and rewriting fills would defeat it.
+ *
+ * The master SVGs set the "Fabri" glyph's font-family to
+ * `"Poppins-Bold, Poppins"` — "Poppins-Bold" is never registered by the
+ * page's @font-face (only "Poppins" weight 700 is imported), so it's a dead
+ * alias. On iOS Safari specifically, an SVG <text> font-family list whose
+ * first entry never resolves fails to fall through to the second, valid
+ * entry (unlike ordinary CSS text, where the same list falls back
+ * correctly) — the wordmark's second glyph silently renders in the system
+ * fallback serif instead of Poppins, while "Co" (a single-name font-family)
+ * is unaffected. Dropping the dead alias here fixes it at the one place
+ * every cut/tone passes through, without touching the hosted masters.
  */
 function normalizeSvg(svg: string): string {
   return svg
@@ -94,6 +105,7 @@ function normalizeSvg(svg: string): string {
     .replace(/<metadata[\s\S]*?<\/metadata>/gi, '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/\son[a-z]+="[^"]*"/gi, '')
+    .replace(/font-family="Poppins-Bold,\s*Poppins"/gi, 'font-family="Poppins"')
     .replace(/<svg\b([^>]*)>/i, (_m, attrs: string) =>
       `<svg${attrs.replace(/\s(?:width|height)="[^"]*"/gi, '')} style="display:block;width:100%;height:100%">`,
     )
