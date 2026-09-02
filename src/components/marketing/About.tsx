@@ -56,7 +56,7 @@ const About = () => {
             With deep expertise in software development and business process optimization, we create elegant, no-code and low-code solutions that simplify complexity and deliver measurable results. Every product is built to be modular, easy to adopt, and backed by ongoing support.
             </p>
             <p className="text-lg text-muted-foreground">
-            We’re not just a software provider â we’re your technology partner.
+            We’re not just a software provider — we’re your technology partner.
             </p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2">
