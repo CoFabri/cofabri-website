@@ -10,6 +10,8 @@ import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
 import NewsletterSignup from '@/components/marketing/NewsletterSignup';
 import LiveChat from '@/components/marketing/LiveChat';
+import RevealSection from '@/components/marketing/RevealSection';
+import { Card } from '@/components/ui/card';
 
 export default function HomeContent() {
   const searchParams = useSearchParams();
@@ -52,11 +54,13 @@ export default function HomeContent() {
       <Testimonials />
       <CompactRoadmap />
       <FAQ />
-      <section className="py-20 bg-gradient-to-r from-blue-500 to-indigo-600">
-        <div className="container mx-auto px-4">
-          <NewsletterSignup />
+      <RevealSection className="py-20 bg-background">
+        <div className="mx-auto max-w-6xl px-6">
+          <Card className="max-w-2xl mx-auto p-8 md:p-10">
+            <NewsletterSignup />
+          </Card>
         </div>
-      </section>
+      </RevealSection>
       <LiveChat />
     </main>
   );
