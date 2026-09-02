@@ -1,81 +1,74 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import {
-  BookOpenIcon, 
-  ChatBubbleLeftRightIcon, 
-  DocumentTextIcon, 
-  ExclamationCircleIcon,
-  ClockIcon,
-  PhoneIcon,
-  ArrowRightIcon
-} from '@heroicons/react/24/outline';
-import GradientHeading from '@/components/marketing/GradientHeading';
+import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import PageHero from '@/components/marketing/PageHero';
 import SupportForm from '@/components/marketing/SupportForm';
+
+const SUPPORT_CARDS = [
+  {
+    title: 'Knowledge base',
+    body: 'Setup guides, troubleshooting, and the answers support gives most often.',
+    href: '/knowledge-base',
+    action: 'Browse articles',
+  },
+  {
+    title: 'System status',
+    body: "Check whether something's actually down before you file a ticket.",
+    href: '/status',
+    action: 'Check status',
+  },
+  {
+    title: 'Contact us',
+    body: 'General inquiries, partnerships, or anything that is not a bug.',
+    href: '/contact',
+    action: 'Get in touch',
+  },
+];
 
 export default function SupportPageContent() {
   return (
-    <div className="min-h-screen bg-background">
-      <GradientHeading
-        title="Support Center"
-        subtitle="We're here to help you succeed with our products and services"
+    <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
+      <div className="mb-14">
+        <Breadcrumbs items={[{ name: 'Support', href: '/support' }]} />
+      </div>
+
+      <PageHero
+        eyebrow="Support"
+        title="Tell us what broke."
+        subtitle="A real person replies within one business day. Check the three below first — they solve most things faster than we can."
       />
 
-      <div className="container mx-auto px-4 mt-16">
-        {/* Quick Actions Grid */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <BookOpenIcon className="h-6 w-6 text-primary mr-3" />
-              <h3 className="text-lg font-semibold text-foreground">Knowledge Base</h3>
-            </div>
-            <p className="text-muted-foreground mb-4">Browse our comprehensive documentation and guides.</p>
-            <Link href="/knowledge-base" className="text-primary hover:text-accent-hover inline-flex items-center">
-              Visit Knowledge Base <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
+      <div className="mt-11 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        {SUPPORT_CARDS.map((card) => (
+          <Link
+            key={card.title}
+            href={card.href}
+            className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
+          >
+            <div className="text-lg font-semibold tracking-[-0.015em]">{card.title}</div>
+            <p className="mt-2.5 text-[15px] leading-[1.55] text-ink-muted">{card.body}</p>
+            <span className="mt-4 inline-block text-[15px] font-semibold text-primary">{card.action} →</span>
+          </Link>
+        ))}
+      </div>
 
-          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <ExclamationCircleIcon className="h-6 w-6 text-primary mr-3" />
-              <h3 className="text-lg font-semibold text-foreground">System Status</h3>
+      <div className="mt-[72px] grid grid-cols-1 gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
+        <div>
+          <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
+            Open a ticket
+          </h2>
+          <p className="mt-4 text-base leading-[1.6] text-ink-muted">
+            Include the app, what you expected, and what happened instead. Screenshots help.
+          </p>
+          <div className="mt-7 rounded-[10px] border border-border bg-muted px-5 py-[18px]">
+            <div className="flex items-center gap-2.5 text-sm font-semibold">
+              <span className="block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-success" />
+              Typical first reply
             </div>
-            <p className="text-muted-foreground mb-4">Check if there are any ongoing issues with our services.</p>
-            <a href="/status" className="text-primary hover:text-accent-hover inline-flex items-center">
-              Check Status <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </a>
-          </div>
-
-          <div className="bg-card rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center mb-4">
-              <ChatBubbleLeftRightIcon className="h-6 w-6 text-primary mr-3" />
-              <h3 className="text-lg font-semibold text-foreground">Contact Us</h3>
-            </div>
-            <p className="text-muted-foreground mb-4">Get in touch with our team for general inquiries.</p>
-            <a href="/contact" className="text-primary hover:text-accent-hover inline-flex items-center">
-              Contact Support <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </a>
+            <div className="mt-2 text-[15px] text-ink-muted">Under 24 hours, Monday to Friday.</div>
           </div>
         </div>
-
-        {/* Response Time Section - Full Width */}
-        <div className="max-w-6xl mx-auto mb-8">
-          <div className="bg-card rounded-xl shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <ClockIcon className="h-6 w-6 text-primary mr-3" />
-              <h3 className="text-lg font-semibold text-foreground">Response Time</h3>
-            </div>
-            <p className="text-muted-foreground">
-              We typically respond to support tickets within 24 hours during business days.
-            </p>
-          </div>
-        </div>
-
-        {/* Support Form Section - Full Width */}
-        <div className="max-w-6xl mx-auto">
-          <SupportForm />
-        </div>
+        <SupportForm />
       </div>
     </div>
   );

@@ -75,8 +75,8 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
+        className={`w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors bg-background text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-ink-faint'
         }`}
       >
         <div className="flex items-center space-x-3">
@@ -171,8 +171,8 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
+        className={`w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors bg-background text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-ink-faint'
         }`}
       >
         <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -270,8 +270,8 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors bg-card text-left flex items-center justify-between ${
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-input'
+        className={`w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors bg-background text-left flex items-center justify-between ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-ink-faint'
         }`}
       >
         <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
@@ -706,9 +706,11 @@ export default function SupportForm() {
     return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   };
 
-  // Prepare app options for the custom dropdown
+  // Prepare app options for the custom dropdown. Every app is a valid
+  // thing to file a ticket against, regardless of lifecycle status — this
+  // used to filter to a status ('Active') apps are never actually in,
+  // which silently emptied the list.
   const appOptions = apps
-    .filter(app => app.status === 'Active' || app.status === 'In Development')
     .map(app => ({
       value: app.id,
       label: app.name,
@@ -716,7 +718,7 @@ export default function SupportForm() {
     }));
 
   return (
-    <div className="bg-card rounded-3xl p-8 shadow-sm">
+    <div className="rounded-2xl border border-border p-9">
       {submitStatus === 'success' ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -731,7 +733,7 @@ export default function SupportForm() {
           <button
             type="button"
             onClick={clearForm}
-            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover transition-colors"
           >
             Submit Another Ticket
           </button>
@@ -750,7 +752,7 @@ export default function SupportForm() {
           <button
             type="button"
             onClick={() => setSubmitStatus('idle')}
-            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 transition-all duration-300 ease-out transform"
+            className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover transition-colors"
           >
             Try Again
           </button>
@@ -779,8 +781,8 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={FIRST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
-                errors.firstName ? 'border-danger' : 'border-border'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                errors.firstName ? 'border-danger' : 'border-border-strong'
               }`}
                 placeholder="Enter your first name"
                 aria-describedby={errors.firstName ? 'firstName-error' : undefined}
@@ -804,8 +806,8 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={LAST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
-                errors.lastName ? 'border-danger' : 'border-border'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                errors.lastName ? 'border-danger' : 'border-border-strong'
               }`}
                 placeholder="Enter your last name"
                 aria-describedby={errors.lastName ? 'lastName-error' : undefined}
@@ -844,7 +846,7 @@ export default function SupportForm() {
               value={formData.companyOrganization}
               onChange={handleInputChange}
               maxLength={COMPANY_ORGANIZATION_MAX_LENGTH}
-              className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors hover:border-ink-faint"
               placeholder="Enter your company or organization"
             />
           </div>
@@ -863,8 +865,8 @@ export default function SupportForm() {
                   key={option.value}
                   className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                     formData.preferredContactMethod === option.value
-                      ? 'border-primary bg-accent shadow-sm'
-                      : 'border-border bg-card hover:border-input hover:bg-muted'
+                      ? 'border-primary bg-accent'
+                      : 'border-border bg-card hover:border-ink-faint hover:bg-muted'
                   }`}
                 >
                   <input
@@ -923,8 +925,8 @@ export default function SupportForm() {
                 onChange={handleInputChange}
                 required
                 maxLength={EMAIL_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
-                errors.email ? 'border-danger' : 'border-border'
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                errors.email ? 'border-danger' : 'border-border-strong'
               }`}
                 placeholder="Enter your email address"
                 aria-describedby={errors.email ? 'email-error' : undefined}
@@ -948,8 +950,8 @@ export default function SupportForm() {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 ${
-                errors.phone ? 'border-danger' : 'border-border'
+                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                errors.phone ? 'border-danger' : 'border-border-strong'
               }`}
                   placeholder="(555) 555-5555"
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
@@ -1011,8 +1013,8 @@ export default function SupportForm() {
                   key={option.value}
                   className={`relative flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                     formData.subject === option.value
-                      ? 'border-primary bg-accent shadow-sm'
-                      : 'border-border bg-card hover:border-input hover:bg-muted'
+                      ? 'border-primary bg-accent'
+                      : 'border-border bg-card hover:border-ink-faint hover:bg-muted'
                   }`}
                 >
                   <input
@@ -1073,8 +1075,8 @@ export default function SupportForm() {
               required
               rows={6}
               maxLength={DESCRIPTION_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-transparent hover:border-input hover:shadow-sm transition-all duration-200 resize-none ${
-                errors.description ? 'border-danger' : 'border-border'
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors resize-none ${
+                errors.description ? 'border-danger' : 'border-border-strong'
               }`}
               placeholder="Please describe your issue or request..."
               aria-describedby={errors.description ? 'description-error' : undefined}
@@ -1104,7 +1106,7 @@ export default function SupportForm() {
             <p className="text-sm text-muted-foreground mb-3">
               Supported formats: JPG, PNG, GIF, WebP, BMP (max 10MB per file, 50MB total)
             </p>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+            <div className="border border-dashed border-border-strong rounded-lg p-6 text-center">
               <input
                 type="file"
                 id="screenshots"
@@ -1204,7 +1206,7 @@ export default function SupportForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 transition-all duration-300 ease-out transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-accent-hover focus:ring-2 focus:ring-ring/20 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <div className="flex items-center">

@@ -1,44 +1,38 @@
 import { Suspense } from 'react';
+import { Metadata } from 'next';
 import SupportPageContent from './SupportPageContent';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
+export const metadata: Metadata = {
+  title: 'Support',
+  description: 'Get help with any CoFabri app. Real people reply within one business day.',
+  keywords: ['support', 'help', 'contact support', 'submit a ticket'],
+  alternates: {
+    canonical: '/support',
+  },
+  openGraph: {
+    title: 'Support | CoFabri',
+    description: 'Get help with any CoFabri app. Real people reply within one business day.',
+    url: 'https://cofabri.com/support',
+  },
+  twitter: {
+    title: 'Support | CoFabri',
+    description: 'Get help with any CoFabri app. Real people reply within one business day.',
+  },
+};
+
 export default function SupportPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 mt-16">
-          <div className="max-w-6xl mx-auto">
-            <div className="animate-pulse">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-card rounded-xl shadow-sm p-6">
-                    <div className="flex items-center mb-4">
-                      <div className="h-6 w-6 bg-muted rounded mr-3"></div>
-                      <div className="h-5 w-32 bg-muted rounded"></div>
-                    </div>
-                    <div className="h-4 w-full bg-muted rounded mb-4"></div>
-                    <div className="h-4 w-24 bg-muted rounded"></div>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-card rounded-xl shadow-sm p-6 mb-8">
-                <div className="flex items-center mb-4">
-                  <div className="h-6 w-6 bg-muted rounded mr-3"></div>
-                  <div className="h-5 w-32 bg-muted rounded"></div>
-                </div>
-                <div className="h-4 w-full bg-muted rounded"></div>
-              </div>
-              <div className="bg-card rounded-xl shadow-sm p-6">
-                <div className="h-[1600px] bg-muted rounded"></div>
-              </div>
-            </div>
-          </div>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary" />
         </div>
-      </div>
-    }>
+      }
+    >
       <SupportPageContent />
     </Suspense>
   );
-} 
+}
