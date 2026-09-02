@@ -57,11 +57,11 @@ export const metadata: Metadata = {
     description: 'We build and operate a portfolio of independent SaaS apps across industries, and co-build new ones with the industry operators who know those markets best.',
     images: [
       {
-        url: '/images/placeholder.jpg',
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
         width: 1200,
         height: 630,
         alt: 'CoFabri - A Software Studio Building a Portfolio of Independent Apps',
-        type: 'image/jpeg',
+        type: 'image/png',
       },
     ],
   },
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CoFabri - A Software Studio Building a Portfolio of Independent Apps',
     description: 'We build and operate a portfolio of independent SaaS apps across industries, and co-build new ones with the industry operators who know those markets best.',
-    images: ['/images/placeholder.jpg'],
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     creator: '@cofabri',
     site: '@cofabri',
   },

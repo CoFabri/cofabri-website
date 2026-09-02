@@ -7,3 +7,5 @@ env.example
 
 # Git worktrees (subagent-driven-development)
 .worktrees/
+.vercel
+.env*

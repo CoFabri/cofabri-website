@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://cofabri.com/contact',
     images: [
       {
-        url: '/images/placeholder.jpg',
+        url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
         width: 1200,
         height: 630,
         alt: 'Contact CoFabri Team',

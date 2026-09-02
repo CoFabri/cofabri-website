@@ -53,7 +53,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "@type": "Article",
           "headline": data.title,
           "description": data.description,
-          "image": data.image || "https://cofabri.com/images/placeholder.jpg",
+          "image": data.image || "https://files.cofabri.com/logos/cofabri/cofabri-og-image.png",
           "author": {
             "@type": "Organization",
             "name": "CoFabri"

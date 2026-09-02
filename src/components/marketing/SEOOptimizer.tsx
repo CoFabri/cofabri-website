@@ -22,7 +22,7 @@ export default function SEOOptimizer({
   description,
   keywords = [],
   canonical,
-  ogImage = '/images/placeholder.jpg',
+  ogImage = 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
   ogType = 'website',
   twitterCard = 'summary_large_image',
   structuredData,
