@@ -1,9 +1,7 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy, Handshake } from 'lucide-react';
+import CofabriLogo from './CofabriLogo';
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
@@ -45,15 +43,7 @@ const Footer = () => {
 
       <div className="border-t border-[#35424C]">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
-          <Link href="/" className="flex items-center flex-shrink-0">
-            <Image
-              src="https://files.cofabri.com/logos/cofabri-core/icon-512.png"
-              alt="CoFabri"
-              width={40}
-              height={40}
-              className="h-9 w-9"
-            />
-          </Link>
+          <CofabriLogo variant="mark" tone="dark" height={40} href="/" />
 
           <ul className="flex items-center gap-6 flex-wrap justify-center text-sm">
             {navigation.map((item) => (
