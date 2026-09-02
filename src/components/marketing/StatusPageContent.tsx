@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/airtable';
 import type { App } from '@/lib/api-client';
-import { incidentDotClasses, incidentPillClasses, severityPillClasses } from '@/lib/incident-display';
+import { incidentDotClasses, incidentPillClasses, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
 import RevealSection from './RevealSection';
@@ -74,9 +75,47 @@ function formatCountdown(seconds: number): string {
   return `${minutes}:${remaining.toString().padStart(2, '0')}`;
 }
 
+const STATUS_LABEL: Record<ServiceUptimeDay['status'] | 'none', string> = {
+  operational: 'Operational',
+  degraded: 'Degraded',
+  down: 'Down',
+  none: 'No data available',
+};
+
+interface DayBarProps {
+  date: string;
+  status: ServiceUptimeDay['status'] | 'none';
+  barKey: string;
+  isOpen: boolean;
+  setOpenBar: (key: string | null) => void;
+}
+
+// Controlled (rather than Radix's default hover-only) so a tap opens it on
+// touch devices too, and so only one bar's tooltip is ever open at a time.
+function DayBar({ date, status, barKey, isOpen, setOpenBar }: DayBarProps) {
+  return (
+    <Tooltip open={isOpen} onOpenChange={(open) => setOpenBar(open ? barKey : null)}>
+      <TooltipTrigger asChild>
+        <span
+          className={`block flex-1 rounded-[2px] ${dayBarClasses(status)}`}
+          onMouseEnter={() => setOpenBar(barKey)}
+          onMouseLeave={() => {
+            if (isOpen) setOpenBar(null);
+          }}
+          onClick={() => setOpenBar(isOpen ? null : barKey)}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="top">
+        {formatDate(date)} — {STATUS_LABEL[status]}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: StatusPageContentProps) {
   const [statuses, setStatuses] = useState(initialStatuses);
   const [secondsUntilRefresh, setSecondsUntilRefresh] = useState(REFRESH_SECONDS);
+  const [openBar, setOpenBar] = useState<string | null>(null);
   const uptimeWindow = useMemo(() => uptimeWindowDates(), []);
 
   const openIncidents = useMemo(() => statuses.filter((s) => s.publicStatus !== 'Resolved'), [statuses]);
@@ -150,6 +189,20 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
     ];
   }, [apps, openIncidents, uptimeHistory]);
 
+  // Aggregate row folding every service's day-by-day status into one, so the
+  // page has a single at-a-glance ticker above the per-service breakdown.
+  const rows = useMemo(
+    () => [
+      {
+        name: 'All Services',
+        incident: mostSevereIncident(statuses),
+        history: mergeHistories(services.map((s) => s.history)),
+      },
+      ...services,
+    ],
+    [services, statuses]
+  );
+
   const allOperational = openIncidents.length === 0;
 
   return (
@@ -177,47 +230,64 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
             {UPTIME_WINDOW_DAYS}-day uptime
           </span>
         </div>
-        {services.map((service) => {
-          const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'none');
-          const daysWithData = bars.filter((s) => s !== 'none').length;
-          const operationalDays = bars.filter((s) => s === 'operational').length;
-          const uptimePct = daysWithData > 0 ? ((operationalDays / daysWithData) * 100).toFixed(1) : null;
+        <TooltipProvider delayDuration={0}>
+          {rows.map((service) => {
+            const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'none');
+            const daysWithData = bars.filter((s) => s !== 'none').length;
+            const operationalDays = bars.filter((s) => s === 'operational').length;
+            const uptimePct = daysWithData > 0 ? ((operationalDays / daysWithData) * 100).toFixed(1) : null;
 
-          return (
-            <div
-              key={service.name}
-              className="grid grid-cols-[1fr_auto] items-center gap-6 border-t border-border px-7 py-[18px] first:border-t-0 sm:grid-cols-[200px_1fr_90px_130px] sm:gap-8"
-            >
-              <div className="flex items-center gap-2.5">
-                <span
-                  className={`block h-2 w-2 flex-shrink-0 rounded-full ${
-                    service.incident ? incidentDotClasses(service.incident.publicStatus) : 'bg-success'
-                  }`}
-                />
-                <span className="text-base font-semibold text-foreground">{service.name}</span>
-              </div>
-              {daysWithData > 0 ? (
-                <div className="hidden h-[26px] items-stretch gap-[2px] sm:flex">
-                  {bars.map((status, i) => (
-                    <span key={i} className={`block flex-1 rounded-[2px] ${dayBarClasses(status)}`} />
-                  ))}
-                </div>
-              ) : (
-                <div className="hidden sm:block" />
-              )}
-              <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
-                {uptimePct !== null ? `${uptimePct}%` : '—'}
-              </span>
-              <span
-                className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
-                  service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
-                }`}
+            return (
+              <div
+                key={service.name}
+                className="border-t border-border px-7 py-[18px] first:border-t-0"
               >
-                {service.incident ? service.incident.publicStatus : 'Operational'}
-              </span>
-            </div>
-          );
-        })}
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 sm:grid sm:grid-cols-[200px_1fr_90px_130px] sm:justify-normal sm:gap-8">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={`block h-2 w-2 flex-shrink-0 rounded-full ${
+                        service.incident ? incidentDotClasses(service.incident.publicStatus) : 'bg-success'
+                      }`}
+                    />
+                    <span className="text-base font-semibold text-foreground">{service.name}</span>
+                  </div>
+                  <div className="order-3 w-full sm:order-none sm:w-auto">
+                    {daysWithData > 0 ? (
+                      <div className="flex h-[26px] items-stretch gap-[2px]">
+                        {bars.map((status, i) => {
+                          const date = uptimeWindow[i];
+                          const barKey = `${service.name}::${date}`;
+                          return (
+                            <DayBar
+                              key={barKey}
+                              date={date}
+                              status={status}
+                              barKey={barKey}
+                              isOpen={openBar === barKey}
+                              setOpenBar={setOpenBar}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="h-[26px]" />
+                    )}
+                  </div>
+                  <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
+                    {uptimePct !== null ? `${uptimePct}%` : '—'}
+                  </span>
+                  <span
+                    className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
+                    }`}
+                  >
+                    {service.incident ? service.incident.publicStatus : 'Operational'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </TooltipProvider>
       </RevealSection>
 
       {(openIncidents.length > 0 || resolvedIncidents.length > 0) && (
