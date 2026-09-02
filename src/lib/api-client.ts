@@ -84,3 +84,95 @@ export async function getApp(appId: string): Promise<App | null> {
     return null;
   }
 }
+
+export interface KnowledgeBaseArticle {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  category: string;
+  slug: string;
+  author: string;
+  readTime: number;
+  publishedAt: string;
+  lastUpdated?: string;
+  isPopular?: boolean;
+  isFeatured?: boolean;
+  tags?: string[];
+  applications?: string[];
+  logoUrl?: string;
+  relatedTopics?: string[] | string;
+}
+
+interface KbArticleRow {
+  id: string;
+  article_title: string;
+  article_content: string | null;
+  excerpt: string | null;
+  category: string;
+  site_url_slug: string | null;
+  author_name: string | null;
+  read_time: number | null;
+  last_updated: string | null;
+  is_popular: boolean | null;
+  is_featured: boolean | null;
+  tags: string[] | null;
+  logo_url: string | null;
+}
+
+function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
+  return {
+    id: row.id,
+    title: row.article_title,
+    content: row.article_content || '',
+    excerpt: row.excerpt || undefined,
+    category: row.category,
+    slug: row.site_url_slug || row.id,
+    author: row.author_name || '',
+    readTime: row.read_time || 0,
+    publishedAt: row.last_updated || '',
+    lastUpdated: row.last_updated || undefined,
+    isPopular: row.is_popular || undefined,
+    isFeatured: row.is_featured || undefined,
+    tags: row.tags || [],
+    applications: [],
+    logoUrl: row.logo_url || undefined,
+  };
+}
+
+export async function getKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
+  try {
+    const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base');
+    return rows.map(mapKbArticle);
+  } catch (error) {
+    console.error('Error fetching knowledge base articles:', error);
+    return [];
+  }
+}
+
+export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBaseArticle | null> {
+  try {
+    const row = await apiFetch<KbArticleRow>(`/web/content/knowledge-base/${encodeURIComponent(slug)}`);
+    return mapKbArticle(row);
+  } catch (error) {
+    console.error('Error fetching knowledge base article:', error);
+    return null;
+  }
+}
+
+export async function getKnowledgeBaseArticlesBySlugs(slugs: string[]): Promise<KnowledgeBaseArticle[]> {
+  if (slugs.length === 0) return [];
+  const all = await getKnowledgeBaseArticles();
+  const slugSet = new Set(slugs);
+  return all.filter((article) => slugSet.has(article.slug));
+}
+
+export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseArticle[]> {
+  try {
+    const rows = await apiFetch<KbArticleRow[]>('/web/content/knowledge-base?featured=true');
+    return rows.slice(0, 6).map(mapKbArticle);
+  } catch (error) {
+    console.error('Error fetching featured knowledge base articles:', error);
+    return [];
+  }
+}
