@@ -2,8 +2,6 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import PartnersPageContent from '@/components/marketing/PartnersPageContent';
 
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Co-Build',
   description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',

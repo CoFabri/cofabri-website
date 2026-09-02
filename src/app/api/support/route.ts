@@ -26,7 +26,12 @@ const FIRST_NAME_MAX_LENGTH = 50;
 const LAST_NAME_MAX_LENGTH = 50;
 const EMAIL_MAX_LENGTH = 100;
 const COMPANY_ORGANIZATION_MAX_LENGTH = 100;
+const PHONE_MAX_LENGTH = 30;
 const DESCRIPTION_MAX_LENGTH = 2000;
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
 
 // Get Turnstile secret key based on environment
 const getTurnstileSecretKey = () => {
@@ -40,23 +45,23 @@ const getTurnstileSecretKey = () => {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    
+
     // Extract form data
-    const firstName = formData.get('firstName') as string;
-    const lastName = formData.get('lastName') as string;
-    const languagePreference = formData.get('languagePreference') as string;
-    const companyOrganization = formData.get('companyOrganization') as string;
-    const preferredContactMethod = formData.get('preferredContactMethod') as string;
-    const email = formData.get('email') as string;
-    const phone = formData.get('phone') as string;
-    const applications = formData.get('applications') as string;
-    const subject = formData.get('subject') as string;
-    const description = formData.get('description') as string;
-    const turnstileToken = formData.get('turnstileToken') as string;
-    
+    const firstName = formData.get('firstName');
+    const lastName = formData.get('lastName');
+    const languagePreference = formData.get('languagePreference');
+    const companyOrganization = formData.get('companyOrganization');
+    const preferredContactMethod = formData.get('preferredContactMethod');
+    const email = formData.get('email');
+    const phone = formData.get('phone');
+    const applications = formData.get('applications');
+    const subject = formData.get('subject');
+    const description = formData.get('description');
+    const turnstileToken = formData.get('turnstileToken');
+
     // Parse applications array (cofabri-api's support endpoint only accepts a single
     // app_id, so we forward the first selected application, if any)
-    const applicationsArray = applications ? JSON.parse(applications) : [];
+    const applicationsArray = typeof applications === 'string' && applications ? JSON.parse(applications) : [];
 
     // Validate required fields
     // Note: phone is intentionally not required here — cofabri-api's
@@ -64,7 +69,14 @@ export async function POST(request: Request) {
     // cross-repo schema gap), so it would be misleading to block submission
     // on a value that's silently discarded. The form still collects it (it
     // may be useful in logs) but does not require it.
-    if (!firstName || !lastName || !email || !preferredContactMethod || !subject || !description) {
+    if (
+      !isNonEmptyString(firstName) ||
+      !isNonEmptyString(lastName) ||
+      !isNonEmptyString(email) ||
+      !isNonEmptyString(preferredContactMethod) ||
+      !isNonEmptyString(subject) ||
+      !isNonEmptyString(description)
+    ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -73,7 +85,7 @@ export async function POST(request: Request) {
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
@@ -102,9 +114,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (companyOrganization && companyOrganization.trim().length > COMPANY_ORGANIZATION_MAX_LENGTH) {
+    if (typeof companyOrganization === 'string' && companyOrganization.trim().length > COMPANY_ORGANIZATION_MAX_LENGTH) {
       return NextResponse.json(
         { error: `Company/Organization must be ${COMPANY_ORGANIZATION_MAX_LENGTH} characters or less` },
+        { status: 400 }
+      );
+    }
+
+    if (typeof phone === 'string' && phone.trim().length > PHONE_MAX_LENGTH) {
+      return NextResponse.json(
+        { error: `Phone must be ${PHONE_MAX_LENGTH} characters or less` },
         { status: 400 }
       );
     }
@@ -152,13 +171,13 @@ export async function POST(request: Request) {
         },
         body: new URLSearchParams({
           secret: TURNSTILE_SECRET_KEY,
-          response: turnstileToken,
+          response: turnstileToken as string,
           remoteip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
         }),
       });
 
       const turnstileResult = await turnstileResponse.json();
-      
+
       if (!turnstileResult.success) {
         console.error('Turnstile verification failed:', turnstileResult);
         return NextResponse.json(
@@ -185,39 +204,42 @@ export async function POST(request: Request) {
     }
 
     // Submit to cofabri-api, which persists the support ticket in Supabase
-    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/support`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        subject: toApiSubjectLabel(subject),
-        description,
-        app_id: applicationsArray[0],
-        subject_type: toApiSubjectType(subject),
-        preferred_contact_method: preferredContactMethod || undefined,
-        company_organization: companyOrganization || undefined,
-        language_preference: toApiLanguagePreference(languagePreference),
-      }),
-    });
+    let apiRes: Response;
+    try {
+      apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/support`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email: email.trim(),
+          subject: toApiSubjectLabel(subject.trim()),
+          description: description.trim(),
+          app_id: applicationsArray[0],
+          subject_type: toApiSubjectType(subject.trim()),
+          preferred_contact_method: preferredContactMethod.trim() || undefined,
+          company_organization: typeof companyOrganization === 'string' && companyOrganization.trim() ? companyOrganization.trim() : undefined,
+          language_preference: toApiLanguagePreference(typeof languagePreference === 'string' ? languagePreference : undefined),
+        }),
+      });
+    } catch (fetchError) {
+      console.error('cofabri-api support submission unreachable:', fetchError);
+      return NextResponse.json(
+        { error: 'Failed to save support ticket. Please try again later.' },
+        { status: 502 }
+      );
+    }
 
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
-      console.error('cofabri-api support submission failed:', apiRes.status, errorBody);
-
-      // Log the submission for manual processing if the API call fails
-      console.log('Support form submission (cofabri-api failed):', {
-        firstName,
-        lastName,
-        email,
-        phone,
-        subject,
-        description: description.substring(0, 100) + '...', // Truncate for logging
-        languagePreference,
+      // Log only validation messages, never the raw errorBody — express-validator's
+      // error entries include the submitted `value` verbatim, which can be PII (email, etc).
+      const errorSummary = errorBody?.errors ? errorBody.errors.map((e: { msg?: string }) => e.msg) : errorBody?.message || null;
+      console.error('cofabri-api support submission failed:', apiRes.status, errorSummary, {
+        subject: subject.trim(),
         applications: applicationsArray,
         screenshots: screenshots.map(f => f.name),
         timestamp: new Date().toISOString()
@@ -232,12 +254,7 @@ export async function POST(request: Request) {
     const result = await apiRes.json();
     console.log('Support form submission saved via cofabri-api:', {
       recordId: result.id,
-      firstName,
-      lastName,
-      email,
-      phone,
-      subject,
-      languagePreference,
+      subject: subject.trim(),
       applications: applicationsArray,
       screenshots: screenshots.map(f => f.name),
       timestamp: new Date().toISOString()
@@ -252,23 +269,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error processing support form:', error);
-    
-    // Log the submission for manual processing if there's an error
-    try {
-      const formData = await request.formData();
-      console.log('Support form submission (error occurred):', {
-        firstName: formData.get('firstName'),
-        lastName: formData.get('lastName'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        subject: formData.get('subject'),
-        description: formData.get('description') ? (formData.get('description') as string).substring(0, 100) + '...' : '',
-        timestamp: new Date().toISOString()
-      });
-    } catch (logError) {
-      console.error('Could not log form data:', logError);
-    }
-    
+
     return NextResponse.json(
       { error: 'Failed to process support ticket. Please try again later.' },
       { status: 500 }

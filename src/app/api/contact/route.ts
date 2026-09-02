@@ -16,6 +16,10 @@ const EMAIL_MAX_LENGTH = 100;
 const SUBJECT_MAX_LENGTH = 100;
 const MESSAGE_MAX_LENGTH = 2000;
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 // Get Turnstile secret key based on environment
 const getTurnstileSecretKey = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -31,7 +35,7 @@ export async function POST(request: Request) {
     const { firstName, lastName, email, subject, message, languagePreference, relatedApp, turnstileToken } = body;
 
     // Validate required fields
-    if (!firstName || !lastName || !email || !subject || !message) {
+    if (!isNonEmptyString(firstName) || !isNonEmptyString(lastName) || !isNonEmptyString(email) || !isNonEmptyString(subject) || !isNonEmptyString(message)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email.trim())) {
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
@@ -125,7 +129,7 @@ export async function POST(request: Request) {
       });
 
       const turnstileResult = await turnstileResponse.json();
-      
+
       if (!turnstileResult.success) {
         console.error('Turnstile verification failed:', turnstileResult);
         return NextResponse.json(
@@ -145,36 +149,40 @@ export async function POST(request: Request) {
     }
 
     // Submit to cofabri-api, which persists the contact submission in Supabase
-    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/contact`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        subject,
-        message,
-        language_preference: toApiLanguagePreference(languagePreference),
-      }),
-    });
+    let apiRes: Response;
+    try {
+      apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email: email.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+          language_preference: toApiLanguagePreference(languagePreference),
+        }),
+      });
+    } catch (fetchError) {
+      console.error('cofabri-api contact submission unreachable:', fetchError);
+      return NextResponse.json(
+        { error: 'Failed to save contact submission. Please try again later.' },
+        { status: 502 }
+      );
+    }
 
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
-      console.error('cofabri-api contact submission failed:', apiRes.status, errorBody);
-
-      // Log the submission for manual processing if the API call fails
-      console.log('Contact form submission (cofabri-api failed):', {
-        firstName,
-        lastName,
-        email,
-        subject,
-        message: message.substring(0, 100) + '...', // Truncate for logging
-        languagePreference,
+      // Log only validation messages, never the raw errorBody — express-validator's
+      // error entries include the submitted `value` verbatim, which can be PII (email, etc).
+      const errorSummary = errorBody?.errors ? errorBody.errors.map((e: { msg?: string }) => e.msg) : errorBody?.message || null;
+      console.error('cofabri-api contact submission failed:', apiRes.status, errorSummary, {
+        subject: subject.trim(),
         relatedApp,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       return NextResponse.json(
@@ -186,11 +194,7 @@ export async function POST(request: Request) {
     const result = await apiRes.json();
     console.log('Contact form submission saved via cofabri-api:', {
       recordId: result.id,
-      firstName,
-      lastName,
-      email,
-      subject,
-      languagePreference,
+      subject: subject.trim(),
       relatedApp,
       timestamp: new Date().toISOString()
     });
@@ -204,22 +208,10 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Error processing contact form:', error);
-    
-    // Log the submission for manual processing if there's an error
-    try {
-      const body = await request.json();
-      console.log('Contact form submission (error occurred):', {
-        ...body,
-        message: body.message ? body.message.substring(0, 100) + '...' : '', // Truncate for logging
-        timestamp: new Date().toISOString()
-      });
-    } catch (logError) {
-      console.error('Could not log form data:', logError);
-    }
-    
+
     return NextResponse.json(
       { error: 'Failed to process form submission. Please try again later.' },
       { status: 500 }
     );
   }
-} 
+}
