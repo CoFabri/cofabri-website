@@ -14,6 +14,7 @@ interface FormData {
   message: string;
   languagePreference: string;
   relatedApp: string;
+  inquiryType: '' | 'sales' | 'general';
 }
 
 interface FormErrors {
@@ -22,6 +23,7 @@ interface FormErrors {
   email?: string;
   subject?: string;
   message?: string;
+  inquiryType?: string;
   turnstile?: string;
 }
 
@@ -205,7 +207,8 @@ export default function ContactForm() {
     subject: '',
     message: '',
     languagePreference: 'English',
-    relatedApp: ''
+    relatedApp: '',
+    inquiryType: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -312,6 +315,10 @@ export default function ContactForm() {
       newErrors.message = `Message must be ${MESSAGE_MAX_LENGTH} characters or less`;
     }
 
+    if (!formData.inquiryType) {
+      newErrors.inquiryType = 'Please select what this is about';
+    }
+
     if (!turnstileToken) {
       newErrors.turnstile = 'Please complete the security verification';
     }
@@ -358,6 +365,19 @@ export default function ContactForm() {
     }));
   };
 
+  const handleInquiryTypeChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      inquiryType: value as 'sales' | 'general'
+    }));
+    if (errors.inquiryType) {
+      setErrors(prev => ({
+        ...prev,
+        inquiryType: undefined
+      }));
+    }
+  };
+
   const handleAppChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -373,7 +393,8 @@ export default function ContactForm() {
       subject: '',
       message: '',
       languagePreference: 'English',
-      relatedApp: ''
+      relatedApp: '',
+      inquiryType: ''
     });
     setErrors({});
     setTurnstileToken('');
@@ -434,7 +455,8 @@ export default function ContactForm() {
           subject: '',
           message: '',
           languagePreference: 'English',
-          relatedApp: ''
+          relatedApp: '',
+          inquiryType: ''
         });
         setErrors({});
         setTurnstileToken('');
@@ -615,6 +637,26 @@ export default function ContactForm() {
               placeholder="Select a language"
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="inquiryType" className="block text-sm font-medium text-foreground mb-2">
+            What can we help with? *
+          </label>
+          <SimpleDropdown
+            options={[
+              { value: 'sales', label: 'Sales / partnership inquiry' },
+              { value: 'general', label: 'General question / support' },
+            ]}
+            value={formData.inquiryType}
+            onChange={handleInquiryTypeChange}
+            placeholder="Select an option"
+          />
+          {errors.inquiryType && (
+            <p className="mt-1 text-sm text-danger">
+              {errors.inquiryType}
+            </p>
+          )}
         </div>
 
         <div>
