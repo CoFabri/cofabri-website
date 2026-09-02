@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import SectionHeading from './SectionHeading';
+import Link from 'next/link';
 import RevealSection from './RevealSection';
 import {
   Accordion,
@@ -39,22 +39,31 @@ const faqs = [
 
 const FAQ = () => {
   return (
-    <RevealSection className="py-20 bg-muted/30">
-      <div className="mx-auto max-w-6xl px-6">
-        <SectionHeading
-          eyebrow="FAQ"
-          title="Frequently Asked Questions"
-          subtitle="Find answers to common questions about our products and services"
-        />
+    <RevealSection className="py-24 md:py-28 bg-background">
+      <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[320px_1fr] md:gap-20">
+          <div>
+            <h2 className="m-0 text-[32px] leading-[1.12] tracking-[-0.03em] font-semibold text-foreground sm:text-[36px]">
+              Questions,
+              <br />
+              answered.
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground">
+              Still stuck?{' '}
+              <Link href="/contact" className="font-medium text-primary hover:text-accent-hover">
+                Talk to us
+              </Link>
+              .
+            </p>
+          </div>
 
-        <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible>
+          <Accordion type="single" collapsible className="border-t border-border">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`faq-${index}`}>
-                <AccordionTrigger className="text-lg font-medium text-foreground">
+                <AccordionTrigger className="py-6 text-[18px] font-medium tracking-[-0.01em] text-foreground hover:no-underline hover:text-primary">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
+                <AccordionContent className="pr-0 text-[16px] leading-[1.65] text-muted-foreground md:pr-20">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

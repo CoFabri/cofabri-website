@@ -39,8 +39,8 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="py-24 md:py-28 bg-background">
+        <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <SectionHeading
             eyebrow="Testimonials"
             title="What Our Customers Say"
@@ -50,7 +50,7 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
             {[...Array(3)].map((_, index) => (
               <div
                 key={index}
-                className="relative p-8 rounded-2xl bg-card border border-border shadow-sm animate-pulse"
+                className="relative p-8 rounded-xl bg-card border border-border shadow-sm animate-pulse"
               >
                 <div className="flex items-center mb-6">
                   <div className="w-14 h-14 rounded-full bg-muted" />
@@ -71,8 +71,8 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
 
   if (error) {
     return (
-      <section className="py-20 bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="py-24 md:py-28 bg-background">
+        <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <SectionHeading
             eyebrow="Testimonials"
             title="What Our Customers Say"
@@ -87,8 +87,8 @@ const Testimonials = ({ appId }: TestimonialsProps) => {
   }
 
   return (
-    <RevealSection className="py-20 bg-muted/30">
-      <div className="mx-auto max-w-6xl px-6">
+    <RevealSection className="py-24 md:py-28 bg-background">
+      <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
         <SectionHeading
           eyebrow="Testimonials"
           title="What Our Customers Say"

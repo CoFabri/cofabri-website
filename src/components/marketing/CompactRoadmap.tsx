@@ -3,20 +3,25 @@
 import React, { useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
-import { getStatusColor, getStatusIcon } from './ProductRoadmap';
-import SectionHeading from './SectionHeading';
 import RevealSection from './RevealSection';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
+interface Column {
+  title: string;
+  dotClassName: string;
+  items: RoadmapFeature[];
+}
+
+function formatWhen(feature: RoadmapFeature) {
+  if (feature.releasedDate) {
+    return new Date(feature.releasedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return feature.milestone;
+}
 
 export default function CompactRoadmap() {
-  const router = useRouter();
   const [features, setFeatures] = useState<RoadmapFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchFeatures() {
@@ -27,7 +32,6 @@ export default function CompactRoadmap() {
         setFeatures(data);
       } catch (err) {
         console.error('Error fetching roadmap features:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch roadmap features');
       } finally {
         setIsLoading(false);
       }
@@ -38,121 +42,94 @@ export default function CompactRoadmap() {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-background">
-        <div className="mx-auto max-w-6xl px-6">
+      <section className="py-24 bg-muted">
+        <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
           </div>
         </div>
       </section>
     );
   }
 
-  if (features.length === 0) {
-    return null;
-  }
+  if (features.length === 0) return null;
 
-  // Get the next quarter's milestone and its features
-  const nextQuarter = features[0].milestone;
-  const nextQuarterFeatures = features.filter(feature => feature.milestone === nextQuarter);
-
-  // Helper function to get dynamic grid classes based on feature count
-  const getDynamicGridClasses = (featureCount: number) => {
-    if (featureCount === 1) {
-      return 'grid-cols-1 lg:grid-cols-1'; // Single feature takes full width
-    } else if (featureCount === 2) {
-      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'; // Two features, 50% each
-    } else {
-      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'; // Three or more, max 3 per row
-    }
-  };
-
-  // Helper function to group features into rows of 3
-  const groupFeaturesIntoRows = (features: RoadmapFeature[]) => {
-    const rows: RoadmapFeature[][] = [];
-    for (let i = 0; i < features.length; i += 3) {
-      rows.push(features.slice(i, i + 3));
-    }
-    return rows;
-  };
+  const columns: Column[] = [
+    {
+      title: 'Shipped',
+      dotClassName: 'bg-success',
+      items: features
+        .filter((f) => f.status === 'Released')
+        .sort((a, b) => (b.releasedDate ?? '').localeCompare(a.releasedDate ?? ''))
+        .slice(0, 4),
+    },
+    {
+      title: 'In progress',
+      dotClassName: 'bg-primary',
+      items: features.filter((f) => f.status === 'In Progress').slice(0, 4),
+    },
+    {
+      title: 'Next',
+      dotClassName: 'bg-ink-disabled',
+      items: features.filter((f) => f.status === 'Planned' || f.status === 'Delayed').slice(0, 4),
+    },
+  ];
 
   return (
-    <RevealSection className="py-20 bg-background">
-      <div className="mx-auto max-w-6xl px-6">
-        <SectionHeading
-          eyebrow="Roadmap"
-          title="Product Roadmaps & Changelog"
-          subtitle="See what's coming next and track our progress"
-        />
-
-        <div className="space-y-8 mb-12">
-          <div className="relative">
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-4 mb-6">
-              <h3 className="text-2xl font-semibold text-foreground">
-                {nextQuarter}
-              </h3>
+    <RevealSection className="py-24 md:py-28 bg-muted border-y border-border">
+      <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
+        <div className="mb-11 flex items-end justify-between gap-10">
+          <div>
+            <div className="mb-3.5 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
+              Roadmap
             </div>
-
-            <div className="space-y-6">
-              {groupFeaturesIntoRows(nextQuarterFeatures).map((row, rowIndex) => (
-                <div key={rowIndex} className={`grid ${getDynamicGridClasses(row.length)} gap-6`}>
-                  {row.map((feature) => (
-                    <Card
-                      key={feature.id}
-                      onClick={() => router.push(`/roadmaps?expand=${feature.id}`)}
-                      className="overflow-hidden gap-0 py-0 flex flex-col cursor-pointer group hover:border-primary/40 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="p-5">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="flex-shrink-0 mt-1">
-                            {getStatusIcon(feature.status)}
-                          </div>
-                          <div className="flex-grow">
-                            <h4 className="text-base font-semibold text-foreground">
-                              {feature.name}
-                            </h4>
-                            {feature.application && (
-                              <div className="mt-1">
-                                <span className="inline-flex text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
-                                  {feature.application}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {feature.description}
-                        </p>
-                      </div>
-
-                      <div className="mt-auto">
-                        <div className="px-5 py-3 border-t border-border bg-muted/50">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <Badge variant="outline" className={getStatusColor(feature.status)}>
-                              {feature.status}
-                            </Badge>
-                            <span className="text-xs text-primary group-hover:text-primary/80 transition-colors">
-                              View Details →
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ))}
-            </div>
+            <h2 className="m-0 text-[32px] leading-[1.1] tracking-[-0.03em] font-semibold text-foreground sm:text-[42px]">
+              Built in the open.
+            </h2>
+            <p className="mt-3.5 max-w-[520px] text-lg text-muted-foreground">
+              Every release, every delay, every reprioritisation. Published as it happens.
+            </p>
           </div>
+          <Link
+            href="/roadmaps"
+            className="hidden sm:inline-flex items-center gap-1.5 flex-shrink-0 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            Full roadmap
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
-        <div className="text-center">
-          <Button asChild size="lg">
-            <Link href="/roadmaps">
-              View All Roadmaps
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          {columns.map((col) => (
+            <div key={col.title} className="rounded-xl border border-border bg-card p-6">
+              <div className="flex items-center gap-2.5 border-b border-border pb-4.5">
+                <span className={`block h-[7px] w-[7px] rounded-full ${col.dotClassName}`} />
+                <span className="text-sm font-semibold text-foreground">{col.title}</span>
+                <span className="ml-auto font-mono text-xs text-ink-faint">{col.items.length}</span>
+              </div>
+              {col.items.length === 0 ? (
+                <p className="py-6 text-sm text-muted-foreground">Nothing here yet.</p>
+              ) : (
+                col.items.map((item) => (
+                  <div key={item.id} className="border-b border-border py-4 last:border-b-0">
+                    <div className="text-[15px] font-medium leading-[1.4] text-foreground">{item.name}</div>
+                    <div className="mt-1.5 flex items-center gap-2 font-mono text-[11px] text-ink-faint">
+                      {item.application && <span>{item.application}</span>}
+                      {item.application && <span>·</span>}
+                      <span>{formatWhen(item)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 text-center sm:hidden">
+          <Link href="/roadmaps" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
+            Full roadmap
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </RevealSection>

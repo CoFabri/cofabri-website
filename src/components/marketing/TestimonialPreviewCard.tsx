@@ -16,7 +16,7 @@ interface TestimonialPreviewCardProps {
 
 export default function TestimonialPreviewCard({ testimonial }: TestimonialPreviewCardProps) {
   return (
-    <div className="group relative p-8 rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-1">
+    <div className="group relative p-8 rounded-xl bg-card border border-border shadow-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300 ease-out">
       <div className="flex items-center mb-6">
         <div className="relative w-14 h-14 rounded-full overflow-hidden transition-transform duration-300 group-hover:scale-110">
           <Image
