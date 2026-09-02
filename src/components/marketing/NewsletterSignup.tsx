@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EnvelopeIcon, CheckCircleIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Mail, CheckCircle2, User } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface NewsletterSignupProps {
   className?: string;
@@ -10,7 +13,7 @@ interface NewsletterSignupProps {
   description?: string;
 }
 
-export default function NewsletterSignup({ 
+export default function NewsletterSignup({
   className = '',
   title = 'Subscribe to our newsletter',
   description = 'Get weekly updates on the latest articles and insights.'
@@ -67,13 +70,13 @@ export default function NewsletterSignup({
   if (hasSubscribed) {
     return (
       <div className={`flex flex-col items-center justify-center min-h-[220px] ${className}`}>
-        <div className="flex flex-col items-center bg-white/20 border border-green-400 rounded-2xl p-8 max-w-md mx-auto shadow-lg">
-          <CheckCircleIcon className="h-12 w-12 text-green-400 mb-3" />
-          <h3 className="text-xl font-bold text-white mb-2">You're Subscribed!</h3>
-          <p className="text-blue-100 mb-1 text-center">
+        <div className="flex flex-col items-center text-center">
+          <CheckCircle2 className="h-12 w-12 text-primary mb-3" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">You're Subscribed!</h3>
+          <p className="text-muted-foreground mb-1">
             {firstName ? `Thank you for subscribing, ${firstName}!` : 'Thank you for subscribing to our newsletter.'}
           </p>
-          <p className="text-blue-100 text-center">Updates will be sent to <span className="font-semibold text-white">{email}</span>.</p>
+          <p className="text-muted-foreground">Updates will be sent to <span className="font-semibold text-foreground">{email}</span>.</p>
         </div>
       </div>
     );
@@ -82,59 +85,67 @@ export default function NewsletterSignup({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="text-center">
-        <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-        <p className="text-blue-100">{description}</p>
+        <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-muted-foreground">{description}</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="First Name"
-              required
-              className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="newsletter-first-name" className="sr-only">First Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="newsletter-first-name"
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="First Name"
+                required
+                className="pl-9"
+              />
+            </div>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="newsletter-last-name" className="sr-only">Last Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="newsletter-last-name"
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Last Name"
+                required
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="newsletter-email" className="sr-only">Email</Label>
           <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Last Name"
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="newsletter-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               required
-              className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="pl-9"
             />
           </div>
         </div>
-        <div className="relative">
-          <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-200" />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-            className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-white/50"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-3 px-4 rounded-lg bg-white text-blue-600 font-medium hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" disabled={isSubmitting} className="w-full">
           {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
-        </button>
+        </Button>
       </form>
       {error && (
-        <p className="text-sm text-red-200">{error}</p>
+        <p className="text-sm text-destructive text-center">{error}</p>
       )}
       {isSuccess && (
-        <p className="text-sm text-green-200">Successfully subscribed! Welcome to our newsletter.</p>
+        <p className="text-sm text-primary text-center">Successfully subscribed! Welcome to our newsletter.</p>
       )}
     </div>
   );
-} 
+}
