@@ -1,13 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Apps from '@/components/marketing/Apps';
-import NewsletterSignup from '@/components/marketing/NewsletterSignup';
-import GradientHeading from '@/components/marketing/GradientHeading';
-import Link from 'next/link';
-import Testimonials from '@/components/marketing/Testimonials';
-import FeaturedApp from '@/components/marketing/FeaturedApp';
-import Breadcrumbs from '@/components/marketing/Breadcrumbs';
-import { Card } from '@/components/ui/card';
+import AppsPageContent from '@/components/marketing/AppsPageContent';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -41,82 +34,7 @@ export const metadata: Metadata = {
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-8">
-        <Breadcrumbs items={[{ name: 'Apps', href: '/apps' }]} />
-      </div>
-      <GradientHeading
-        title="Our Apps"
-        subtitle="Explore our full collection of applications designed to enhance your productivity."
-      />
-
-      {/* Main content */}
-      <div className="container mx-auto px-4 py-16">
-        {/* Featured App Spotlight */}
-        <FeaturedApp />
-
-        {/* Apps Grid */}
-        <div className="relative">
-          <Apps />
-        </div>
-      </div>
-
-      {/* Resources & Support Section */}
-      <div className="w-full bg-muted">
-        <section className="py-24">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <h2 className="text-4xl font-bold text-foreground">Resources & Support</h2>
-              <p className="mt-4 text-lg text-muted-foreground">Everything you need to get started and succeed with our apps</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-              <Link href="/roadmaps" className="group">
-                <div className="bg-card rounded-3xl p-8 shadow-lg transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-accent">
-                      <svg className="w-6 h-6 text-accent-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground">Product Roadmap</h3>
-                      <p className="text-muted-foreground mt-1">See what&apos;s coming next and vote on future features</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="/knowledge-base" className="group">
-                <div className="bg-card rounded-3xl p-8 shadow-lg transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-xl bg-accent">
-                      <svg className="w-6 h-6 text-accent-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-foreground">Knowledge Base</h3>
-                      <p className="text-muted-foreground mt-1">Find guides, tutorials, and answers to common questions</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* Testimonials Section */}
-      {/* To filter testimonials by app, pass appId: <Testimonials appId={appId} /> */}
-      <Testimonials />
-
-      {/* Newsletter Section */}
-      <div className="container mx-auto px-4">
-        <section className="mt-24 py-20">
-          <Card className="max-w-2xl mx-auto p-8 md:p-10">
-            <NewsletterSignup />
-          </Card>
-        </section>
-      </div>
+      <AppsPageContent />
     </div>
   );
-} 
+}

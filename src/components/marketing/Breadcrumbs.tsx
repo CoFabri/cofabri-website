@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline';
 import StructuredData from './StructuredData';
 
 interface BreadcrumbItem {
@@ -28,30 +27,17 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
   return (
     <>
       <StructuredData type="breadcrumb" data={structuredData} />
-      <nav className={`flex items-center space-x-2 text-sm text-muted-foreground ${className}`} aria-label="Breadcrumb">
+      <nav className={`flex items-center gap-2.5 text-sm ${className}`} aria-label="Breadcrumb">
         {breadcrumbItems.map((item, index) => (
-          <div key={item.href} className="flex items-center">
-            {index > 0 && (
-              <ChevronRightIcon className="h-4 w-4 text-ink-faint mx-2" />
-            )}
+          <div key={item.href} className="flex items-center gap-2.5">
+            {index > 0 && <span className="text-ink-disabled">/</span>}
             {index === breadcrumbItems.length - 1 ? (
-              <span className="text-foreground font-medium" aria-current="page">
-                {index === 0 ? (
-                  <HomeIcon className="h-4 w-4" />
-                ) : (
-                  item.name
-                )}
+              <span className="font-medium text-foreground" aria-current="page">
+                {item.name}
               </span>
             ) : (
-              <Link
-                href={item.href}
-                className="hover:text-primary transition-colors duration-200 flex items-center"
-              >
-                {index === 0 ? (
-                  <HomeIcon className="h-4 w-4" />
-                ) : (
-                  item.name
-                )}
+              <Link href={item.href} className="text-ink-faint transition-colors hover:text-foreground">
+                {item.name}
               </Link>
             )}
           </div>
