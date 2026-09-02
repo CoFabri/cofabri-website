@@ -8,6 +8,7 @@ import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
 import Analytics from "@/components/ui/Analytics";
 import CookieConsent from "@/components/ui/CookieConsent";
 import StructuredData from "@/components/ui/StructuredData";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic';
@@ -108,7 +109,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="https://files.cofabri.com/images/cofabri-favicon.jpg" sizes="any" />
         <link rel="icon" href="https://files.cofabri.com/images/cofabri-favicon.jpg" type="image/jpeg" sizes="32x32" />
@@ -117,29 +118,31 @@ export default function RootLayout({
         <Analytics />
       </head>
       <body className={inter.className}>
-        <StructuredData 
-          type="organization" 
-          data={{
-            "foundingDate": "2024",
-            "industry": "Software Development",
-            "numberOfEmployees": "10-50"
-          }}
-        />
-        <StructuredData 
-          type="website" 
-          data={{
-            "inLanguage": "en-US",
-            "copyrightYear": new Date().getFullYear()
-          }}
-        />
-        <Navbar />
-        <SitewideBanner />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <MarketingPopupWrapper />
-        <CookieConsent />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <StructuredData
+            type="organization"
+            data={{
+              "foundingDate": "2024",
+              "industry": "Software Development",
+              "numberOfEmployees": "10-50"
+            }}
+          />
+          <StructuredData
+            type="website"
+            data={{
+              "inLanguage": "en-US",
+              "copyrightYear": new Date().getFullYear()
+            }}
+          />
+          <Navbar />
+          <SitewideBanner />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+          <MarketingPopupWrapper />
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   );
