@@ -40,7 +40,10 @@ export async function POST(request: Request) {
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
       console.error('cofabri-api waitlist submission failed:', apiRes.status, errorBody);
-      throw new Error('Failed to create record');
+      return NextResponse.json(
+        { error: 'Failed to create record' },
+        { status: 502 }
+      );
     }
 
     const waitlistRecord = await apiRes.json();

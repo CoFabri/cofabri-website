@@ -26,7 +26,10 @@ export async function POST(request: Request) {
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
       console.error('cofabri-api newsletter submission failed:', apiRes.status, errorBody);
-      throw new Error('Failed to process signup');
+      return NextResponse.json(
+        { error: 'Failed to process signup. Please try again later.' },
+        { status: 502 }
+      );
     }
 
     const result = await apiRes.json();
