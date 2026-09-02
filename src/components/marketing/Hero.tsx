@@ -103,7 +103,7 @@ const Hero = () => {
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-7 first:pl-0">
               <div className="text-[28px] font-semibold tracking-[-0.03em] text-foreground sm:text-[34px]">
-                {loaded ? <MetricCount target={m.target} suffix={m.suffix} /> : '—'}
+                {loaded && m.target > 0 ? <MetricCount target={m.target} suffix={m.suffix} /> : '—'}
               </div>
               <div className="mt-1.5 text-sm text-muted-foreground">{m.label}</div>
             </div>

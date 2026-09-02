@@ -7,7 +7,7 @@ import { clearHydrationCaches } from '@/lib/utils';
 const highlights = [
   'Every app maintained by the people who built it',
   'Frequent, real updates — not annual overhauls',
-  'Support from humans, not a ticket queue',
+  'Support from humans, not a bot',
 ];
 
 const whyChoose = [
