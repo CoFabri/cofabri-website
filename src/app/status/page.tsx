@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus, getServiceUptimeHistory } from '@/lib/airtable';
 import { getApps } from '@/lib/api-client';
 import { StatusPageContent } from '@/components/marketing/StatusPageContent';
 
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export default async function StatusPage() {
-  const [statuses, apps] = await Promise.all([getSystemStatus(), getApps()]);
+  const [statuses, apps, uptimeHistory] = await Promise.all([getSystemStatus(), getApps(), getServiceUptimeHistory()]);
 
-  return <StatusPageContent initialStatuses={statuses} apps={apps} />;
+  return <StatusPageContent initialStatuses={statuses} apps={apps} uptimeHistory={uptimeHistory} />;
 }

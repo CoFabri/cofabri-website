@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import RevealSection from './RevealSection';
 import { CoreLoader } from '@/components/ui/core-loader';
+import { roadmapStatusDotClasses } from '@/lib/roadmap-display';
 
 interface Column {
   title: string;
@@ -58,7 +59,7 @@ export default function CompactRoadmap() {
   const columns: Column[] = [
     {
       title: 'Shipped',
-      dotClassName: 'bg-success',
+      dotClassName: roadmapStatusDotClasses('Released'),
       items: features
         .filter((f) => f.status === 'Released')
         .sort((a, b) => (b.releasedDate ?? '').localeCompare(a.releasedDate ?? ''))
@@ -66,12 +67,12 @@ export default function CompactRoadmap() {
     },
     {
       title: 'In progress',
-      dotClassName: 'bg-primary',
+      dotClassName: roadmapStatusDotClasses('In Progress'),
       items: features.filter((f) => f.status === 'In Progress').slice(0, 4),
     },
     {
       title: 'Next',
-      dotClassName: 'bg-ink-disabled',
+      dotClassName: roadmapStatusDotClasses('Planned'),
       items: features.filter((f) => f.status === 'Planned' || f.status === 'Delayed').slice(0, 4),
     },
   ];
@@ -96,7 +97,7 @@ export default function CompactRoadmap() {
             className="hidden sm:inline-flex items-center gap-1.5 flex-shrink-0 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             Full roadmap
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
 
@@ -129,7 +130,7 @@ export default function CompactRoadmap() {
         <div className="mt-8 text-center sm:hidden">
           <Link href="/roadmaps" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
             Full roadmap
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

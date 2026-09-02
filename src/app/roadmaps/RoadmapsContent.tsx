@@ -195,7 +195,16 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
       </div>
 
       <RevealSection>
-        <ProductRoadmap selectedApp={selectedApp} selectedStatus={selectedStatus} appNames={appNames} initialFeatures={allFeatures} />
+        <ProductRoadmap
+          selectedApp={selectedApp}
+          selectedStatus={selectedStatus}
+          appNames={appNames}
+          initialFeatures={allFeatures}
+          onClearFilters={() => {
+            setSelectedApp('');
+            setSelectedStatus('');
+          }}
+        />
       </RevealSection>
     </div>
   );

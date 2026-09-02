@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
-  LayoutGrid, TrendingUp, BookOpen, LifeBuoy,
-  Menu, Sun, Moon, Monitor, AppWindow,
-} from 'lucide-react';
+  Squares2X2Icon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon,
+  Bars3Icon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,14 +15,14 @@ import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
 
 const navigation = [
-  { name: 'Apps', href: '/apps', icon: LayoutGrid },
-  { name: 'Roadmap', href: '/roadmaps', icon: TrendingUp },
-  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
-  { name: 'Support', href: '/support', icon: LifeBuoy },
+  { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
+  { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
+  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
+  { name: 'Support', href: '/support', icon: LifebuoyIcon },
 ];
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
-const THEME_ICONS = { light: Sun, dark: Moon, system: Monitor } as const;
+const THEME_ICONS = { light: SunIcon, dark: MoonIcon, system: ComputerDesktopIcon } as const;
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -105,7 +105,7 @@ const Navbar = () => {
             <TooltipTrigger asChild>
               <Button asChild size="icon" aria-label="Explore apps">
                 <Link href="/apps">
-                  <AppWindow className="h-4 w-4" />
+                  <WindowIcon className="h-4 w-4" />
                 </Link>
               </Button>
             </TooltipTrigger>
@@ -119,7 +119,7 @@ const Navbar = () => {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" aria-label="Open menu">
-                <Menu className="h-4 w-4" />
+                <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right">

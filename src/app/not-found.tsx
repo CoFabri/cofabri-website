@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 const HELPFUL_LINKS = [
   { title: 'Apps', body: 'Every app we make, one page.', href: '/apps' },
@@ -52,7 +52,7 @@ export default function NotFound() {
           >
             <span className="text-lg font-semibold tracking-[-0.015em]">{link.title}</span>
             <span className="text-base text-ink-muted">{link.body}</span>
-            <ArrowRight className="hidden h-[18px] w-[18px] justify-self-end text-ink-disabled sm:block" />
+            <ArrowRightIcon className="hidden h-[18px] w-[18px] justify-self-end text-ink-disabled sm:block" />
           </Link>
         ))}
       </div>

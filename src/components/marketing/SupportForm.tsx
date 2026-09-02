@@ -215,8 +215,19 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
                 type="checkbox"
                 checked={selectedValues.includes(option.value)}
                 onChange={() => onChange(option.value)}
-                className="w-4 h-4 text-primary border-border rounded focus:ring-primary/20"
+                className="sr-only"
               />
+              <div
+                className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
+                  selectedValues.includes(option.value) ? 'border-primary bg-primary' : 'border-border bg-card'
+                }`}
+              >
+                {selectedValues.includes(option.value) && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="h-3 w-3 text-primary-foreground">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                )}
+              </div>
               {option.image ? (
                 <img 
                   src={option.image} 

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import { actionHref, actionLabel, appMomentum, markPalette, statusPillClasses } from '@/lib/app-display';
 import { filterPillClasses } from '@/lib/filter-pill';
@@ -14,6 +14,8 @@ import AppsCelebration from './AppsCelebration';
 import AppRow from './AppRow';
 import RevealSection from './RevealSection';
 import StructuredData from './StructuredData';
+import { EmptyState } from './EmptyState';
+import { ErrorState } from './ErrorState';
 
 const RESOURCES = [
   {
@@ -48,34 +50,35 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('All');
 
+  const fetchApps = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    const noCacheHeaders = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+    };
+
+    try {
+      const [appsRes, roadmapRes] = await Promise.all([
+        fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
+        fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
+      ]);
+      if (!appsRes.ok) throw new Error('Failed to fetch apps');
+      setApps(await appsRes.json());
+      setRoadmap(roadmapRes.ok ? await roadmapRes.json() : []);
+    } catch (err) {
+      console.error('Error fetching apps:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch apps');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (initialApps.length > 0) return;
-
-    async function fetchApps() {
-      const noCacheHeaders = {
-        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-      };
-
-      try {
-        const [appsRes, roadmapRes] = await Promise.all([
-          fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
-          fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
-        ]);
-        if (!appsRes.ok) throw new Error('Failed to fetch apps');
-        setApps(await appsRes.json());
-        setRoadmap(roadmapRes.ok ? await roadmapRes.json() : []);
-      } catch (err) {
-        console.error('Error fetching apps:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch apps');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     fetchApps();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initialApps is a mount-time snapshot, not a reactive dependency
-  }, []);
+  }, [fetchApps]);
 
   const featured = apps.find((a) => a.featureOnWebsite) ?? apps[0];
   const rows = useMemo(() => apps.filter((a) => a !== featured), [apps, featured]);
@@ -117,11 +120,18 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
           <CoreLoader size={40} />
         </div>
       ) : error ? (
-        <div className="mt-16 text-center">
-          <h2 className="text-2xl font-semibold text-foreground">Error</h2>
-          <p className="mt-2 text-muted-foreground">{error}</p>
+        <div className="mt-16">
+          <ErrorState title="Couldn't load apps" description={error} onRetry={fetchApps} />
         </div>
-      ) : apps.length === 0 ? null : (
+      ) : apps.length === 0 ? (
+        <div className="mt-16">
+          <EmptyState
+            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+            title="No apps yet"
+            description="Check back soon — the suite is growing."
+          />
+        </div>
+      ) : (
         <RevealSection>
           {statuses.length > 1 && (
             <div className="mt-10 flex flex-wrap gap-2 border-b border-border pb-8">
@@ -208,7 +218,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                     rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
                     className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
                   >
-                    {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowUpRight className="h-3.5 w-3.5" />}
+                    {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
                   </Link>
                   <Link
                     href={`/apps/${featured.id}`}
@@ -221,13 +231,22 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
             </div>
           )}
 
-          {filteredRows.length > 0 && (
+          {filteredRows.length > 0 ? (
             <div className="mt-2">
               {filteredRows.map((app) => (
                 <AppRow key={app.id} app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
               ))}
             </div>
-          )}
+          ) : statusFilter !== 'All' ? (
+            <div className="mt-10">
+              <EmptyState
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                title="No apps match"
+                description="Try a different status filter."
+                action={{ label: 'Clear Filters', onClick: () => setStatusFilter('All') }}
+              />
+            </div>
+          ) : null}
 
           <AppsCelebration apps={apps} />
         </RevealSection>

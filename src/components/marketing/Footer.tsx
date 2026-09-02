@@ -3,16 +3,19 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutGrid, TrendingUp, Sparkles, BookOpen, ScrollText, LifeBuoy, Handshake } from 'lucide-react';
+import { Handshake } from 'lucide-react'; // No Heroicons equivalent for a handshake glyph — kept as the one exception.
+import {
+  Squares2X2Icon, ArrowTrendingUpIcon, SparklesIcon, BookOpenIcon, DocumentTextIcon, LifebuoyIcon,
+} from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Apps', href: '/apps', icon: LayoutGrid },
+  { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
   { name: 'Partners', href: '/partners', icon: Handshake },
-  { name: 'Roadmap', href: '/roadmaps', icon: TrendingUp },
-  { name: 'Changelog', href: '/changelog', icon: Sparkles },
-  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
-  { name: 'Legal', href: '/legal', icon: ScrollText },
-  { name: 'Support', href: '/support', icon: LifeBuoy },
+  { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
+  { name: 'Changelog', href: '/changelog', icon: SparklesIcon },
+  { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
+  { name: 'Legal', href: '/legal', icon: DocumentTextIcon },
+  { name: 'Support', href: '/support', icon: LifebuoyIcon },
 ];
 
 const Footer = () => {

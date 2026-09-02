@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { CoreLoader } from '@/components/ui/core-loader';
@@ -9,6 +9,9 @@ import { filterPillClasses } from '@/lib/filter-pill';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import RevealSection from '@/components/marketing/RevealSection';
+import { EmptyState } from '@/components/marketing/EmptyState';
+import { ErrorState } from '@/components/marketing/ErrorState';
+import { Pagination } from '@/components/marketing/Pagination';
 
 const DOCUMENTS_PER_PAGE = 6;
 
@@ -49,31 +52,35 @@ export default function LegalDocumentsContent() {
 
   const [documents, setDocuments] = useState<LegalDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState(searchParams?.get('type') || '');
   const [searchInput, setSearchInput] = useState(searchParams?.get('search') || '');
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    async function fetchDocuments() {
-      try {
-        const response = await fetch('/api/legal', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch legal documents');
-        setDocuments((await response.json()) as LegalDocument[]);
-      } catch (error) {
-        console.error('Error loading legal documents:', error);
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchDocuments = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/legal', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch legal documents');
+      setDocuments((await response.json()) as LegalDocument[]);
+    } catch (err) {
+      console.error('Error loading legal documents:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load legal documents');
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchDocuments();
   }, []);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
 
   const documentTypes = useMemo(() => Array.from(new Set(documents.map((d) => d.documentType))), [documents]);
 
@@ -112,6 +119,13 @@ export default function LegalDocumentsContent() {
     setSearchInput(search);
     setCurrentPage(1);
     updateURL(selectedType || undefined, search || undefined);
+  };
+
+  const clearFilters = () => {
+    setSearchInput('');
+    setSelectedType('');
+    setCurrentPage(1);
+    updateURL(undefined, undefined);
   };
 
   return (
@@ -167,8 +181,19 @@ export default function LegalDocumentsContent() {
         <div className="mt-16 flex justify-center">
           <CoreLoader size={40} />
         </div>
+      ) : error ? (
+        <div className="mt-16">
+          <ErrorState title="Couldn't load legal documents" description={error} onRetry={fetchDocuments} />
+        </div>
       ) : filteredDocuments.length === 0 ? (
-        <div className="mt-16 text-center text-muted-foreground">No documents found matching those filters.</div>
+        <div className="mt-16">
+          <EmptyState
+            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+            title="No documents match"
+            description="Try a different search term, or clear the type filter."
+            action={{ label: 'Clear Filters', onClick: clearFilters }}
+          />
+        </div>
       ) : (
         <>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -230,40 +255,7 @@ export default function LegalDocumentsContent() {
             })}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="flex h-10 min-w-10 items-center justify-center rounded-lg border border-border text-sm text-ink-body transition-colors hover:border-ink-faint disabled:cursor-not-allowed disabled:text-ink-disabled disabled:hover:border-border"
-              >
-                ←
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`flex h-10 min-w-10 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                    page === currentPage
-                      ? 'bg-foreground text-background'
-                      : 'border border-border text-ink-body hover:border-ink-faint'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="flex h-10 min-w-10 items-center justify-center rounded-lg border border-border text-sm text-ink-body transition-colors hover:border-ink-faint disabled:cursor-not-allowed disabled:text-ink-disabled disabled:hover:border-border"
-              >
-                →
-              </button>
-            </div>
-          )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </>
       )}
       </RevealSection>

@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { App } from '@/lib/api-client';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import ExpandableText from './ExpandableText';
 import { Button } from '@/components/ui/button';
+import { statusPillClasses } from '@/lib/app-display';
 
 interface AppPreviewCardProps {
   app: App;
@@ -48,13 +49,7 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
         <div className="p-6">
           {/* Badges Section */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${
-              app.status === 'Live' ? 'bg-success/15 text-success hover:bg-success/25' :
-              app.status === 'Active' ? 'bg-success/15 text-success hover:bg-success/25' :
-              app.status === 'Beta' ? 'bg-accent text-accent-foreground hover:bg-accent/80' :
-              app.status === 'Alpha' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' :
-              'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}>
+            <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-200 ${statusPillClasses(app.status)}`}>
               {app.status}
             </span>
             {app.launchDate && (
@@ -135,7 +130,7 @@ export default function AppPreviewCard({ app }: AppPreviewCardProps) {
                 rel="noopener noreferrer"
               >
                 Visit App
-                <ArrowUpRight className="h-4 w-4" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
               </Link>
             </Button>
           ) : null}

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import RevealSection from './RevealSection';
 import CoBuildWordmark from './CoBuildWordmark';
 
@@ -31,7 +31,7 @@ export default function CoBuildSection() {
               className="mt-7 inline-flex items-center gap-1.5 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               See how Co-Build works
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRightIcon className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import { CoreLoader } from '@/components/ui/core-loader';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RoadmapOverlay from '@/components/marketing/RoadmapOverlay';
+import { EmptyState } from '@/components/marketing/EmptyState';
+import { ErrorState } from '@/components/marketing/ErrorState';
 import { displayAppName } from '@/lib/roadmap-display';
 import { filterPillClasses } from '@/lib/filter-pill';
 
@@ -76,36 +79,36 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
     [shipped]
   );
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [roadmapRes, appsRes] = await Promise.all([
+        fetch('/api/roadmaps', { cache: 'no-store' }),
+        fetch('/api/apps', { cache: 'no-store' }),
+      ]);
+
+      if (roadmapRes.ok) {
+        const features = (await roadmapRes.json()) as RoadmapFeature[];
+        setShipped(features.filter((f) => f.status === 'Released'));
+      }
+
+      if (appsRes.ok) {
+        const apps = (await appsRes.json()) as App[];
+        setAppNames(Object.fromEntries(apps.map((a) => [a.id, a.name])));
+      }
+    } catch (err) {
+      console.error('Error fetching changelog data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load the changelog');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (initialShipped.length > 0) return;
-
-    async function fetchData() {
-      try {
-        const [roadmapRes, appsRes] = await Promise.all([
-          fetch('/api/roadmaps', { cache: 'no-store' }),
-          fetch('/api/apps', { cache: 'no-store' }),
-        ]);
-
-        if (roadmapRes.ok) {
-          const features = (await roadmapRes.json()) as RoadmapFeature[];
-          setShipped(features.filter((f) => f.status === 'Released'));
-        }
-
-        if (appsRes.ok) {
-          const apps = (await appsRes.json()) as App[];
-          setAppNames(Object.fromEntries(apps.map((a) => [a.id, a.name])));
-        }
-      } catch (err) {
-        console.error('Error fetching changelog data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load the changelog');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialShipped is a mount-time snapshot, not a reactive dependency
-  }, []);
+  }, [fetchData, initialShipped.length]);
 
   // Deep link to a single entry via ?expand=<id>
   useEffect(() => {
@@ -191,11 +194,14 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
           <CoreLoader size={40} />
         </div>
       ) : error ? (
-        <div className="py-16 text-center">
-          <p className="text-danger">{error}</p>
-        </div>
+        <ErrorState title="Couldn't load the changelog" description={error} onRetry={fetchData} />
       ) : groups.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">Nothing has shipped yet.</div>
+        <EmptyState
+          icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+          title={selectedApp ? 'Nothing matches that filter' : 'Nothing has shipped yet'}
+          description={selectedApp ? 'Try a different app filter.' : 'Check back once the first release lands.'}
+          action={selectedApp ? { label: 'Clear Filters', onClick: () => setSelectedApp('') } : undefined}
+        />
       ) : (
         <div>
           {groups.map((group) => (

@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import { useSearchParams } from 'next/navigation';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { roadmapStatusPillClasses, roadmapStatusDotClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import { CoreLoader } from '@/components/ui/core-loader';
+import { EmptyState } from './EmptyState';
+import { ErrorState } from './ErrorState';
 import RoadmapOverlay from './RoadmapOverlay';
 
 // Helper function to parse quarter and year from milestone string
@@ -55,9 +58,10 @@ interface ProductRoadmapProps {
   selectedStatus: string;
   appNames: Record<string, string>;
   initialFeatures: RoadmapFeature[];
+  onClearFilters?: () => void;
 }
 
-export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, initialFeatures }: ProductRoadmapProps) {
+export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, initialFeatures, onClearFilters }: ProductRoadmapProps) {
   const searchParams = useSearchParams();
   const [features, setFeatures] = useState<RoadmapFeature[]>(initialFeatures);
   const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>(() =>
@@ -86,37 +90,37 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
     }
   }, [searchParams, features, isOverlayOpen]);
 
-  useEffect(() => {
-    async function fetchRoadmap() {
-      try {
-        if (isOverlayOpen) {
-          setIsOverlayOpen(false);
-          setSelectedFeature(null);
-        }
+  const fetchRoadmap = useCallback(async () => {
+    setError(null);
+    try {
+      const response = await fetch('/api/roadmaps', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch roadmap features');
 
-        const response = await fetch('/api/roadmaps', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch roadmap features');
-
-        const roadmapFeatures = (await response.json()) as RoadmapFeature[];
-        setFeatures(roadmapFeatures);
-        setMilestones(groupByMilestone(roadmapFeatures, selectedApp, selectedStatus));
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Error fetching roadmap:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch roadmap');
-        setIsLoading(false);
-      }
+      const roadmapFeatures = (await response.json()) as RoadmapFeature[];
+      setFeatures(roadmapFeatures);
+      setMilestones(groupByMilestone(roadmapFeatures, selectedApp, selectedStatus));
+    } catch (err) {
+      console.error('Error fetching roadmap:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch roadmap');
+    } finally {
+      setIsLoading(false);
     }
+  }, [selectedApp, selectedStatus]);
 
+  useEffect(() => {
+    if (isOverlayOpen) {
+      setIsOverlayOpen(false);
+      setSelectedFeature(null);
+    }
     fetchRoadmap();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- isOverlayOpen intentionally excluded: it's written by this effect, not read to decide when to refetch
-  }, [selectedApp, selectedStatus]);
+  }, [fetchRoadmap]);
 
   const openFeature = (feature: RoadmapFeature) => {
     setSelectedFeature(feature);
@@ -132,16 +136,21 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
   }
 
   if (error) {
-    return (
-      <div className="py-16 text-center">
-        <p className="text-danger">{error}</p>
-      </div>
-    );
+    return <ErrorState title="Couldn't load the roadmap" description={error} onRetry={fetchRoadmap} />;
   }
 
   if (milestones.length === 0) {
     return (
-      <div className="py-16 text-center text-muted-foreground">Nothing matches those filters yet.</div>
+      <EmptyState
+        icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+        title="Nothing matches those filters"
+        description="Try a different app or status filter."
+        action={
+          onClearFilters && (selectedApp || selectedStatus)
+            ? { label: 'Clear Filters', onClick: onClearFilters }
+            : undefined
+        }
+      />
     );
   }
 

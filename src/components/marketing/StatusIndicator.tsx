@@ -6,24 +6,7 @@ import { SystemStatus } from '@/lib/airtable';
 import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-
-const getSeverityColor = (status: SystemStatus | null) => {
-  if (!status) return 'bg-green-500';
-
-  // Use the same color logic as the status page
-  switch (status.publicStatus) {
-    case 'Investigating':
-      return 'bg-red-500';
-    case 'Identified':
-      return 'bg-orange-500';
-    case 'Monitoring':
-      return 'bg-blue-500';
-    case 'Resolved':
-      return 'bg-green-500';
-    default:
-      return 'bg-green-500';
-  }
-};
+import { incidentDotClasses, mostSevereIncident } from '@/lib/incident-display';
 
 const getStatusMessage = (status: SystemStatus | null) => {
   if (!status) return 'All systems operational';
@@ -68,29 +51,12 @@ export default function StatusIndicator() {
 
   if (isLoading) return <div className="h-9 w-9" />;
 
-  // Find the most severe active status to determine the color
-  const activeStatuses = statuses.filter(status => status.publicStatus !== 'Resolved');
-  const hasActiveIssues = activeStatuses.length > 0;
+  const activeIncident = mostSevereIncident(statuses);
+  const hasActiveIssues = Boolean(activeIncident);
 
-  // Get the most severe status for color (priority: Investigating > Identified > Monitoring)
-  const getStatusPriority = (status: string) => {
-    switch (status) {
-      case 'Investigating': return 3;
-      case 'Identified': return 2;
-      case 'Monitoring': return 1;
-      default: return 0;
-    }
-  };
-
-  const mostSevereStatus = activeStatuses.reduce((prev, current) => {
-    return getStatusPriority(current.publicStatus) > getStatusPriority(prev.publicStatus) ? current : prev;
-  }, activeStatuses[0]);
-
-  const dotColor = hasActiveIssues ? getSeverityColor(mostSevereStatus) : 'bg-green-500';
-  const label = hasActiveIssues ? mostSevereStatus.publicStatus : 'All systems normal';
-  const message = hasActiveIssues
-    ? getStatusMessage(mostSevereStatus || null)
-    : 'All systems operational';
+  const dotColor = activeIncident ? incidentDotClasses(activeIncident.publicStatus) : 'bg-success';
+  const label = activeIncident ? activeIncident.publicStatus : 'All systems normal';
+  const message = getStatusMessage(activeIncident ?? null);
 
   return (
     <Tooltip>
@@ -100,12 +66,8 @@ export default function StatusIndicator() {
           aria-label={`Status: ${label}`}
           className={cn(buttonVariants({ variant: 'outline', size: 'icon' }))}
         >
-          <span className="relative flex h-2 w-2 flex-shrink-0">
-            <span className={`block h-2 w-2 rounded-full ${dotColor}`} />
-            {hasActiveIssues && (
-              <span className={`absolute inset-0 rounded-full ${dotColor} animate-ping opacity-75`} />
-            )}
-          </span>
+          {/* The dot never animates — a ping/pulse reads as an alarm on a page where nothing is wrong. */}
+          <span className={`block h-2 w-2 flex-shrink-0 rounded-full ${dotColor}`} />
         </Link>
       </TooltipTrigger>
       <TooltipContent side="bottom">

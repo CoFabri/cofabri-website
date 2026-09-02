@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Mail, CheckCircle2, User } from 'lucide-react';
+import { EnvelopeIcon, CheckCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import Cookies from 'js-cookie';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,7 +72,7 @@ export default function NewsletterSignup({
     return (
       <div className={`flex flex-col items-center justify-center min-h-[220px] ${className}`}>
         <div className="flex flex-col items-center text-center">
-          <CheckCircle2 className="h-12 w-12 text-primary mb-3" />
+          <CheckCircleIcon className="h-12 w-12 text-primary mb-3" />
           <h3 className="text-xl font-semibold text-foreground mb-2">You&apos;re Subscribed!</h3>
           <p className="text-muted-foreground mb-1">
             {firstName ? `Thank you for subscribing, ${firstName}!` : 'Thank you for subscribing to our newsletter.'}
@@ -94,7 +94,7 @@ export default function NewsletterSignup({
           <div className="space-y-1.5">
             <Label htmlFor="newsletter-first-name" className="sr-only">First Name</Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="newsletter-first-name"
                 type="text"
@@ -109,7 +109,7 @@ export default function NewsletterSignup({
           <div className="space-y-1.5">
             <Label htmlFor="newsletter-last-name" className="sr-only">Last Name</Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="newsletter-last-name"
                 type="text"
@@ -125,7 +125,7 @@ export default function NewsletterSignup({
         <div className="space-y-1.5">
           <Label htmlFor="newsletter-email" className="sr-only">Email</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="newsletter-email"
               type="email"

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import { statusPillClasses, statusDotClasses, markPalette, appMomentum } from '@/lib/app-display';
 
@@ -45,7 +45,7 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
           <div className="mt-1 text-sm leading-snug text-ink-body">{momentum}</div>
         </div>
       </div>
-      <ArrowRight className="hidden h-[17px] w-[17px] justify-self-end text-ink-disabled transition-transform duration-200 group-hover:translate-x-0.5 md:block" />
+      <ArrowRightIcon className="hidden h-[17px] w-[17px] justify-self-end text-ink-disabled transition-transform duration-200 group-hover:translate-x-0.5 md:block" />
     </Link>
   );
 }

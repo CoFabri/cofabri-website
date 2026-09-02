@@ -1,4 +1,5 @@
 import { getSystemStatus, SystemStatus } from '@/lib/airtable';
+import { incidentHexColor, mostSevereStatus } from '@/lib/status-widget-colors';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
@@ -24,59 +25,9 @@ export async function GET(request: Request) {
     }
     
     const statuses = statusCache;
-    
-    // Get most severe status for color
-    const getStatusPriority = (status: string) => {
-      const priorities: Record<string, number> = { 'Investigating': 3, 'Identified': 2, 'Monitoring': 1, 'Resolved': 0 };
-      return priorities[status] || 0;
-    };
-    
-    const activeStatuses = statuses.filter((s: SystemStatus) => s.publicStatus !== 'Resolved');
-    const mostSevere = activeStatuses.length > 0
-      ? activeStatuses.reduce((prev: SystemStatus, curr: SystemStatus) =>
-          getStatusPriority(curr.publicStatus) > getStatusPriority(prev.publicStatus) ? curr : prev
-        )
-      : null;
-    
-    const getStatusColor = () => {
-      if (!statuses || statuses.length === 0) return '#10b981'; // Green
-      if (!mostSevere) return '#10b981'; // Green
-      
-      switch (mostSevere.publicStatus) {
-        case 'Investigating': return '#ef4444'; // Red
-        case 'Identified': return '#f97316'; // Orange
-        case 'Monitoring': return '#3b82f6'; // Blue
-        default: return '#10b981'; // Green
-      }
-    };
-    
-    const statusColor = getStatusColor();
-    
-    // Determine if we should show pulsing animation
-    const shouldPulse = activeStatuses.length > 0;
-    
-    // Get status message logic (same as navigation header)
-    const getStatusMessage = (status: SystemStatus | null) => {
-      if (!status) return 'All systems operational';
-      
-      switch (status.publicStatus) {
-        case 'Investigating':
-          return status.message ? `Investigating: ${status.message}` : 'Investigating';
-        case 'Identified':
-          return status.message ? `Issue Identified: ${status.message}` : 'Issue Identified';
-        case 'Monitoring':
-          return status.message ? `Monitoring Resolution: ${status.message}` : 'Monitoring Resolution';
-        case 'Resolved':
-          return status.message ? `Resolved: ${status.message}` : 'Resolved';
-        default:
-          return status.message || status.publicStatus || 'All systems operational';
-      }
-    };
-    
-    const message = shouldPulse 
-      ? getStatusMessage(mostSevere)
-      : 'All systems operational';
-    
+    const mostSevere = mostSevereStatus(statuses);
+    const statusColor = incidentHexColor(mostSevere?.publicStatus);
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -129,44 +80,12 @@ export async function GET(request: Request) {
             max-width: 16px;
             max-height: 16px;
         }
-        ${shouldPulse ? `
-        .status-dot-ping {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0.5em;
-            height: 0.5em;
-            border-radius: 50%;
-            background-color: ${statusColor};
-            opacity: 0.75;
-            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-            /* Scale dot size relative to font size */
-            min-width: 8px;
-            min-height: 8px;
-            max-width: 16px;
-            max-height: 16px;
-        }
-        @keyframes ping {
-            75%, 100% {
-                transform: scale(2);
-                opacity: 0;
-            }
-        }
-        ` : ''}
-        .status-widget.loading .status-dot {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
         <div class="status-dot-container">
             <div class="status-dot"></div>
-            ${shouldPulse ? '<div class="status-dot-ping"></div>' : ''}
         </div>
     </a>
     <script>
@@ -194,14 +113,9 @@ export async function GET(request: Request) {
                             const fontSize = parseFloat(computedStyle.fontSize);
                             const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
                             const dot = document.querySelector('.status-dot');
-                            const pingDot = document.querySelector('.status-dot-ping');
                             if (dot) {
                                 dot.style.width = dotSize + 'px';
                                 dot.style.height = dotSize + 'px';
-                            }
-                            if (pingDot) {
-                                pingDot.style.width = dotSize + 'px';
-                                pingDot.style.height = dotSize + 'px';
                             }
                         }
                     }
@@ -275,29 +189,11 @@ export async function GET(request: Request) {
             border-radius: 50%;
             background-color: #9ca3af;
         }
-        .status-dot-ping {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #9ca3af;
-            opacity: 0.75;
-            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        @keyframes ping {
-            75%, 100% {
-                transform: scale(2);
-                opacity: 0;
-            }
-        }
     </style>
 </head>
 <body>
     <a href="https://cofabri.com/status" target="_blank" rel="noopener noreferrer" class="status-widget">
         <div class="status-dot-container">
-            <div class="status-dot-ping"></div>
             <div class="status-dot"></div>
         </div>
     </a>
@@ -324,14 +220,9 @@ export async function GET(request: Request) {
                             const fontSize = parseFloat(computedStyle.fontSize);
                             const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
                             const dot = document.querySelector('.status-dot');
-                            const pingDot = document.querySelector('.status-dot-ping');
                             if (dot) {
                                 dot.style.width = dotSize + 'px';
                                 dot.style.height = dotSize + 'px';
-                            }
-                            if (pingDot) {
-                                pingDot.style.width = dotSize + 'px';
-                                pingDot.style.height = dotSize + 'px';
                             }
                         }
                     }

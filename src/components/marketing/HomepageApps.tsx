@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { App, RoadmapFeature } from '@/lib/api-client';
 import type { SystemStatus } from '@/lib/airtable';
 import { CoreLoader } from '@/components/ui/core-loader';
 import confetti from 'canvas-confetti';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import RevealSection from './RevealSection';
 import AppRow from './AppRow';
+import { ErrorState } from './ErrorState';
 import { statusPillClasses, actionLabel, actionHref, appMomentum, markPalette } from '@/lib/app-display';
 import { shippedInLastNDays } from '@/lib/roadmap-display';
 
@@ -26,37 +27,40 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
+  const fetchApps = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     const noCacheHeaders = {
       'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
       'Pragma': 'no-cache',
     };
 
-    async function fetchApps() {
-      try {
-        const [appsRes, roadmapRes, statusRes] = await Promise.all([
-          fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
-          fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
-          fetch('/api/status', { cache: 'no-store', headers: noCacheHeaders }),
-        ]);
-        if (!appsRes.ok) throw new Error('Failed to fetch apps');
-        const data = await appsRes.json();
-        setApps(data.filter((app: App) => app.category !== 'Customer Facing'));
-        setRoadmap(roadmapRes.ok ? await roadmapRes.json() : []);
-        setSystemStatus(statusRes.ok ? await statusRes.json() : []);
-      } catch (err) {
-        console.error('Error fetching apps:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch apps');
-      } finally {
-        setIsLoading(false);
-        if (onAppsLoaded) {
-          onAppsLoaded();
-        }
+    try {
+      const [appsRes, roadmapRes, statusRes] = await Promise.all([
+        fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
+        fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
+        fetch('/api/status', { cache: 'no-store', headers: noCacheHeaders }),
+      ]);
+      if (!appsRes.ok) throw new Error('Failed to fetch apps');
+      const data = await appsRes.json();
+      setApps(data.filter((app: App) => app.category !== 'Customer Facing'));
+      setRoadmap(roadmapRes.ok ? await roadmapRes.json() : []);
+      setSystemStatus(statusRes.ok ? await statusRes.json() : []);
+    } catch (err) {
+      console.error('Error fetching apps:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch apps');
+    } finally {
+      setIsLoading(false);
+      if (onAppsLoaded) {
+        onAppsLoaded();
       }
     }
-
-    fetchApps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onAppsLoaded is a mount-time callback, not a reactive dependency
   }, []);
+
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
 
   useEffect(() => {
     if (!sectionRef.current || hasTriggeredConfetti || !apps.length) return;
@@ -133,10 +137,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
     return (
       <section className="py-24 bg-background">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-foreground">Error</h2>
-            <p className="mt-2 text-muted-foreground">{error}</p>
-          </div>
+          <ErrorState title="Couldn't load apps" description={error} onRetry={fetchApps} />
         </div>
       </section>
     );
@@ -168,7 +169,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
             className="hidden sm:inline-flex items-center gap-1.5 flex-shrink-0 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             View all apps
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
 
@@ -233,7 +234,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
               rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
               className="inline-flex w-fit flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
             >
-              {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowUpRight className="h-3.5 w-3.5" />}
+              {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
             </Link>
           </div>
         </div>
@@ -264,7 +265,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
         <div className="mt-8 text-center sm:hidden">
           <Link href="/apps" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
             View all apps
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>

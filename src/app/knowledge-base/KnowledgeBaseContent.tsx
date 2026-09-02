@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -12,6 +12,9 @@ import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import RevealSection from '@/components/marketing/RevealSection';
 import StructuredData from '@/components/marketing/StructuredData';
+import { EmptyState } from '@/components/marketing/EmptyState';
+import { ErrorState } from '@/components/marketing/ErrorState';
+import { Pagination } from '@/components/marketing/Pagination';
 
 const ARTICLES_PER_PAGE = 6;
 
@@ -37,6 +40,7 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
   // the initial HTML has real content for crawlers — this only stays "loading"
   // if that server fetch came back empty, as a client-side recovery path.
   const [isLoading, setIsLoading] = useState(initialArticles.length === 0);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Initialize from URL parameters
@@ -48,27 +52,30 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
     if (searchParam) setSearchQuery(searchParam);
   }, [searchParams]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/knowledge-base', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch knowledge base articles');
-        setArticles((await response.json()) as KnowledgeBaseArticle[]);
-      } catch (error) {
-        console.error('Error loading knowledge base articles:', error);
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/knowledge-base', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch knowledge base articles');
+      setArticles((await response.json()) as KnowledgeBaseArticle[]);
+    } catch (err) {
+      console.error('Error loading knowledge base articles:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load knowledge base articles');
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const categories = useMemo(() => Array.from(new Set(articles.map((a) => a.category))), [articles]);
 
@@ -111,6 +118,13 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
     setSearchQuery(search);
     setCurrentPage(1);
     updateURL(selectedCategory || undefined, search || undefined);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setCurrentPage(1);
+    updateURL(undefined, undefined);
   };
 
   return (
@@ -170,8 +184,19 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
         <div className="mt-16 flex justify-center">
           <CoreLoader size={40} />
         </div>
+      ) : error ? (
+        <div className="mt-16">
+          <ErrorState title="Couldn't load the knowledge base" description={error} onRetry={fetchData} />
+        </div>
       ) : filteredArticles.length === 0 ? (
-        <div className="mt-16 text-center text-muted-foreground">No articles found matching those filters.</div>
+        <div className="mt-16">
+          <EmptyState
+            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+            title="No articles match"
+            description="Try a different search term, or clear the category filter."
+            action={{ label: 'Clear Filters', onClick: clearFilters }}
+          />
+        </div>
       ) : (
         <>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -210,40 +235,7 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="flex h-10 min-w-10 items-center justify-center rounded-lg border border-border text-sm text-ink-body transition-colors hover:border-ink-faint disabled:cursor-not-allowed disabled:text-ink-disabled disabled:hover:border-border"
-              >
-                ←
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`flex h-10 min-w-10 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                    page === currentPage
-                      ? 'bg-foreground text-background'
-                      : 'border border-border text-ink-body hover:border-ink-faint'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="flex h-10 min-w-10 items-center justify-center rounded-lg border border-border text-sm text-ink-body transition-colors hover:border-ink-faint disabled:cursor-not-allowed disabled:text-ink-disabled disabled:hover:border-border"
-              >
-                →
-              </button>
-            </div>
-          )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </>
       )}
       </RevealSection>

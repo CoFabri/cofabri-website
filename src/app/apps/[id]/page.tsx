@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getRoadmapFeatures } from '@/lib/api-client';
 import { actionHref, actionLabel, statusPillClasses } from '@/lib/app-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
@@ -129,7 +129,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 rel={app.status !== 'In Development' ? 'noopener noreferrer' : undefined}
                 className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
               >
-                {actionLabel(app)} {app.status !== 'In Development' && <ArrowUpRight className="h-4 w-4" />}
+                {actionLabel(app)} {app.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
               </Link>
               <Link
                 href="/apps"
