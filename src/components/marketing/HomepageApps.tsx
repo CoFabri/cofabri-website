@@ -8,64 +8,8 @@ import type { SystemStatus } from '@/lib/airtable';
 import confetti from 'canvas-confetti';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import RevealSection from './RevealSection';
+import AppRow from './AppRow';
 import { statusPillClasses, actionLabel, actionHref } from '@/lib/app-display';
-
-const statusDotClasses = (status: string) => {
-  switch (status) {
-    case 'Live':
-    case 'Active':
-      return 'bg-success';
-    case 'Beta':
-      return 'bg-accent-solid';
-    case 'In Development':
-      return 'bg-ink-faint';
-    default:
-      return 'bg-ink-disabled';
-  }
-};
-
-const MARK_PALETTES = [
-  'bg-primary/15 text-primary',
-  'bg-accent text-accent-foreground',
-  'bg-success/15 text-success',
-  'bg-warning/15 text-warning',
-  'bg-danger/15 text-danger',
-];
-
-function markPalette(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return MARK_PALETTES[hash % MARK_PALETTES.length];
-}
-
-// Interim stand-in for a future apps.tagline field: first sentence of the
-// long-form description, truncated to a word boundary.
-function deriveTagline(app: App): string | null {
-  if (!app.description) return null;
-  const firstSentence = app.description.trim().split(/(?<=[.!?])\s/)[0].replace(/[.!?]+$/, '');
-  if (firstSentence.length <= 72) return firstSentence;
-  const truncated = firstSentence.slice(0, 72);
-  return `${truncated.slice(0, truncated.lastIndexOf(' '))}…`;
-}
-
-const QUARTER_MS = 90 * 24 * 60 * 60 * 1000;
-
-function appMomentum(app: App, roadmap: RoadmapFeature[]): string {
-  const now = Date.now();
-  const items = roadmap.filter((item) => item.application === app.id);
-
-  const shippedThisQuarter = items.filter(
-    (item) => item.status === 'Released' && item.releasedDate && now - new Date(item.releasedDate).getTime() <= QUARTER_MS
-  );
-  if (shippedThisQuarter.length > 0) {
-    return `${shippedThisQuarter.length} shipped this quarter`;
-  }
-
-  const upcoming = items.find((item) => item.status === 'In Progress') ?? items.find((item) => item.status === 'Planned');
-  if (upcoming) return `Next: ${upcoming.name}`;
-
-  return '—';
-}
 
 interface HomepageAppsProps {
   onAppsLoaded?: () => void;
@@ -292,57 +236,9 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
         {rest.length > 0 && (
           <div className="mt-2">
-            {rest.map((app) => {
-              const tagline = deriveTagline(app);
-              const momentum = appMomentum(app, roadmap);
-              const mark = app.faviconUrl ? (
-                <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[9px] border border-border">
-                  <Image src={app.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
-                </div>
-              ) : (
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[9px] text-[17px] font-semibold tracking-[-0.02em] ${markPalette(app.id)}`}>
-                  {app.name.charAt(0).toUpperCase()}
-                </div>
-              );
-              const nameAndTagline = (
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-semibold tracking-[-0.015em]">{app.name}</span>
-                    <span className={`block h-1.5 w-1.5 flex-shrink-0 rounded-full ${statusDotClasses(app.status)}`} />
-                  </div>
-                  {tagline && <div className="mt-1 text-[15px] text-muted-foreground">{tagline}</div>}
-                </div>
-              );
-              const statusPill = (
-                <div className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(app.status)}`}>
-                  {app.status}
-                </div>
-              );
-              const momentumBlock = (
-                <div>
-                  <div className="font-mono text-[11px] uppercase tracking-[0.07em] text-ink-faint">Momentum</div>
-                  <div className="mt-1 text-sm leading-snug text-ink-body">{momentum}</div>
-                </div>
-              );
-
-              return (
-                <Link
-                  key={app.id}
-                  href={`/apps#${app.id}`}
-                  className="block rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors hover:bg-muted md:grid md:grid-cols-[40px_1fr_112px_200px_20px] md:items-center md:gap-6"
-                >
-                  <div className="flex items-center gap-4 md:contents">
-                    {mark}
-                    {nameAndTagline}
-                  </div>
-                  <div className="mt-3 flex items-center gap-3 md:contents">
-                    {statusPill}
-                    <div className="md:border-l md:border-border md:pl-6">{momentumBlock}</div>
-                  </div>
-                  <ArrowRight className="hidden h-[17px] w-[17px] justify-self-end text-ink-disabled md:block" />
-                </Link>
-              );
-            })}
+            {rest.map((app) => (
+              <AppRow key={app.id} app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
+            ))}
           </div>
         )}
 

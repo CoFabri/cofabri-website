@@ -4,11 +4,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
-import type { App } from '@/lib/api-client';
+import type { App, RoadmapFeature } from '@/lib/api-client';
 import { actionHref, actionLabel, statusPillClasses } from '@/lib/app-display';
+import { filterPillClasses } from '@/lib/filter-pill';
 import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
 import AppsCelebration from './AppsCelebration';
+import AppRow from './AppRow';
 
 const RESOURCES = [
   {
@@ -30,23 +32,26 @@ const RESOURCES = [
 
 export default function AppsPageContent() {
   const [apps, setApps] = useState<App[]>([]);
+  const [roadmap, setRoadmap] = useState<RoadmapFeature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('All');
 
   useEffect(() => {
     async function fetchApps() {
+      const noCacheHeaders = {
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+      };
+
       try {
-        const response = await fetch('/api/apps', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-            'Pragma': 'no-cache',
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch apps');
-        const data = await response.json();
-        setApps(data);
+        const [appsRes, roadmapRes] = await Promise.all([
+          fetch('/api/apps', { cache: 'no-store', headers: noCacheHeaders }),
+          fetch('/api/roadmaps', { cache: 'no-store', headers: noCacheHeaders }),
+        ]);
+        if (!appsRes.ok) throw new Error('Failed to fetch apps');
+        setApps(await appsRes.json());
+        setRoadmap(roadmapRes.ok ? await roadmapRes.json() : []);
       } catch (err) {
         console.error('Error fetching apps:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch apps');
@@ -99,11 +104,7 @@ export default function AppsPageContent() {
               <button
                 type="button"
                 onClick={() => setStatusFilter('All')}
-                className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
-                  statusFilter === 'All'
-                    ? 'bg-foreground text-background'
-                    : 'border border-border-strong text-ink-body hover:border-ink-faint'
-                }`}
+                className={filterPillClasses(statusFilter === 'All')}
               >
                 All {apps.length}
               </button>
@@ -112,11 +113,7 @@ export default function AppsPageContent() {
                   key={status}
                   type="button"
                   onClick={() => setStatusFilter(status)}
-                  className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
-                    statusFilter === status
-                      ? 'bg-foreground text-background'
-                      : 'border border-border-strong text-ink-body hover:border-ink-faint'
-                  }`}
+                  className={filterPillClasses(statusFilter === status)}
                 >
                   {status}
                 </button>
@@ -196,25 +193,7 @@ export default function AppsPageContent() {
           {filteredRows.length > 0 && (
             <div className="mt-2">
               {filteredRows.map((app) => (
-                <Link
-                  key={app.id}
-                  href={`/apps/${app.id}`}
-                  className="grid grid-cols-1 gap-2 rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors hover:bg-muted sm:grid-cols-[minmax(180px,260px)_1fr_auto_auto] sm:items-center sm:gap-8"
-                >
-                  <div>
-                    <div className="text-lg font-semibold tracking-[-0.015em]">{app.name}</div>
-                    {app.category && (
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">{app.category}</div>
-                    )}
-                  </div>
-                  {app.description && <div className="text-[15px] leading-[1.55] text-ink-muted">{app.description}</div>}
-                  <div className={`justify-self-start rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(app.status)}`}>
-                    {app.status}
-                  </div>
-                  <div className="justify-self-start text-[15px] font-semibold text-ink-muted sm:justify-self-end">
-                    Details →
-                  </div>
-                </Link>
+                <AppRow key={app.id} app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
               ))}
             </div>
           )}
