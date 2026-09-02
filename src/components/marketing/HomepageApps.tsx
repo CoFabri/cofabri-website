@@ -4,6 +4,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { App } from '@/lib/airtable';
 import confetti from 'canvas-confetti';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import SectionHeading from './SectionHeading';
+import RevealSection from './RevealSection';
 import AppPreviewCard from './AppPreviewCard';
 
 interface HomepageAppsProps {
@@ -105,10 +109,10 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-primary"></div>
           </div>
         </div>
       </section>
@@ -117,11 +121,11 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   if (error) {
     return (
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Error</h2>
-            <p className="mt-2 text-gray-600">{error}</p>
+            <h2 className="text-2xl font-semibold text-foreground">Error</h2>
+            <p className="mt-2 text-muted-foreground">{error}</p>
           </div>
         </div>
       </section>
@@ -129,20 +133,19 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
   }
 
   return (
-    <section ref={sectionRef} className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Latest Apps</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Discover our suite of powerful applications designed to streamline your workflow
-          </p>
-        </div>
+    <RevealSection ref={sectionRef} className="py-20 bg-muted/30">
+      <div className="mx-auto max-w-6xl px-6">
+        <SectionHeading
+          eyebrow="Our Apps"
+          title="Latest Apps"
+          subtitle="Discover our suite of powerful applications designed to streamline your workflow"
+        />
 
         <div className={`grid gap-8 mx-auto ${
-          apps.length === 1 
-            ? 'grid-cols-1' 
-            : apps.length === 2 
-              ? 'grid-cols-1 md:grid-cols-2' 
+          apps.length === 1
+            ? 'grid-cols-1'
+            : apps.length === 2
+              ? 'grid-cols-1 md:grid-cols-2'
               : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
         }`}>
           {apps.map((app) => (
@@ -150,19 +153,15 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
           ))}
         </div>
 
-        {/* View All Apps Button */}
         <div className="mt-12 text-center">
-          <Link
-            href="/apps"
-            className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md"
-          >
-            View All Apps
-            <svg className="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+          <Button asChild size="lg">
+            <Link href="/apps">
+              View All Apps
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
-    </section>
+    </RevealSection>
   );
-} 
+}
