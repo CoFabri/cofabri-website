@@ -85,7 +85,11 @@ export default function AppsPageContent() {
       <PageHero
         eyebrow="The suite"
         title="Every app we make."
-        subtitle="Five products, none of which overlap. Pick the one that matches the problem you actually have."
+        subtitle={
+          apps.length > 0
+            ? `${apps.length} apps, none of which overlap. Pick the one that matches the problem you actually have.`
+            : 'Apps built to solve one problem well. Pick the one that matches the problem you actually have.'
+        }
       />
 
       {isLoading ? (
