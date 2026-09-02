@@ -15,7 +15,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "name": "CoFabri",
           "url": "https://cofabri.com",
           "logo": "https://cofabri.com/logo.png",
-          "description": "CoFabri builds innovative SaaS applications that solve real business challenges.",
+          "description": "CoFabri is a software studio operating a portfolio of independent apps across industries.",
           "sameAs": [
             "https://twitter.com/cofabri",
             "https://linkedin.com/company/cofabri"
@@ -38,7 +38,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           "@type": "WebSite",
           "name": "CoFabri",
           "url": "https://cofabri.com",
-          "description": "Discover our suite of powerful SaaS applications designed to help your business grow and succeed.",
+          "description": "CoFabri — small software that does one thing well.",
           "potentialAction": {
             "@type": "SearchAction",
             "target": "https://cofabri.com/knowledge-base?search={search_term_string}",
