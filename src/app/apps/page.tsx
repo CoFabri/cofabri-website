@@ -7,11 +7,10 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Our Apps',
-  description: 'Explore our full collection of SaaS applications designed to enhance your productivity. From productivity tools to AI-powered solutions, find the perfect app for your business needs.',
-  keywords: ['SaaS apps', 'productivity tools', 'business software', 'web applications', 'AI tools', 'cloud software'],
+  description: 'Every app CoFabri builds, in one place — each one solves a single problem, none of them overlap.',
   openGraph: {
     title: 'Our Apps | CoFabri',
-    description: 'Explore our full collection of SaaS applications designed to enhance your productivity.',
+    description: 'Every app CoFabri builds, in one place — each one solves a single problem, none of them overlap.',
     url: 'https://cofabri.com/apps',
     images: [
       {
@@ -24,7 +23,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     title: 'Our Apps | CoFabri',
-    description: 'Explore our full collection of SaaS applications designed to enhance your productivity.',
+    description: 'Every app CoFabri builds, in one place — each one solves a single problem, none of them overlap.',
   },
   alternates: {
     canonical: '/apps',
