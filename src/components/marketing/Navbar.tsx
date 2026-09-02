@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
-  Home, LayoutGrid, TrendingUp, BookOpen, LifeBuoy, Mail,
+  LayoutGrid, TrendingUp, BookOpen, LifeBuoy,
   Menu, Sun, Moon, Monitor, ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,10 @@ import Logo from './Logo';
 import StatusIndicator from './StatusIndicator';
 
 const navigation = [
-  { name: 'Home', href: '/', icon: Home },
   { name: 'Apps', href: '/apps', icon: LayoutGrid },
-  { name: 'Roadmaps', href: '/roadmaps', icon: TrendingUp },
+  { name: 'Roadmap', href: '/roadmaps', icon: TrendingUp },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen },
   { name: 'Support', href: '/support', icon: LifeBuoy },
-  { name: 'Contact', href: '/contact', icon: Mail },
 ];
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
@@ -64,29 +62,27 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-sm">
-      <nav className="max-w-6xl mx-auto px-6 h-[68px] flex items-center justify-between gap-6">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+      <nav className="max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center flex-shrink-0">
           <Logo size="nav" noLink />
         </Link>
 
-        <ul className="hidden lg:flex items-center gap-7 text-sm">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className={`inline-flex items-center gap-1.5 transition-colors ${
-                    isActive(item.href) ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Icon className="h-[15px] w-[15px]" />
-                  {item.name}
-                </Link>
-              </li>
-            );
-          })}
+        <ul className="hidden lg:flex items-center gap-1">
+          {navigation.map((item) => (
+            <li key={item.name}>
+              <Link
+                href={item.href}
+                className={`inline-flex items-center rounded-lg px-3.5 py-2 text-[15px] font-medium transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? 'bg-muted text-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
         </ul>
 
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">

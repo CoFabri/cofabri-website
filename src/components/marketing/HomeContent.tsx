@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
-import About from '@/components/marketing/About';
 import Testimonials from '@/components/marketing/Testimonials';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
@@ -51,7 +50,6 @@ export default function HomeContent() {
       )}
       <Hero />
       <HomepageApps onAppsLoaded={() => setAppsLoaded(true)} />
-      <About />
       <Testimonials />
       <CompactRoadmap />
       <FAQ />

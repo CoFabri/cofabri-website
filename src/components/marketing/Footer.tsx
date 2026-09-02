@@ -50,50 +50,75 @@ const navigation = {
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border py-9">
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between gap-5 flex-wrap">
-        <Link href="/" className="flex items-center">
-          <Logo size="footer" noLink />
-        </Link>
+    <footer className="bg-[#232E36] text-white">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-16 md:py-[88px] flex flex-col md:flex-row items-center md:items-center justify-between gap-8 md:gap-16 text-center md:text-left">
+        <div>
+          <h2 className="m-0 text-3xl md:text-[40px] font-semibold leading-[1.1] tracking-[-0.03em]">
+            Start with one app.
+          </h2>
+          <p className="mt-3.5 text-lg text-[#9BA7B0]">
+            No demo call. No onboarding fee. Sign up and use it.
+          </p>
+        </div>
+        <div className="flex gap-3 flex-shrink-0">
+          <Link
+            href="/apps"
+            className="rounded-[9px] bg-white px-[26px] py-3.5 text-[16px] font-semibold text-[#232E36] transition-transform duration-200 hover:-translate-y-px"
+          >
+            Explore Apps
+          </Link>
+          <Link
+            href="/contact"
+            className="rounded-[9px] border border-[#3D4A55] px-[26px] py-3.5 text-[16px] font-semibold text-white transition-colors duration-200 hover:border-[#8494A0]"
+          >
+            Contact Us
+          </Link>
+        </div>
+      </div>
 
-        <ul className="flex items-center gap-5 flex-wrap text-sm">
-          {navigation.main.map((item) => {
-            const Icon = item.icon;
-            return (
+      <div className="border-t border-[#35424C]">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <Logo size="footer" variant="inverted" noLink />
+          </Link>
+
+          <ul className="flex items-center gap-6 flex-wrap justify-center text-sm">
+            {navigation.main.map((item) => (
               <li key={item.name}>
                 <Link
                   href={item.href}
-                  className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[#9BA7B0] hover:text-white transition-colors"
                 >
-                  <Icon className="h-3.5 w-3.5" />
                   {item.name}
                 </Link>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
 
-        <div className="flex items-center gap-3">
-          {navigation.social.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-primary transition-colors"
-            >
-              <span className="sr-only">{item.name}</span>
-              <item.icon className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          ))}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {navigation.social.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-[#3D4A55] text-[#9BA7B0] hover:text-white hover:border-[#8494A0] transition-colors"
+              >
+                <span className="sr-only">{item.name}</span>
+                <item.icon className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
         </div>
 
-        <div className="w-full mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} CoFabri by{' '}
-          <Link href="https://mavenx.co" className="font-medium text-foreground hover:text-primary underline underline-offset-2" target="_blank" rel="noopener noreferrer">
-            Maven X LLC
-          </Link>
-          . All rights reserved.
+        <div className="border-t border-[#35424C]">
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-4 text-center md:text-left text-xs text-[#6B7880]">
+            &copy; {new Date().getFullYear()} CoFabri by{' '}
+            <Link href="https://mavenx.co" className="font-medium text-[#9BA7B0] hover:text-white underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+              Maven X LLC
+            </Link>
+            . All rights reserved.
+          </div>
         </div>
       </div>
     </footer>

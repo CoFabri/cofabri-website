@@ -24,7 +24,7 @@ const Logo = ({ className = '', variant = 'auto', href = '/', size = 'nav', noLi
     variant === 'auto' ? (mounted && resolvedTheme === 'dark' ? 'inverted' : 'default') : variant;
 
   const sizeClasses = {
-    nav: 'w-36',      // Slightly bigger for nav
+    nav: 'w-[104px]',
     footer: 'w-28',   // A bit smaller for footer
     hero: 'h-64',     // Keep the perfect hero size
   };

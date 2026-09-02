@@ -84,25 +84,26 @@ export default function StatusIndicator() {
   }, activeStatuses[0]);
   
   const dotColor = hasActiveIssues ? getSeverityColor(mostSevereStatus) : 'bg-green-500';
-  const message = hasActiveIssues 
+  const label = hasActiveIssues ? mostSevereStatus.publicStatus : 'All systems normal';
+  const message = hasActiveIssues
     ? getStatusMessage(mostSevereStatus || null)
     : 'All systems operational';
 
   return (
     <Link
       href="/status"
-      className="relative group flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-200 hover:bg-surface-hover"
+      className="relative group inline-flex items-center gap-[7px] rounded-full border border-border px-[11px] py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-200 hover:border-input hover:text-foreground"
     >
-      <div className="relative">
-        <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
+      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+        <span className={`block h-1.5 w-1.5 rounded-full ${dotColor}`} />
         {hasActiveIssues && (
-          <div
-            className={`absolute top-0 left-0 w-2.5 h-2.5 rounded-full ${dotColor} animate-ping opacity-75`}
+          <span
+            className={`absolute inset-0 rounded-full ${dotColor} animate-ping opacity-75`}
           />
         )}
-      </div>
-      <span className="sr-only">System Status</span>
-      
+      </span>
+      <span className="whitespace-nowrap">{label}</span>
+
       {/* Tooltip */}
       <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-foreground text-background text-sm rounded-lg whitespace-normal max-w-xs w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden text-ellipsis">
         <span className="block truncate">{message}</span>
@@ -110,4 +111,4 @@ export default function StatusIndicator() {
       </div>
     </Link>
   );
-} 
+}
