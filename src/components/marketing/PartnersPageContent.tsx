@@ -68,8 +68,6 @@ export default function PartnersPageContent() {
           the partner holds a real stake in the company.
         </p>
 
-        {/* DRAFT QUOTE — needs partner approval before publishing, see spec Open Items in
-            docs/superpowers/specs/2026-09-02-site-copy-and-cobuild-design.md */}
         <blockquote className="mt-8 max-w-[640px] border-l-2 border-primary pl-6 text-lg italic leading-[1.6] text-foreground">
           &ldquo;We&apos;d tried to explain what telehealth actually needs to three different dev
           shops before this. CoFabri was the first team that built the sales side and the
