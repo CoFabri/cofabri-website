@@ -42,9 +42,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (inquiryType !== 'sales' && inquiryType !== 'general') {
+    const normalizedInquiryType = inquiryType === undefined ? 'general' : inquiryType;
+    if (normalizedInquiryType !== 'sales' && normalizedInquiryType !== 'general') {
       return NextResponse.json(
-        { error: 'inquiryType must be sales or general' },
+        { error: 'Please select what this is about, then try again.' },
         { status: 400 }
       );
     }
@@ -171,7 +172,7 @@ export async function POST(request: Request) {
           subject: subject.trim(),
           message: message.trim(),
           language_preference: toApiLanguagePreference(languagePreference),
-          inquiry_type: inquiryType,
+          inquiry_type: normalizedInquiryType,
         }),
       });
     } catch (fetchError) {
