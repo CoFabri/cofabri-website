@@ -32,12 +32,19 @@ const getTurnstileSecretKey = () => {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { firstName, lastName, email, subject, message, languagePreference, relatedApp, turnstileToken } = body;
+    const { firstName, lastName, email, subject, message, languagePreference, relatedApp, turnstileToken, inquiryType } = body;
 
     // Validate required fields
     if (!isNonEmptyString(firstName) || !isNonEmptyString(lastName) || !isNonEmptyString(email) || !isNonEmptyString(subject) || !isNonEmptyString(message)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    if (inquiryType !== 'sales' && inquiryType !== 'general') {
+      return NextResponse.json(
+        { error: 'inquiryType must be sales or general' },
         { status: 400 }
       );
     }
@@ -164,6 +171,7 @@ export async function POST(request: Request) {
           subject: subject.trim(),
           message: message.trim(),
           language_preference: toApiLanguagePreference(languagePreference),
+          inquiry_type: inquiryType,
         }),
       });
     } catch (fetchError) {
