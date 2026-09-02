@@ -87,7 +87,7 @@ export default function AppsPageContent() {
         title="Every app we make."
         subtitle={
           apps.length > 0
-            ? `${apps.length} apps, none of which overlap. Pick the one that matches the problem you actually have.`
+            ? `${apps.length} app${apps.length === 1 ? '' : 's'}, none of which overlap. Pick the one that matches the problem you actually have.`
             : 'Apps built to solve one problem well. Pick the one that matches the problem you actually have.'
         }
       />

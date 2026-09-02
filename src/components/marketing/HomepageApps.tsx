@@ -159,7 +159,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
               The suite
             </div>
             <h2 className="m-0 text-[32px] leading-[1.1] tracking-[-0.03em] font-semibold text-foreground sm:text-[42px]">
-              {apps.length > 0 ? `${apps.length} apps. One standard.` : 'One standard, every app.'}
+              {apps.length > 0 ? `${apps.length} app${apps.length === 1 ? '' : 's'}. One standard.` : 'One standard, every app.'}
             </h2>
           </div>
           <Link
