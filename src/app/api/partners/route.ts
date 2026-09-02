@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
-
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const COMPANY_NAME_MAX_LENGTH = 100;
-const INDUSTRY_MAX_LENGTH = 100;
-const PHONE_MAX_LENGTH = 30;
-const MESSAGE_MAX_LENGTH = 2000;
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
+import { partnerSchema, checkContactMethodRequirement } from '@/lib/validation/schemas';
+import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
 
 const getTurnstileSecretKey = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -22,34 +12,45 @@ const getTurnstileSecretKey = () => {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { firstName, lastName, email, companyName, industry, phone, message, turnstileToken } = body;
+    const { phone, turnstileToken } = body;
 
-    if (!isNonEmptyString(firstName) || !isNonEmptyString(lastName) || !isNonEmptyString(email) || !isNonEmptyString(industry) || !isNonEmptyString(message)) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate + normalize (trim, title-case names, lowercase email) in one
+    // place — this is the security boundary; the client's own validation is
+    // just UX and must never be trusted on its own.
+    const parsed = partnerSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid form submission' },
+        { status: 400 }
+      );
+    }
+    const { firstName, lastName, email, companyName, industry, message, preferredContactMethod } = parsed.data;
+
+    // Phone is optional on this form, but if provided it must be a real,
+    // valid number. The client always sends E.164 (leading "+"), which
+    // libphonenumber-js can validate without needing a default country.
+    const rawPhone = typeof phone === 'string' ? phone.trim() : '';
+    let normalizedPhone: string | undefined;
+    if (rawPhone) {
+      const phoneCountry: CountryCode = DEFAULT_COUNTRY;
+      if (!isValidPhone(rawPhone, phoneCountry)) {
+        return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
+      }
+      normalizedPhone = normalizePhone(rawPhone, phoneCountry) ?? undefined;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
-    }
-
-    if (firstName.trim().length > FIRST_NAME_MAX_LENGTH || lastName.trim().length > LAST_NAME_MAX_LENGTH) {
-      return NextResponse.json({ error: 'Name must be 50 characters or less' }, { status: 400 });
-    }
-    if (email.trim().length > EMAIL_MAX_LENGTH) {
-      return NextResponse.json({ error: `Email must be ${EMAIL_MAX_LENGTH} characters or less` }, { status: 400 });
-    }
-    if (industry.trim().length > INDUSTRY_MAX_LENGTH) {
-      return NextResponse.json({ error: `Industry must be ${INDUSTRY_MAX_LENGTH} characters or less` }, { status: 400 });
-    }
-    if (typeof companyName === 'string' && companyName.trim().length > COMPANY_NAME_MAX_LENGTH) {
-      return NextResponse.json({ error: `Company name must be ${COMPANY_NAME_MAX_LENGTH} characters or less` }, { status: 400 });
-    }
-    if (typeof phone === 'string' && phone.trim().length > PHONE_MAX_LENGTH) {
-      return NextResponse.json({ error: `Phone must be ${PHONE_MAX_LENGTH} characters or less` }, { status: 400 });
-    }
-    if (message.trim().length < 10 || message.trim().length > MESSAGE_MAX_LENGTH) {
-      return NextResponse.json({ error: `Message must be between 10 and ${MESSAGE_MAX_LENGTH} characters` }, { status: 400 });
+    // Email is also optional on this form — at least one of email/phone is
+    // required, and whichever contact method was chosen must actually be
+    // reachable. Re-checked server-side since the client's own check is UX only.
+    const contactMethodErrors = checkContactMethodRequirement({
+      email,
+      phone: rawPhone,
+      isPhoneValid: true, // already validated above
+      preferredContactMethod,
+    });
+    const contactMethodError = contactMethodErrors.email || contactMethodErrors.phone || contactMethodErrors.preferredContactMethod;
+    if (contactMethodError) {
+      return NextResponse.json({ error: contactMethodError }, { status: 400 });
     }
 
     if (!turnstileToken) {
@@ -94,13 +95,14 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
         },
         body: JSON.stringify({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          company_name: typeof companyName === 'string' && companyName.trim() ? companyName.trim() : undefined,
-          industry: industry.trim(),
-          phone: typeof phone === 'string' && phone.trim() ? phone.trim() : undefined,
-          message: message.trim(),
+          first_name: firstName,
+          last_name: lastName,
+          email: email || undefined,
+          phone: normalizedPhone,
+          preferred_contact_method: preferredContactMethod || undefined,
+          company_name: companyName || undefined,
+          industry,
+          message,
         }),
       });
     } catch (fetchError) {
@@ -120,7 +122,7 @@ export async function POST(request: Request) {
     const result = await apiRes.json();
     console.log('Partnership inquiry saved via cofabri-api:', {
       recordId: result.id,
-      industry: industry.trim(),
+      industry,
       timestamp: new Date().toISOString(),
     });
 

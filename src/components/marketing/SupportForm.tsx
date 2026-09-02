@@ -2,9 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDown, Mail, Phone, CircleCheck, LifeBuoy, Lightbulb } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
+import PhoneField from './PhoneField';
+import { supportSchema, zodIssuesToFieldErrors, FIELD_LIMITS } from '@/lib/validation/schemas';
+import { formatNameInput } from '@/lib/validation/name';
+import { formatEmailInput } from '@/lib/validation/email';
+import { DEFAULT_COUNTRY, formatPhoneAsYouType, isValidPhone, normalizePhone, type CountryCode } from '@/lib/validation/phone';
 
 interface FormData {
   firstName: string;
@@ -31,12 +36,12 @@ interface FormErrors {
   turnstile?: string;
 }
 
-// Character limits
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const COMPANY_ORGANIZATION_MAX_LENGTH = 100;
-const DESCRIPTION_MAX_LENGTH = 2000;
+// Character limits (kept in sync with the server via FIELD_LIMITS)
+const FIRST_NAME_MAX_LENGTH = FIELD_LIMITS.firstName;
+const LAST_NAME_MAX_LENGTH = FIELD_LIMITS.lastName;
+const EMAIL_MAX_LENGTH = FIELD_LIMITS.email;
+const COMPANY_ORGANIZATION_MAX_LENGTH = FIELD_LIMITS.companyOrganization;
+const DESCRIPTION_MAX_LENGTH = FIELD_LIMITS.description;
 
 interface App {
   id: string;
@@ -101,7 +106,7 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -201,7 +206,7 @@ function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, d
             <span className="text-muted-foreground">{placeholder}</span>
           )}
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -289,7 +294,7 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
         <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -338,6 +343,7 @@ export default function SupportForm() {
   const [turnstileError, setTurnstileError] = useState<string>('');
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
   const [urlAppsInitialized, setUrlAppsInitialized] = useState(false);
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
 
 
 
@@ -401,8 +407,11 @@ export default function SupportForm() {
     const language = searchParams?.get('language') || 'English';
     const subject = searchParams?.get('subject') || 'support';
 
-    // Format phone number if it comes from URL parameters
-    const phone = rawPhone ? formatPhoneNumber(rawPhone) : '';
+    // Format phone number if it comes from URL parameters. This only runs
+    // at mount (before the user could have picked a different country), so
+    // it always formats against the default country rather than reacting
+    // to later country changes.
+    const phone = rawPhone ? formatPhoneAsYouType(rawPhone, '', DEFAULT_COUNTRY) : '';
 
     setFormData(prev => ({
       ...prev,
@@ -416,52 +425,13 @@ export default function SupportForm() {
   }, [searchParams]);
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    } else if (formData.firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
-      newErrors.firstName = `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    } else if (formData.lastName.trim().length > LAST_NAME_MAX_LENGTH) {
-      newErrors.lastName = `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.preferredContactMethod) {
-      newErrors.preferredContactMethod = 'Please select a preferred contact method';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    } else if (formData.email.trim().length > EMAIL_MAX_LENGTH) {
-      newErrors.email = `Email must be ${EMAIL_MAX_LENGTH} characters or less`;
-    }
+    const parsed = supportSchema.safeParse(formData);
+    const newErrors: FormErrors = parsed.success ? {} : (zodIssuesToFieldErrors(parsed.error) as FormErrors);
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else {
-      // Validate US phone number format (XXX) XXX-XXXX
-      const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
-      if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = 'Please enter a valid US phone number: (555) 555-5555';
-      }
-    }
-
-    if (!formData.subject) {
-      newErrors.subject = 'Please select a subject';
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    } else if (formData.description.trim().length < 10) {
-      newErrors.description = 'Description must be at least 10 characters long';
-    } else if (formData.description.trim().length > DESCRIPTION_MAX_LENGTH) {
-      newErrors.description = `Description must be ${DESCRIPTION_MAX_LENGTH} characters or less`;
+    } else if (!isValidPhone(formData.phone, phoneCountry)) {
+      newErrors.phone = 'Please enter a valid phone number';
     }
 
     if (!turnstileToken) {
@@ -488,20 +458,18 @@ export default function SupportForm() {
     } else if (name === 'description' && value.length > DESCRIPTION_MAX_LENGTH) {
       processedValue = value.slice(0, DESCRIPTION_MAX_LENGTH);
     }
-    
-    // Special handling for phone number formatting
-    if (name === 'phone') {
-      const formattedPhone = formatPhoneNumber(processedValue);
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedPhone
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: processedValue
-      }));
+
+    // Live formatting: title-case names as typed, lowercase emails as typed
+    if (name === 'firstName' || name === 'lastName') {
+      processedValue = formatNameInput(processedValue);
+    } else if (name === 'email') {
+      processedValue = formatEmailInput(processedValue);
     }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: processedValue
+    }));
 
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
@@ -512,19 +480,15 @@ export default function SupportForm() {
     }
   };
 
-  // Function to format phone number as (XXX) XXX-XXXX
-  const formatPhoneNumber = (value: string): string => {
-    // Remove all non-digits
-    const phoneNumber = value.replace(/\D/g, '');
-    
-    // Limit to 10 digits
-    const trimmed = phoneNumber.slice(0, 10);
-    
-    // Format based on length
-    if (trimmed.length === 0) return '';
-    if (trimmed.length <= 3) return `(${trimmed}`;
-    if (trimmed.length <= 6) return `(${trimmed.slice(0, 3)}) ${trimmed.slice(3)}`;
-    return `(${trimmed.slice(0, 3)}) ${trimmed.slice(3, 6)}-${trimmed.slice(6)}`;
+  const handlePhoneChange = (value: string) => {
+    setFormData(prev => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: undefined }));
+    }
+  };
+
+  const handlePhoneCountryChange = (nextCountry: CountryCode) => {
+    setPhoneCountry(nextCountry);
   };
 
   const handleLanguageChange = (value: string) => {
@@ -618,7 +582,8 @@ export default function SupportForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    const parsed = supportSchema.safeParse(formData);
+    if (!validateForm() || !parsed.success) {
       return;
     }
 
@@ -627,19 +592,19 @@ export default function SupportForm() {
     setErrorMessage('');
 
     try {
+      const normalizedPhone = normalizePhone(formData.phone, phoneCountry) ?? '';
+
       const formDataToSend = new FormData();
-      formDataToSend.append('firstName', formData.firstName);
-      formDataToSend.append('lastName', formData.lastName);
-      formDataToSend.append('languagePreference', formData.languagePreference);
-      formDataToSend.append('companyOrganization', formData.companyOrganization);
-      formDataToSend.append('preferredContactMethod', formData.preferredContactMethod);
-      formDataToSend.append('email', formData.email);
-      // Clean phone number for API (remove formatting)
-      const cleanPhone = formData.phone.replace(/\D/g, '');
-      formDataToSend.append('phone', cleanPhone);
+      formDataToSend.append('firstName', parsed.data.firstName);
+      formDataToSend.append('lastName', parsed.data.lastName);
+      formDataToSend.append('languagePreference', parsed.data.languagePreference ?? '');
+      formDataToSend.append('companyOrganization', parsed.data.companyOrganization ?? '');
+      formDataToSend.append('preferredContactMethod', parsed.data.preferredContactMethod);
+      formDataToSend.append('email', parsed.data.email);
+      formDataToSend.append('phone', normalizedPhone);
       formDataToSend.append('applications', JSON.stringify(formData.applications));
-      formDataToSend.append('subject', formData.subject);
-      formDataToSend.append('description', formData.description);
+      formDataToSend.append('subject', parsed.data.subject);
+      formDataToSend.append('description', parsed.data.description);
       formDataToSend.append('turnstileToken', turnstileToken);
 
       // Append screenshots
@@ -673,6 +638,7 @@ export default function SupportForm() {
         setTurnstileToken('');
         setTurnstileError('');
         setUrlAppsInitialized(false);
+        setPhoneCountry(DEFAULT_COUNTRY);
       } else {
         const errorData = await response.json();
         setSubmitStatus('error');
@@ -706,6 +672,7 @@ export default function SupportForm() {
     setTurnstileError('');
     setSubmitStatus('idle');
     setUrlAppsInitialized(false);
+    setPhoneCountry(DEFAULT_COUNTRY);
   };
 
   // Get Turnstile site key based on environment
@@ -869,9 +836,9 @@ export default function SupportForm() {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { value: 'email', label: 'Email', icon: '📧' },
-                { value: 'phone', label: 'Phone', icon: '📞' },
-                { value: 'any', label: 'Any', icon: '✅' }
+                { value: 'email', label: 'Email', icon: Mail },
+                { value: 'phone', label: 'Phone', icon: Phone },
+                { value: 'any', label: 'Any', icon: CircleCheck }
               ].map((option) => (
                 <label
                   key={option.value}
@@ -900,7 +867,7 @@ export default function SupportForm() {
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg">{option.icon}</span>
+                      <option.icon className="w-5 h-5 text-ink-faint" />
                       <span className="text-sm font-medium text-foreground">{option.label}</span>
                     </div>
                   </div>
@@ -954,36 +921,15 @@ export default function SupportForm() {
               <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                 Phone Number *
               </label>
-              <div className="relative">
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                                className={`w-full px-4 py-3 pl-16 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
-                errors.phone ? 'border-danger' : 'border-border-strong'
-              }`}
-                  placeholder="(555) 555-5555"
-                  aria-describedby={errors.phone ? 'phone-error' : undefined}
-                  maxLength={14}
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <div className="flex items-center space-x-1">
-                    <span className="text-sm font-medium text-muted-foreground">🇺🇸</span>
-                    <span className="text-xs text-ink-faint">+1</span>
-                  </div>
-                </div>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                US phone number format: (555) 555-5555
-              </p>
-              {errors.phone && (
-                <p id="phone-error" className="mt-1 text-sm text-danger">
-                  {errors.phone}
-                </p>
-              )}
+              <PhoneField
+                id="phone"
+                value={formData.phone}
+                country={phoneCountry}
+                onValueChange={handlePhoneChange}
+                onCountryChange={handlePhoneCountryChange}
+                error={errors.phone}
+                required
+              />
             </div>
           </div>
         </div>
@@ -1018,8 +964,8 @@ export default function SupportForm() {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { value: 'support', label: 'Support/Help', icon: '🆘', description: 'Get help with issues or questions' },
-                { value: 'feature', label: 'Feature Request', icon: '💡', description: 'Suggest new features or improvements' }
+                { value: 'support', label: 'Support/Help', icon: LifeBuoy, description: 'Get help with issues or questions' },
+                { value: 'feature', label: 'Feature Request', icon: Lightbulb, description: 'Suggest new features or improvements' }
               ].map((option) => (
                 <label
                   key={option.value}
@@ -1049,7 +995,7 @@ export default function SupportForm() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-lg">{option.icon}</span>
+                        <option.icon className="w-5 h-5 text-ink-faint" />
                         <span className="text-sm font-medium text-foreground">{option.label}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">{option.description}</p>

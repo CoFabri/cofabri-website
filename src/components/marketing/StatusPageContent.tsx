@@ -28,6 +28,27 @@ function uptimeWindowDates(): string[] {
   return dates;
 }
 
+const STATUS_SEVERITY: Record<ServiceUptimeDay['status'], number> = { operational: 0, degraded: 1, down: 2 };
+
+function worseStatus(a: ServiceUptimeDay['status'], b: ServiceUptimeDay['status']): ServiceUptimeDay['status'] {
+  return STATUS_SEVERITY[a] >= STATUS_SEVERITY[b] ? a : b;
+}
+
+// Folds several services' day-by-day status into one, taking the worst status
+// any of them had on a given day — used for the "CoFabri Platform" row, which
+// represents every monitored service not attributable to one specific app
+// (in practice: shared infra like Supabase/Vercel/Stripe, not per-app feeds).
+function mergeHistories(histories: ServiceUptimeDay[][]): ServiceUptimeDay[] {
+  const byDate = new Map<string, ServiceUptimeDay['status']>();
+  for (const history of histories) {
+    for (const day of history) {
+      const existing = byDate.get(day.date);
+      byDate.set(day.date, existing ? worseStatus(existing, day.status) : day.status);
+    }
+  }
+  return Array.from(byDate.entries()).map(([date, status]) => ({ date, status }));
+}
+
 function dayBarClasses(status: ServiceUptimeDay['status'] | 'none'): string {
   switch (status) {
     case 'operational':
@@ -111,9 +132,21 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
       (incident) => !appRows.some((row) => row.incident === incident)
     );
 
+    // Real monitored_services are shared infra (Supabase, Vercel, Stripe,
+    // GoHighLevel, GitHub, ...), not per-app feeds — none of them will ever
+    // match an app name. Anything not claimed by a specific app rolls up into
+    // the platform row's bar, mirroring how an unattributed incident already
+    // falls through to platformIncident above.
+    const matchedServiceIds = new Set(
+      apps.map((app) => matchHistory(app.name)?.id).filter((id): id is string => Boolean(id))
+    );
+    const platformHistory = mergeHistories(
+      uptimeHistory.filter((s) => !matchedServiceIds.has(s.id)).map((s) => s.history)
+    );
+
     return [
       ...appRows,
-      { name: 'CoFabri Platform', incident: platformIncident, history: matchHistory('CoFabri Platform')?.history ?? [] },
+      { name: 'CoFabri Platform', incident: platformIncident, history: platformHistory },
     ];
   }, [apps, openIncidents, uptimeHistory]);
 

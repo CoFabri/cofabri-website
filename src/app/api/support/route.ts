@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { supportSchema } from '@/lib/validation/schemas';
+import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
 const SUPPORTED_LANGUAGE_PREFERENCES = new Set(['english', 'spanish']);
@@ -19,18 +21,6 @@ function toApiSubjectLabel(subject: string): string {
   if (subject === 'support') return 'Support/Help';
   if (subject === 'feature') return 'Feature Request';
   return subject;
-}
-
-// Character limits (must match client-side limits)
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const COMPANY_ORGANIZATION_MAX_LENGTH = 100;
-const PHONE_MAX_LENGTH = 30;
-const DESCRIPTION_MAX_LENGTH = 2000;
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 // Get Turnstile secret key based on environment
@@ -63,83 +53,54 @@ export async function POST(request: Request) {
     // app_id, so we forward the first selected application, if any)
     const applicationsArray = typeof applications === 'string' && applications ? JSON.parse(applications) : [];
 
-    // Validate required fields
+    // Validate + normalize (trim, title-case names, lowercase email) in one
+    // place — this is the security boundary; the client's own validation is
+    // just UX and must never be trusted on its own.
+    const parsed = supportSchema.safeParse({
+      firstName: typeof firstName === 'string' ? firstName : '',
+      lastName: typeof lastName === 'string' ? lastName : '',
+      email: typeof email === 'string' ? email : '',
+      languagePreference: typeof languagePreference === 'string' ? languagePreference : undefined,
+      companyOrganization: typeof companyOrganization === 'string' ? companyOrganization : undefined,
+      preferredContactMethod: typeof preferredContactMethod === 'string' ? preferredContactMethod : '',
+      subject: typeof subject === 'string' ? subject : '',
+      description: typeof description === 'string' ? description : '',
+    });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid form submission' },
+        { status: 400 }
+      );
+    }
+    const {
+      firstName: normalizedFirstName,
+      lastName: normalizedLastName,
+      email: normalizedEmail,
+      companyOrganization: normalizedCompanyOrganization,
+      preferredContactMethod: normalizedPreferredContactMethod,
+      subject: normalizedSubject,
+      description: normalizedDescription,
+      languagePreference: normalizedLanguagePreference,
+    } = parsed.data;
+
     // Note: phone is intentionally not required here — cofabri-api's
     // /web/forms/support endpoint has no column to persist it (a separate,
     // cross-repo schema gap), so it would be misleading to block submission
     // on a value that's silently discarded. The form still collects it (it
-    // may be useful in logs) but does not require it.
-    if (
-      !isNonEmptyString(firstName) ||
-      !isNonEmptyString(lastName) ||
-      !isNonEmptyString(email) ||
-      !isNonEmptyString(preferredContactMethod) ||
-      !isNonEmptyString(subject) ||
-      !isNonEmptyString(description)
-    ) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
-    // Validate character limits
-    if (firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (lastName.trim().length > LAST_NAME_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (email.trim().length > EMAIL_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Email must be ${EMAIL_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (typeof companyOrganization === 'string' && companyOrganization.trim().length > COMPANY_ORGANIZATION_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Company/Organization must be ${COMPANY_ORGANIZATION_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (typeof phone === 'string' && phone.trim().length > PHONE_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Phone must be ${PHONE_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (description.trim().length > DESCRIPTION_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Description must be ${DESCRIPTION_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (description.trim().length < 10) {
-      return NextResponse.json(
-        { error: 'Description must be at least 10 characters long' },
-        { status: 400 }
-      );
+    // may be useful in logs), and if present it must be a real, valid number.
+    const rawPhone = typeof phone === 'string' ? phone.trim() : '';
+    let normalizedPhone: string | undefined;
+    if (rawPhone) {
+      // The client always sends E.164 (leading "+"), which libphonenumber-js
+      // can validate without needing a default country.
+      const phoneCountry: CountryCode = DEFAULT_COUNTRY;
+      if (!isValidPhone(rawPhone, phoneCountry)) {
+        return NextResponse.json(
+          { error: 'Please enter a valid phone number' },
+          { status: 400 }
+        );
+      }
+      normalizedPhone = normalizePhone(rawPhone, phoneCountry) ?? undefined;
     }
 
     // Verify Turnstile token
@@ -213,16 +174,16 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
         },
         body: JSON.stringify({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          email: email.trim(),
-          subject: toApiSubjectLabel(subject.trim()),
-          description: description.trim(),
+          first_name: normalizedFirstName,
+          last_name: normalizedLastName,
+          email: normalizedEmail,
+          subject: toApiSubjectLabel(normalizedSubject),
+          description: normalizedDescription,
           app_id: applicationsArray[0],
-          subject_type: toApiSubjectType(subject.trim()),
-          preferred_contact_method: preferredContactMethod.trim() || undefined,
-          company_organization: typeof companyOrganization === 'string' && companyOrganization.trim() ? companyOrganization.trim() : undefined,
-          language_preference: toApiLanguagePreference(typeof languagePreference === 'string' ? languagePreference : undefined),
+          subject_type: toApiSubjectType(normalizedSubject),
+          preferred_contact_method: normalizedPreferredContactMethod || undefined,
+          company_organization: normalizedCompanyOrganization || undefined,
+          language_preference: toApiLanguagePreference(normalizedLanguagePreference),
         }),
       });
     } catch (fetchError) {
@@ -239,9 +200,10 @@ export async function POST(request: Request) {
       // error entries include the submitted `value` verbatim, which can be PII (email, etc).
       const errorSummary = errorBody?.errors ? errorBody.errors.map((e: { msg?: string }) => e.msg) : errorBody?.message || null;
       console.error('cofabri-api support submission failed:', apiRes.status, errorSummary, {
-        subject: subject.trim(),
+        subject: normalizedSubject,
         applications: applicationsArray,
         screenshots: screenshots.map(f => f.name),
+        hasPhone: Boolean(normalizedPhone),
         timestamp: new Date().toISOString()
       });
 
@@ -254,9 +216,10 @@ export async function POST(request: Request) {
     const result = await apiRes.json();
     console.log('Support form submission saved via cofabri-api:', {
       recordId: result.id,
-      subject: subject.trim(),
+      subject: normalizedSubject,
       applications: applicationsArray,
       screenshots: screenshots.map(f => f.name),
+      hasPhone: Boolean(normalizedPhone),
       timestamp: new Date().toISOString()
     });
 

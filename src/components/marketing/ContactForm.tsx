@@ -2,14 +2,22 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { EnvelopeIcon, PhoneIcon, ClockIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDown } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
+import PhoneField from './PhoneField';
+import PreferredContactMethodField from './PreferredContactMethodField';
+import { contactSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS } from '@/lib/validation/schemas';
+import { formatNameInput } from '@/lib/validation/name';
+import { formatEmailInput } from '@/lib/validation/email';
+import { DEFAULT_COUNTRY, formatPhoneAsYouType, isValidPhone, normalizePhone, type CountryCode } from '@/lib/validation/phone';
 
 interface FormData {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
+  preferredContactMethod: string;
   subject: string;
   message: string;
   languagePreference: string;
@@ -21,18 +29,20 @@ interface FormErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
+  phone?: string;
+  preferredContactMethod?: string;
   subject?: string;
   message?: string;
   inquiryType?: string;
   turnstile?: string;
 }
 
-// Character limits
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const SUBJECT_MAX_LENGTH = 100;
-const MESSAGE_MAX_LENGTH = 2000;
+// Character limits (kept in sync with the server via FIELD_LIMITS)
+const FIRST_NAME_MAX_LENGTH = FIELD_LIMITS.firstName;
+const LAST_NAME_MAX_LENGTH = FIELD_LIMITS.lastName;
+const EMAIL_MAX_LENGTH = FIELD_LIMITS.email;
+const SUBJECT_MAX_LENGTH = FIELD_LIMITS.subject;
+const MESSAGE_MAX_LENGTH = FIELD_LIMITS.message;
 
 interface App {
   id: string;
@@ -97,7 +107,7 @@ function CustomDropdown({ options, value, onChange, placeholder, disabled = fals
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
-        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -174,7 +184,7 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
         <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDownIcon className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-faint transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -204,6 +214,8 @@ export default function ContactForm() {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
+    preferredContactMethod: 'any',
     subject: '',
     message: '',
     languagePreference: 'English',
@@ -218,6 +230,7 @@ export default function ContactForm() {
   const [isLoadingApps, setIsLoadingApps] = useState(true);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
 
 
 
@@ -267,57 +280,36 @@ export default function ContactForm() {
     const firstName = searchParams?.get('firstName') || '';
     const lastName = searchParams?.get('lastName') || '';
     const email = searchParams?.get('email') || '';
+    const rawPhone = searchParams?.get('phone') || '';
     const language = searchParams?.get('language') || 'English';
+
+    // Format phone number if it comes from URL parameters. This only runs
+    // at mount (before the user could have picked a different country), so
+    // it always formats against the default country rather than reacting
+    // to later country changes.
+    const phone = rawPhone ? formatPhoneAsYouType(rawPhone, '', DEFAULT_COUNTRY) : '';
 
     setFormData(prev => ({
       ...prev,
       firstName,
       lastName,
       email,
+      phone,
       languagePreference: language
     }));
   }, [searchParams]);
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+    const parsed = contactSchema.safeParse(formData);
+    const newErrors: FormErrors = parsed.success ? {} : (zodIssuesToFieldErrors(parsed.error) as FormErrors);
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    } else if (formData.firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
-      newErrors.firstName = `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    } else if (formData.lastName.trim().length > LAST_NAME_MAX_LENGTH) {
-      newErrors.lastName = `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    } else if (formData.email.trim().length > EMAIL_MAX_LENGTH) {
-      newErrors.email = `Email must be ${EMAIL_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
-    } else if (formData.subject.trim().length > SUBJECT_MAX_LENGTH) {
-      newErrors.subject = `Subject must be ${SUBJECT_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters long';
-    } else if (formData.message.trim().length > MESSAGE_MAX_LENGTH) {
-      newErrors.message = `Message must be ${MESSAGE_MAX_LENGTH} characters or less`;
-    }
-
-    if (!formData.inquiryType) {
-      newErrors.inquiryType = 'Please select what this is about';
-    }
+    const isPhoneValid = formData.phone.trim() ? isValidPhone(formData.phone, phoneCountry) : true;
+    Object.assign(newErrors, checkContactMethodRequirement({
+      email: formData.email,
+      phone: formData.phone,
+      isPhoneValid,
+      preferredContactMethod: formData.preferredContactMethod,
+    }));
 
     if (!turnstileToken) {
       newErrors.turnstile = 'Please complete the security verification';
@@ -343,7 +335,14 @@ export default function ContactForm() {
     } else if (name === 'message' && value.length > MESSAGE_MAX_LENGTH) {
       processedValue = value.slice(0, MESSAGE_MAX_LENGTH);
     }
-    
+
+    // Live formatting: title-case names as typed, lowercase emails as typed
+    if (name === 'firstName' || name === 'lastName') {
+      processedValue = formatNameInput(processedValue);
+    } else if (name === 'email') {
+      processedValue = formatEmailInput(processedValue);
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: processedValue
@@ -378,6 +377,27 @@ export default function ContactForm() {
     }
   };
 
+  const handleContactMethodChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      preferredContactMethod: value
+    }));
+    if (errors.preferredContactMethod) {
+      setErrors(prev => ({ ...prev, preferredContactMethod: undefined }));
+    }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData(prev => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors(prev => ({ ...prev, phone: undefined }));
+    }
+  };
+
+  const handlePhoneCountryChange = (nextCountry: CountryCode) => {
+    setPhoneCountry(nextCountry);
+  };
+
   const handleAppChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -390,6 +410,8 @@ export default function ContactForm() {
       firstName: '',
       lastName: '',
       email: '',
+      phone: '',
+      preferredContactMethod: 'any',
       subject: '',
       message: '',
       languagePreference: 'English',
@@ -399,6 +421,7 @@ export default function ContactForm() {
     setErrors({});
     setTurnstileToken('');
     setTurnstileError('');
+    setPhoneCountry(DEFAULT_COUNTRY);
   };
 
   const handleTurnstileVerify = useCallback((token: string) => {
@@ -425,7 +448,8 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    const parsed = contactSchema.safeParse(formData);
+    if (!validateForm() || !parsed.success) {
       return;
     }
 
@@ -434,13 +458,16 @@ export default function ContactForm() {
     setErrorMessage('');
 
     try {
+      const normalizedPhone = formData.phone.trim() ? normalizePhone(formData.phone, phoneCountry) ?? undefined : undefined;
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
+          ...parsed.data,
+          phone: normalizedPhone,
           turnstileToken
         }),
       });
@@ -452,6 +479,8 @@ export default function ContactForm() {
           firstName: '',
           lastName: '',
           email: '',
+          phone: '',
+          preferredContactMethod: 'any',
           subject: '',
           message: '',
           languagePreference: 'English',
@@ -461,6 +490,7 @@ export default function ContactForm() {
         setErrors({});
         setTurnstileToken('');
         setTurnstileError('');
+        setPhoneCountry(DEFAULT_COUNTRY);
       } else {
         const errorData = await response.json();
         setSubmitStatus('error');
@@ -597,47 +627,67 @@ export default function ContactForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              maxLength={EMAIL_MAX_LENGTH}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
-                errors.email ? 'border-danger' : 'border-border-strong'
-              }`}
-              placeholder="Enter your email address"
-              aria-describedby={errors.email ? 'email-error' : undefined}
-            />
-            {errors.email && (
-              <p id="email-error" className="mt-1 text-sm text-danger">
-                {errors.email}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
-              Language Preference
-            </label>
-            <SimpleDropdown
-              options={[
-                { value: 'English', label: 'English' },
-                { value: 'Spanish', label: 'Spanish' }
-              ]}
-              value={formData.languagePreference}
-              onChange={handleLanguageChange}
-              placeholder="Select a language"
-            />
-          </div>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            maxLength={EMAIL_MAX_LENGTH}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+              errors.email ? 'border-danger' : 'border-border-strong'
+            }`}
+            placeholder="Enter your email address"
+            aria-describedby={errors.email ? 'email-error' : undefined}
+          />
+          {errors.email && (
+            <p id="email-error" className="mt-1 text-sm text-danger">
+              {errors.email}
+            </p>
+          )}
         </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+            Phone Number
+          </label>
+          <PhoneField
+            id="phone"
+            value={formData.phone}
+            country={phoneCountry}
+            onValueChange={handlePhoneChange}
+            onCountryChange={handlePhoneCountryChange}
+            error={errors.phone}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Provide an email address or phone number so we can get back to you.
+        </p>
+
+        <div>
+          <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
+            Language Preference
+          </label>
+          <SimpleDropdown
+            options={[
+              { value: 'English', label: 'English' },
+              { value: 'Spanish', label: 'Spanish' }
+            ]}
+            value={formData.languagePreference}
+            onChange={handleLanguageChange}
+            placeholder="Select a language"
+          />
+        </div>
+
+        <PreferredContactMethodField
+          value={formData.preferredContactMethod}
+          onChange={handleContactMethodChange}
+          error={errors.preferredContactMethod}
+        />
 
         <div>
           <label htmlFor="inquiryType" className="block text-sm font-medium text-foreground mb-2">

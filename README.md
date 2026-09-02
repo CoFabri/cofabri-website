@@ -33,7 +33,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 - 🔗 Social profile linking
 
 ### User Engagement
-- 📧 Newsletter subscription system
 - 💬 Live chat widget (HighLevel integration)
 - ❓ FAQ section
 - 📊 Analytics tracking
@@ -119,9 +118,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    COFABRI_API_BASE_URL=your_cofabri_api_base_url_here
    COFABRI_API_KEY=your_cofabri_api_key_here
 
-   # Newsletter Webhook
-   NEWSLETTER_WEBHOOK_URL=your_webhook_url_here
-
    # HighLevel Chat Widget
    NEXT_PUBLIC_HIGHLEVEL_WIDGET_URL=your_highlevel_widget_url_here
 
@@ -202,7 +198,6 @@ cofabri/
 │   │   │   ├── Banner.tsx    # Announcement banner
 │   │   │   ├── LaunchCountdown.tsx  # App launch countdown
 │   │   │   ├── StatusIndicator.tsx  # System status indicator
-│   │   │   ├── NewsletterSignup.tsx # Newsletter signup form
 │   │   │   ├── LiveChat.tsx  # Live chat widget
 │   │   │   ├── SocialFeeds.tsx # Social media feeds
 │   │   │   ├── Analytics.tsx # Google Analytics & HotJar integration
@@ -416,22 +411,6 @@ Features:
 - User impact assessment
 - Automated status updates
 - Custom status pages
-
-### Newsletter System
-
-The newsletter system allows users to subscribe to updates:
-
-1. Configure webhook URL in environment variables
-2. Customize signup form design
-3. Set up email notifications
-4. Track subscription analytics
-
-Features:
-- Email validation
-- Success/error handling
-- Subscription tracking
-- Webhook integration
-- Customizable form design
 
 ### Live Chat
 

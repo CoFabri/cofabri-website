@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { contactSchema, checkContactMethodRequirement } from '@/lib/validation/schemas';
+import { isValidPhone, normalizePhone, DEFAULT_COUNTRY } from '@/lib/validation/phone';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
 // The contact form offers many more languages, so anything else is left unset rather
@@ -7,17 +9,6 @@ const SUPPORTED_LANGUAGE_PREFERENCES = new Set(['english', 'spanish']);
 function toApiLanguagePreference(languagePreference?: string): string | undefined {
   const normalized = languagePreference?.trim().toLowerCase();
   return normalized && SUPPORTED_LANGUAGE_PREFERENCES.has(normalized) ? normalized : undefined;
-}
-
-// Character limits (must match client-side limits)
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const SUBJECT_MAX_LENGTH = 100;
-const MESSAGE_MAX_LENGTH = 2000;
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
 }
 
 // Get Turnstile secret key based on environment
@@ -32,74 +23,46 @@ const getTurnstileSecretKey = () => {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { firstName, lastName, email, subject, message, languagePreference, relatedApp, turnstileToken, inquiryType } = body;
+    const { turnstileToken, phone } = body;
 
-    // Validate required fields
-    if (!isNonEmptyString(firstName) || !isNonEmptyString(lastName) || !isNonEmptyString(email) || !isNonEmptyString(subject) || !isNonEmptyString(message)) {
+    // Validate + normalize (trim, title-case names, lowercase email) in one
+    // place — this is the security boundary; the client's own validation is
+    // just UX and must never be trusted on its own.
+    const parsed = contactSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: parsed.error.issues[0]?.message ?? 'Invalid form submission' },
         { status: 400 }
       );
     }
+    const {
+      firstName, lastName, email, subject, message, languagePreference, relatedApp, preferredContactMethod, inquiryType,
+    } = parsed.data;
 
-    const normalizedInquiryType = inquiryType === undefined ? 'general' : inquiryType;
-    if (normalizedInquiryType !== 'sales' && normalizedInquiryType !== 'general') {
-      return NextResponse.json(
-        { error: 'Please select what this is about, then try again.' },
-        { status: 400 }
-      );
+    // Phone is optional, but if provided it must be a real, valid number.
+    // The client always sends E.164 (leading "+"), which libphonenumber-js
+    // can validate without needing a default country.
+    const rawPhone = typeof phone === 'string' ? phone.trim() : '';
+    let normalizedPhone: string | undefined;
+    if (rawPhone) {
+      if (!isValidPhone(rawPhone, DEFAULT_COUNTRY)) {
+        return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
+      }
+      normalizedPhone = normalizePhone(rawPhone, DEFAULT_COUNTRY) ?? undefined;
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
-
-    // Validate character limits
-    if (firstName.trim().length > FIRST_NAME_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `First name must be ${FIRST_NAME_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (lastName.trim().length > LAST_NAME_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Last name must be ${LAST_NAME_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (email.trim().length > EMAIL_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Email must be ${EMAIL_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (subject.trim().length > SUBJECT_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Subject must be ${SUBJECT_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (message.trim().length > MESSAGE_MAX_LENGTH) {
-      return NextResponse.json(
-        { error: `Message must be ${MESSAGE_MAX_LENGTH} characters or less` },
-        { status: 400 }
-      );
-    }
-
-    if (message.trim().length < 10) {
-      return NextResponse.json(
-        { error: 'Message must be at least 10 characters long' },
-        { status: 400 }
-      );
+    // Email is also optional on this form — at least one of email/phone is
+    // required, and whichever contact method was chosen must actually be
+    // reachable. Re-checked server-side since the client's own check is UX only.
+    const contactMethodErrors = checkContactMethodRequirement({
+      email,
+      phone: rawPhone,
+      isPhoneValid: true, // already validated above
+      preferredContactMethod,
+    });
+    const contactMethodError = contactMethodErrors.email || contactMethodErrors.phone || contactMethodErrors.preferredContactMethod;
+    if (contactMethodError) {
+      return NextResponse.json({ error: contactMethodError }, { status: 400 });
     }
 
     // Verify Turnstile token
@@ -168,11 +131,13 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
-          email: email.trim(),
+          email: email || undefined,
+          phone: normalizedPhone,
+          preferred_contact_method: preferredContactMethod || undefined,
           subject: subject.trim(),
           message: message.trim(),
           language_preference: toApiLanguagePreference(languagePreference),
-          inquiry_type: normalizedInquiryType,
+          inquiry_type: inquiryType,
         }),
       });
     } catch (fetchError) {
@@ -191,6 +156,7 @@ export async function POST(request: Request) {
       console.error('cofabri-api contact submission failed:', apiRes.status, errorSummary, {
         subject: subject.trim(),
         relatedApp,
+        hasPhone: Boolean(normalizedPhone),
         timestamp: new Date().toISOString(),
       });
 
@@ -205,6 +171,7 @@ export async function POST(request: Request) {
       recordId: result.id,
       subject: subject.trim(),
       relatedApp,
+      hasPhone: Boolean(normalizedPhone),
       timestamp: new Date().toISOString()
     });
 

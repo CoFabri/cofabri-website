@@ -2,14 +2,21 @@
 
 import { useState, useCallback } from 'react';
 import Turnstile from './Turnstile';
+import PhoneField from './PhoneField';
+import PreferredContactMethodField from './PreferredContactMethodField';
+import { partnerSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS } from '@/lib/validation/schemas';
+import { formatNameInput } from '@/lib/validation/name';
+import { formatEmailInput } from '@/lib/validation/email';
+import { DEFAULT_COUNTRY, isValidPhone, normalizePhone, type CountryCode } from '@/lib/validation/phone';
 
 interface FormData {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
+  preferredContactMethod: string;
   companyName: string;
   industry: string;
-  phone: string;
   message: string;
 }
 
@@ -17,26 +24,28 @@ interface FormErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
+  phone?: string;
+  preferredContactMethod?: string;
   industry?: string;
   message?: string;
   turnstile?: string;
 }
 
-const FIRST_NAME_MAX_LENGTH = 50;
-const LAST_NAME_MAX_LENGTH = 50;
-const EMAIL_MAX_LENGTH = 100;
-const COMPANY_NAME_MAX_LENGTH = 100;
-const INDUSTRY_MAX_LENGTH = 100;
-const PHONE_MAX_LENGTH = 30;
-const MESSAGE_MAX_LENGTH = 2000;
+const FIRST_NAME_MAX_LENGTH = FIELD_LIMITS.firstName;
+const LAST_NAME_MAX_LENGTH = FIELD_LIMITS.lastName;
+const EMAIL_MAX_LENGTH = FIELD_LIMITS.email;
+const COMPANY_NAME_MAX_LENGTH = FIELD_LIMITS.companyName;
+const INDUSTRY_MAX_LENGTH = FIELD_LIMITS.industry;
+const MESSAGE_MAX_LENGTH = FIELD_LIMITS.message;
 
 const initialFormData: FormData = {
   firstName: '',
   lastName: '',
   email: '',
+  phone: '',
+  preferredContactMethod: 'any',
   companyName: '',
   industry: '',
-  phone: '',
   message: '',
 };
 
@@ -48,36 +57,28 @@ export default function PartnerForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
 
-  const maxLengths: Record<keyof FormData, number> = {
+  const maxLengths: Partial<Record<keyof FormData, number>> = {
     firstName: FIRST_NAME_MAX_LENGTH,
     lastName: LAST_NAME_MAX_LENGTH,
     email: EMAIL_MAX_LENGTH,
     companyName: COMPANY_NAME_MAX_LENGTH,
     industry: INDUSTRY_MAX_LENGTH,
-    phone: PHONE_MAX_LENGTH,
     message: MESSAGE_MAX_LENGTH,
   };
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+    const parsed = partnerSchema.safeParse(formData);
+    const newErrors: FormErrors = parsed.success ? {} : (zodIssuesToFieldErrors(parsed.error) as FormErrors);
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.industry.trim()) newErrors.industry = 'Industry is required';
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required';
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters long';
-    }
+    const isPhoneValid = formData.phone.trim() ? isValidPhone(formData.phone, phoneCountry) : true;
+    Object.assign(newErrors, checkContactMethodRequirement({
+      email: formData.email,
+      phone: formData.phone,
+      isPhoneValid,
+      preferredContactMethod: formData.preferredContactMethod,
+    }));
 
     if (!turnstileToken) {
       newErrors.turnstile = 'Please complete the security verification';
@@ -90,7 +91,13 @@ export default function PartnerForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target as { name: keyof FormData; value: string };
     const max = maxLengths[name];
-    const processedValue = max && value.length > max ? value.slice(0, max) : value;
+    let processedValue = max && value.length > max ? value.slice(0, max) : value;
+
+    if (name === 'firstName' || name === 'lastName') {
+      processedValue = formatNameInput(processedValue);
+    } else if (name === 'email') {
+      processedValue = formatEmailInput(processedValue);
+    }
 
     setFormData((prev) => ({ ...prev, [name]: processedValue }));
 
@@ -99,11 +106,26 @@ export default function PartnerForm() {
     }
   };
 
+  const handlePhoneChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    }
+  };
+
+  const handleContactMethodChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, preferredContactMethod: value }));
+    if (errors.preferredContactMethod) {
+      setErrors((prev) => ({ ...prev, preferredContactMethod: undefined }));
+    }
+  };
+
   const clearForm = () => {
     setFormData(initialFormData);
     setErrors({});
     setTurnstileToken('');
     setTurnstileError('');
+    setPhoneCountry(DEFAULT_COUNTRY);
   };
 
   const handleTurnstileVerify = useCallback((token: string) => {
@@ -124,17 +146,20 @@ export default function PartnerForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    const parsed = partnerSchema.safeParse(formData);
+    if (!validateForm() || !parsed.success) return;
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
 
     try {
+      const normalizedPhone = formData.phone.trim() ? normalizePhone(formData.phone, phoneCountry) ?? undefined : undefined;
+
       const response = await fetch('/api/partners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, turnstileToken }),
+        body: JSON.stringify({ ...parsed.data, phone: normalizedPhone, turnstileToken }),
       });
 
       if (response.ok) {
@@ -225,7 +250,7 @@ export default function PartnerForm() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">Email Address *</label>
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">Email Address</label>
             <input
               type="email"
               id="email"
@@ -239,18 +264,26 @@ export default function PartnerForm() {
             {errors.email && <p id="email-error" className="mt-1 text-sm text-danger">{errors.email}</p>}
           </div>
           <div>
-            <label htmlFor="phone" className="mb-2 block text-sm font-medium text-foreground">Phone (optional)</label>
-            <input
-              type="tel"
+            <label htmlFor="phone" className="mb-2 block text-sm font-medium text-foreground">Phone</label>
+            <PhoneField
               id="phone"
-              name="phone"
               value={formData.phone}
-              onChange={handleInputChange}
-              maxLength={PHONE_MAX_LENGTH}
-              className="w-full rounded-lg border border-border-strong px-4 py-3 transition-colors focus:border-primary focus:ring-2 focus:ring-ring/20"
+              country={phoneCountry}
+              onValueChange={handlePhoneChange}
+              onCountryChange={setPhoneCountry}
+              error={errors.phone}
             />
           </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Provide an email address or phone number so we can get back to you.
+        </p>
+
+        <PreferredContactMethodField
+          value={formData.preferredContactMethod}
+          onChange={handleContactMethodChange}
+          error={errors.preferredContactMethod}
+        />
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
