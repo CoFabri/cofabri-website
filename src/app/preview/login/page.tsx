@@ -6,12 +6,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 interface PreviewContent {
   id: string;
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface MissingField {
   field: string;
-  value: any;
+  value: unknown;
 }
 
 export default function LoginPreviewPage() {

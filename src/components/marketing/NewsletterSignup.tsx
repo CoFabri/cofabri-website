@@ -72,7 +72,7 @@ export default function NewsletterSignup({
       <div className={`flex flex-col items-center justify-center min-h-[220px] ${className}`}>
         <div className="flex flex-col items-center text-center">
           <CheckCircle2 className="h-12 w-12 text-primary mb-3" />
-          <h3 className="text-xl font-semibold text-foreground mb-2">You're Subscribed!</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-2">You&apos;re Subscribed!</h3>
           <p className="text-muted-foreground mb-1">
             {firstName ? `Thank you for subscribing, ${firstName}!` : 'Thank you for subscribing to our newsletter.'}
           </p>

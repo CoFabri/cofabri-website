@@ -29,7 +29,7 @@ export default function NotFound() {
             {isKnowledgeBaseArticle ? (
               <div className="space-y-4">
                 <p className="text-gray-600">
-                  The article "{pathname?.replace('/knowledge-base/', '')}" could not be found. 
+                  The article &quot;{pathname?.replace('/knowledge-base/', '')}&quot; could not be found.
                   It may have been removed, renamed, or never existed.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -50,7 +50,7 @@ export default function NotFound() {
             ) : (
               <div className="space-y-4">
                 <p className="text-gray-600">
-                  The page you're looking for could not be found. 
+                  The page you&apos;re looking for could not be found.
                   It may have been moved, deleted, or the URL may be incorrect.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">

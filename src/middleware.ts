@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Create response
-  let response = NextResponse.next();
+  const response = NextResponse.next();
 
   // Only apply to preview routes (excluding login page)
   if (request.nextUrl.pathname.startsWith('/preview/') && !request.nextUrl.pathname.startsWith('/preview/login')) {

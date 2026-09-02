@@ -14,6 +14,7 @@ export default function Analytics() {
     
     if (consentCookie) {
       const consentValue = consentCookie.split('=')[1];
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- document.cookie is only available client-side; this must run after mount for SSR/hydration safety
       setConsent(consentValue === 'accepted');
     }
   }, []);

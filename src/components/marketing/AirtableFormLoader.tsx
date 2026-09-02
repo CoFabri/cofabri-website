@@ -25,6 +25,7 @@ export default function AirtableFormLoader({
   useEffect(() => {
     // Start performance tracking
     const id = startPerformanceTracking(src, title);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the tracking id must be stored so cleanup can call endPerformanceTracking with it
     setPerformanceId(id);
 
     // Set a timeout to hide loading state if iframe takes too long
@@ -86,7 +87,7 @@ export default function AirtableFormLoader({
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Form Loading Failed</h3>
-            <p className="text-gray-600 mb-4">The {title.toLowerCase()} couldn't be loaded. Please try refreshing the page.</p>
+            <p className="text-gray-600 mb-4">The {title.toLowerCase()} couldn&apos;t be loaded. Please try refreshing the page.</p>
             <button 
               onClick={() => {
                 setIsLoading(true);

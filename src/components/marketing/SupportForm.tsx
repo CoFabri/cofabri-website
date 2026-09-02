@@ -726,7 +726,7 @@ export default function SupportForm() {
           </div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Support Ticket Submitted!</h2>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Thank you for contacting us. We've received your support request and will get back to you as soon as possible.
+            Thank you for contacting us. We&apos;ve received your support request and will get back to you as soon as possible.
           </p>
           <button
             type="button"

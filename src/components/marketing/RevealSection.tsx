@@ -27,7 +27,7 @@ const RevealSection = React.forwardRef<HTMLElement, React.ComponentPropsWithoutR
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={variants}
-        {...(props as any)}
+        {...(props as React.ComponentProps<typeof motion.section>)}
       >
         {children}
       </motion.section>

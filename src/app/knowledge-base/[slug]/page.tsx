@@ -1,4 +1,4 @@
-import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/api-client';
+import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs, KnowledgeBaseArticle } from '@/lib/api-client';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpenIcon, ClockIcon } from '@heroicons/react/24/outline';
@@ -95,7 +95,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
   }
 
   // Fetch related articles if relatedTopics exist
-  let relatedArticles: any[] = [];
+  let relatedArticles: KnowledgeBaseArticle[] = [];
   if (article.relatedTopics) {
     // Handle both array and string formats
     let topicSlugs: string[] = [];

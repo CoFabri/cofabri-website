@@ -1,11 +1,11 @@
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus, SystemStatus } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
 // In-memory cache for status data (shared with main status endpoint)
-let statusCache: any = null;
+let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -31,9 +31,9 @@ export async function GET(request: Request) {
       return priorities[status] || 0;
     };
     
-    const activeStatuses = statuses.filter((s: any) => s.publicStatus !== 'Resolved');
-    const mostSevere = activeStatuses.length > 0 
-      ? activeStatuses.reduce((prev: any, curr: any) => 
+    const activeStatuses = statuses.filter((s: SystemStatus) => s.publicStatus !== 'Resolved');
+    const mostSevere = activeStatuses.length > 0
+      ? activeStatuses.reduce((prev: SystemStatus, curr: SystemStatus) =>
           getStatusPriority(curr.publicStatus) > getStatusPriority(prev.publicStatus) ? curr : prev
         )
       : null;
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     const shouldPulse = activeStatuses.length > 0;
     
     // Get status message logic (same as navigation header)
-    const getStatusMessage = (status: any) => {
+    const getStatusMessage = (status: SystemStatus | null) => {
       if (!status) return 'All systems operational';
       
       switch (status.publicStatus) {

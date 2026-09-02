@@ -1,11 +1,11 @@
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus, SystemStatus } from '@/lib/airtable';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
 // In-memory cache for status data (shared with main status endpoint)
-let statusCache: any = null;
+let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -31,7 +31,7 @@ export async function GET(
     const allStatuses = statusCache;
     
     // Filter statuses to only include those affecting this app or CoFabri API
-    const relevantStatuses = allStatuses.filter((status: any) => {
+    const relevantStatuses = allStatuses.filter((status: SystemStatus) => {
       // Always include CoFabri API issues
       if (status.application === 'CoFabri API') {
         return true;
@@ -67,9 +67,9 @@ export async function GET(
       return priorities[status] || 0;
     };
     
-    const activeStatuses = relevantStatuses.filter((s: any) => s.publicStatus !== 'Resolved');
-    const mostSevere = activeStatuses.length > 0 
-      ? activeStatuses.reduce((prev: any, curr: any) => 
+    const activeStatuses = relevantStatuses.filter((s: SystemStatus) => s.publicStatus !== 'Resolved');
+    const mostSevere = activeStatuses.length > 0
+      ? activeStatuses.reduce((prev: SystemStatus, curr: SystemStatus) =>
           getStatusPriority(curr.publicStatus) > getStatusPriority(prev.publicStatus) ? curr : prev
         )
       : null;
@@ -92,7 +92,7 @@ export async function GET(
     const hasActiveIssues = activeStatuses.length > 0;
     
     // Get status message logic (same as navigation header)
-    const getStatusMessage = (status: any) => {
+    const getStatusMessage = (status: SystemStatus | null) => {
       if (!status) return 'All systems operational';
       
       switch (status.publicStatus) {

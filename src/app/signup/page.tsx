@@ -184,7 +184,7 @@ function SignupPageContent() {
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Join our exclusive waitlist and get early access to our upcoming products.
-              We're building something special, and you'll be among the first to experience it.
+              We&apos;re building something special, and you&apos;ll be among the first to experience it.
             </p>
 
             {/* Beta Spots Progress */}
@@ -277,9 +277,9 @@ function SignupPageContent() {
                             key={index} 
                             className="bg-white/10 backdrop-blur-sm rounded-xl p-6 transform transition-all duration-500 hover:scale-105 hover:bg-white/15 relative"
                           >
-                            <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">"</div>
+                            <div className="absolute top-4 right-4 text-6xl font-serif text-white/20 select-none">&quot;</div>
                             <div className="flex-1">
-                              <p className="text-white/90 leading-relaxed italic text-lg">"{testimonial.Statement}"</p>
+                              <p className="text-white/90 leading-relaxed italic text-lg">&quot;{testimonial.Statement}&quot;</p>
                             </div>
                           </div>
                         ))}
@@ -299,14 +299,14 @@ function SignupPageContent() {
                       </div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
                       <p className="text-gray-600">
-                        We've received your submission and will keep you updated on our progress.
+                        We&apos;ve received your submission and will keep you updated on our progress.
                       </p>
                     </div>
                   ) : (
                     <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border border-white/20">
                       <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Join the {appData?.name} Waitlist</h2>
-                        <p className="text-gray-600">Fill out the form below to secure your spot on our waitlist. We'll notify you as soon as we're ready to launch.</p>
+                        <p className="text-gray-600">Fill out the form below to secure your spot on our waitlist. We&apos;ll notify you as soon as we&apos;re ready to launch.</p>
                       </div>
 
 

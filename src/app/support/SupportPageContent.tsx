@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { 
+import Link from 'next/link';
+import {
   BookOpenIcon, 
   ChatBubbleLeftRightIcon, 
   DocumentTextIcon, 
@@ -30,9 +31,9 @@ export default function SupportPageContent() {
               <h3 className="text-lg font-semibold text-gray-900">Knowledge Base</h3>
             </div>
             <p className="text-gray-600 mb-4">Browse our comprehensive documentation and guides.</p>
-            <a href="/knowledge-base" className="text-blue-600 hover:text-blue-800 inline-flex items-center">
+            <Link href="/knowledge-base" className="text-blue-600 hover:text-blue-800 inline-flex items-center">
               Visit Knowledge Base <ArrowRightIcon className="h-4 w-4 ml-1" />
-            </a>
+            </Link>
           </div>
 
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">

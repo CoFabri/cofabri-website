@@ -25,8 +25,6 @@ interface RoadmapOverlayProps {
 }
 
 export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOverlayProps) {
-  if (!isOpen) return null;
-
   // Handle escape key
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -46,6 +44,8 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {

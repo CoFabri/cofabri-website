@@ -18,7 +18,36 @@ interface PreviewContent {
   content?: string;
   rating?: number;
   image?: string;
-  [key: string]: any;
+  description?: string;
+  excerpt?: string;
+  screenshot?: string;
+  url?: string;
+  feature1?: string;
+  feature2?: string;
+  feature3?: string;
+  status?: string;
+  launchDate?: string;
+  category?: string;
+  milestone?: string;
+  releasedDate?: string;
+  featuresAndChanges?: string;
+  releaseType?: string;
+  releaseNotes?: string;
+  title?: string;
+  publishedAt?: string;
+  lastUpdated?: string;
+  readTime?: number | string;
+  bannerType?: string;
+  buttonLink?: string;
+  buttonText?: string;
+  linkText?: string;
+  linkUrl?: string;
+  message?: string;
+  publicStatus?: string;
+  severity?: string;
+  updates?: string;
+  affectedServices?: string[];
+  [key: string]: unknown;
 }
 
 interface SeoPreview {
@@ -31,7 +60,7 @@ interface SeoPreview {
 
 interface MissingField {
   field: string;
-  value: any;
+  value: unknown;
 }
 
 interface Roadmap {
@@ -808,7 +837,7 @@ export default function PreviewPage() {
                           </div>
                           {isPresent ? (
                             <div className="text-sm text-gray-600 bg-white/50 p-2 rounded-md border border-gray-100">
-                              {Array.isArray(value) ? value.join(', ') : value.toString()}
+                              {Array.isArray(value) ? value.join(', ') : String(value)}
                             </div>
                           ) : (
                             <div className="text-sm text-gray-400 italic">No value provided</div>
@@ -853,7 +882,7 @@ export default function PreviewPage() {
                           </div>
                           {isPresent ? (
                             <div className="text-sm text-gray-600 bg-white/50 p-2 rounded-md border border-gray-100">
-                              {Array.isArray(value) ? value.join(', ') : value.toString()}
+                              {Array.isArray(value) ? value.join(', ') : String(value)}
                             </div>
                           ) : (
                             <div className="text-sm text-gray-400 italic">No value provided</div>

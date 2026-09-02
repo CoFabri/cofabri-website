@@ -1,11 +1,11 @@
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus, SystemStatus } from '@/lib/airtable';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
 // In-memory cache for status data
-let statusCache: any = null;
+let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 

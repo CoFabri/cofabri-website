@@ -20,6 +20,7 @@ export default function HomeContent() {
 
   useEffect(() => {
     if (searchParams?.get('cache-cleared') === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- transient banner driven by a query param plus a timed auto-dismiss, not derivable during render
       setShowCacheCleared(true);
       setTimeout(() => setShowCacheCleared(false), 5000);
     }

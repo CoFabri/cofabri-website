@@ -25,11 +25,11 @@ export function hapticFeedback(type: 'light' | 'medium' | 'heavy' | 'success' | 
   }
   
   // iOS haptic feedback using WebKit
-  if ('webkit' in window && 'messageHandlers' in (window as any).webkit) {
-    const webkit = (window as any).webkit;
-    if (webkit.messageHandlers.hapticFeedback) {
-      webkit.messageHandlers.hapticFeedback.postMessage({ type });
-    }
+  const webkitWindow = window as unknown as {
+    webkit?: { messageHandlers?: { hapticFeedback?: { postMessage: (message: { type: string }) => void } } };
+  };
+  if (webkitWindow.webkit?.messageHandlers?.hapticFeedback) {
+    webkitWindow.webkit.messageHandlers.hapticFeedback.postMessage({ type });
   }
 }
 
@@ -65,12 +65,12 @@ export function getDevicePixelRatio(): number {
 /**
  * Debounces a function call
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export function debounce<Args extends unknown[]>(
+  func: (...args: Args) => void,
   wait: number
-): (...args: Parameters<T>) => void {
+): (...args: Args) => void {
   let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return (...args: Args) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
@@ -79,12 +79,12 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttles a function call
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
+export function throttle<Args extends unknown[]>(
+  func: (...args: Args) => void,
   limit: number
-): (...args: Parameters<T>) => void {
+): (...args: Args) => void {
   let inThrottle: boolean;
-  return (...args: Parameters<T>) => {
+  return (...args: Args) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;

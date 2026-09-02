@@ -65,8 +65,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
     
     if (kbResponse.ok) {
-      const articles = await kbResponse.json();
-      const articlePages = articles.map((article: any) => ({
+      const articles: { slug: string; lastModified?: string }[] = await kbResponse.json();
+      const articlePages = articles.map((article) => ({
         url: `${baseUrl}/knowledge-base/${article.slug}`,
         lastModified: new Date(article.lastModified || Date.now()),
         changeFrequency: 'monthly' as const,

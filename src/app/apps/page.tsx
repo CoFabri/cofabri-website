@@ -79,7 +79,7 @@ export default function AppsPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900">Product Roadmap</h3>
-                      <p className="text-gray-600 mt-1">See what's coming next and vote on future features</p>
+                      <p className="text-gray-600 mt-1">See what&apos;s coming next and vote on future features</p>
                     </div>
                   </div>
                 </div>

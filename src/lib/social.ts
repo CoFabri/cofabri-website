@@ -54,11 +54,22 @@ export async function getLinkedInPosts() {
       throw new Error(`LinkedIn API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.elements.map((post: any) => ({
+    interface LinkedInPost {
+      id: string;
+      specificContent?: {
+        'com.linkedin.ugc.ShareContent'?: {
+          shareCommentary?: { text?: string };
+        };
+      };
+      created?: { time?: number };
+      numLikes?: number;
+    }
+
+    const data: { elements: LinkedInPost[] } = await response.json();
+    return data.elements.map((post) => ({
       id: post.id,
       content: post.specificContent?.['com.linkedin.ugc.ShareContent']?.shareCommentary?.text || '',
-      date: new Date(post.created?.time).toLocaleDateString(),
+      date: new Date(post.created?.time || 0).toLocaleDateString(),
       engagement: `${post.numLikes || 0} likes`,
       url: `https://linkedin.com/company/cofabri/posts/${post.id}`,
     }));

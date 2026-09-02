@@ -2,7 +2,7 @@ import Script from 'next/script';
 
 interface StructuredDataProps {
   type: 'organization' | 'website' | 'article' | 'breadcrumb';
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export default function StructuredData({ type, data }: StructuredDataProps) {
@@ -79,7 +79,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         return {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
-          "itemListElement": data.items.map((item: any, index: number) => ({
+          "itemListElement": (data.items as { name: string; url: string }[]).map((item, index) => ({
             "@type": "ListItem",
             "position": index + 1,
             "name": item.name,

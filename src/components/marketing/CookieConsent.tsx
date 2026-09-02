@@ -13,6 +13,7 @@ export default function CookieConsent() {
     
     // Only show banner if no consent decision has been made
     if (!consentCookie) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- document.cookie is only available client-side; this must run after mount for SSR/hydration safety
       setShowBanner(true);
     }
   }, []);

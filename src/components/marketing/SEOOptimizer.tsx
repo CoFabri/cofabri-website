@@ -9,7 +9,10 @@ interface SEOOptimizerProps {
   ogImage?: string;
   ogType?: 'website' | 'article' | 'product';
   twitterCard?: 'summary' | 'summary_large_image';
-  structuredData?: any;
+  structuredData?: {
+    type: 'organization' | 'website' | 'article' | 'breadcrumb';
+    data: Record<string, unknown>;
+  };
   noindex?: boolean;
   nofollow?: boolean;
 }

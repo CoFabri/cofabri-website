@@ -49,11 +49,11 @@ export default function TestimonialPreviewCard({ testimonial }: TestimonialPrevi
       </div>
 
       <blockquote className="text-muted-foreground italic transition-colors duration-300">
-        "{testimonial.content}"
+        &quot;{testimonial.content}&quot;
       </blockquote>
 
       <div className="absolute top-4 right-4 text-6xl font-serif text-muted-foreground/10 select-none transition-transform duration-300 group-hover:scale-110 group-hover:text-muted-foreground/20">
-        "
+        &quot;
       </div>
     </div>
   );
