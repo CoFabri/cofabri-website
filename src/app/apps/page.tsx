@@ -64,7 +64,7 @@ export default function AppsPage() {
         <section className="py-24">
           <div className="container mx-auto px-4">
             <div className="text-center">
-              <h2 className="text-4xl font-bold animated-gradient-text">Resources & Support</h2>
+              <h2 className="text-4xl font-bold text-foreground">Resources & Support</h2>
               <p className="mt-4 text-lg text-gray-600">Everything you need to get started and succeed with our apps</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">

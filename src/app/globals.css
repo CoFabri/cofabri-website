@@ -619,12 +619,6 @@
 }
 
 @layer utilities {
-  .animated-gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
-    background-size: 200% auto;
-    animation: gradient 3s ease infinite;
-  }
-
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }

@@ -142,7 +142,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               <BackButton />
             </div>
 
-                        <h1 className="text-5xl md:text-6xl font-bold mb-8 animated-gradient-text">
+                        <h1 className="text-5xl md:text-6xl font-bold mb-8 text-foreground">
               {article.title}
             </h1>
 

@@ -73,7 +73,7 @@ export function KnowledgeBaseContent({ initialArticles, initialPopularArticles }
         <AnimatedGradient />
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-8 animated-gradient-text">
+            <h1 className="text-5xl md:text-6xl font-bold mb-8 text-foreground">
               Knowledge Base
             </h1>
             <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
@@ -126,7 +126,7 @@ export function KnowledgeBaseContent({ initialArticles, initialPopularArticles }
             {/* Popular Articles - Only show when there's no search query */}
             {!searchQuery && (
               <section className="mb-12">
-                <h2 className="text-2xl font-bold mb-6 animated-gradient-text">
+                <h2 className="text-2xl font-bold mb-6 text-foreground">
                   Popular Articles
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -169,7 +169,7 @@ export function KnowledgeBaseContent({ initialArticles, initialPopularArticles }
 
             {/* Articles Grid */}
             <section>
-              <h2 className="text-2xl font-bold mb-6 animated-gradient-text">
+              <h2 className="text-2xl font-bold mb-6 text-foreground">
                 {searchQuery 
                   ? `Search Results for "${searchQuery}"`
                   : selectedCategory 

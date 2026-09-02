@@ -456,7 +456,7 @@ export default function ProductRoadmap({ selectedApp, selectedReleaseType, selec
             {milestones.map((milestone) => (
               <div key={milestone.title} className="relative">
                 <div className="sticky top-0 z-[1] bg-white/95 backdrop-blur-sm py-4 mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 animated-gradient-text">
+                  <h3 className="text-2xl font-bold text-foreground">
                     {milestone.title}
                   </h3>
                 </div>

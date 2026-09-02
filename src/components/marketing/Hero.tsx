@@ -22,7 +22,7 @@ const Hero = () => {
         <div className="flex justify-center mb-8">
           <Logo size="hero" />
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 animated-gradient-text">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
           Powerful SaaS apps for your business needs
         </h1>
         <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
