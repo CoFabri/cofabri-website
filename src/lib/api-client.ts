@@ -179,3 +179,53 @@ export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseA
     return [];
   }
 }
+
+export interface RoadmapFeature {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  milestone: string;
+  releaseType: string;
+  releasedDate?: string;
+  application?: string;
+  applicationUrl?: string;
+  featuresAndChanges?: string;
+  releaseNotes?: string;
+}
+
+interface RoadmapRow {
+  id: string;
+  roadmap_item_name: string;
+  description: string | null;
+  status: string;
+  target_quarter: string | null;
+  target_date: string | null;
+  app_id: string | null;
+}
+
+function mapRoadmapItem(row: RoadmapRow): RoadmapFeature {
+  return {
+    id: row.id,
+    name: row.roadmap_item_name,
+    description: row.description || '',
+    status: row.status,
+    milestone: row.target_quarter || '',
+    releaseType: '',
+    releasedDate: row.target_date || undefined,
+    application: row.app_id || undefined,
+    applicationUrl: undefined,
+    featuresAndChanges: undefined,
+    releaseNotes: undefined,
+  };
+}
+
+export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
+  try {
+    const rows = await apiFetch<RoadmapRow[]>('/web/content/roadmap');
+    return rows.map(mapRoadmapItem);
+  } catch (error) {
+    console.error('Error fetching roadmap features:', error);
+    return [];
+  }
+}
