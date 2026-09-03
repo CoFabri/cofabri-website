@@ -29,7 +29,7 @@ const SUPPORT_CARDS = [
 export default function SupportPageContent() {
   return (
     <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
-      <div className="mb-14">
+      <div className="mb-14 lg:mb-7">
         <Breadcrumbs items={[{ name: 'Support', href: '/support' }]} />
       </div>
 
@@ -39,12 +39,12 @@ export default function SupportPageContent() {
         subtitle="A real person replies within one business day. Check the three below first — they solve most things faster than we can."
       />
 
-      <RevealSection className="mt-11 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <RevealSection className="mt-11 lg:mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
         {SUPPORT_CARDS.map((card) => (
           <Link
             key={card.title}
             href={card.href}
-            className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"
+            className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled lg:p-5"
           >
             <div className="text-lg font-semibold tracking-[-0.015em]">{card.title}</div>
             <p className="mt-2.5 text-[15px] leading-[1.55] text-ink-muted">{card.body}</p>
@@ -53,7 +53,7 @@ export default function SupportPageContent() {
         ))}
       </RevealSection>
 
-      <RevealSection className="mt-[72px] grid grid-cols-1 gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
+      <RevealSection className="mt-[72px] lg:mt-9 grid grid-cols-1 gap-14 lg:grid-cols-[320px_1fr] lg:gap-20">
         <div>
           <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
             Open a ticket
