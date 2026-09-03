@@ -59,6 +59,23 @@ interface AppRow {
   beta_statements?: BetaStatement[];
 }
 
+// The only values statusPillClasses/statusDotClasses (app-display.ts) and
+// actionLabel/actionHref actually match against. lifecycle_stage is a free-text
+// Supabase column with no CHECK constraint, so normalize casing/separators here
+// rather than relying on admins to type an exact match -- a wrong-cased value
+// silently fell through to an unstyled badge before this existed.
+const KNOWN_LIFECYCLE_STATUSES = ['Live', 'Active', 'Beta', 'In Development'];
+
+function normalizeStatus(raw: string | null): string {
+  const value = (raw ?? '').trim();
+  if (!value) return 'Live';
+  const normalized = value.toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const match = KNOWN_LIFECYCLE_STATUSES.find((s) => s.toLowerCase() === normalized);
+  // Unrecognized values pass through as-is (still get the default badge style)
+  // instead of being mangled, so a genuinely new status is easy to spot in the UI.
+  return match ?? value;
+}
+
 function mapApp(row: AppRow): App {
   return {
     id: row.app_id,
@@ -67,7 +84,7 @@ function mapApp(row: AppRow): App {
     url: row.app_url || undefined,
     screenshot: row.screenshot_url || '/images/placeholder.jpg',
     faviconUrl: row.favicon_url || undefined,
-    status: row.lifecycle_stage || 'Live',
+    status: normalizeStatus(row.lifecycle_stage),
     category: row.category || undefined,
     feature1: row.feature_1 || undefined,
     feature2: row.feature_2 || undefined,
