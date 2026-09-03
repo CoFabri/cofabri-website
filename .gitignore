@@ -9,3 +9,8 @@ env.example
 .worktrees/
 .vercel
 .env*
+
+# Test output
+/playwright-report/
+/test-results/
+/coverage/

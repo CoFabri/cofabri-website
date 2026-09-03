@@ -179,6 +179,31 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Testing
+
+CI (`.github/workflows/ci.yml`) runs on every PR and push to `main`: lint, `tsc --noEmit`, `next build`, the Vitest unit suite, and the Playwright e2e suite, in that order.
+
+### Unit tests (Vitest)
+
+Pure logic in `src/lib/` (validation, the CoFabri logo size/asset resolution, status/roadmap display helpers, etc.) is covered by Vitest.
+
+```bash
+npm run test
+```
+
+Tests live next to the code they cover, as `*.test.ts`.
+
+### End-to-end tests (Playwright)
+
+```bash
+npx playwright install --with-deps chromium webkit   # first run only
+npm run test:e2e
+```
+
+This builds the app and runs it with `next start`, then drives it with a real browser: the homepage and nav, a regression guard for the CoFabri logo (must render `next/image` `<img>`s pointing at the pre-rasterized PNG masters — never an inline `<svg>`/`<text>`, which is what broke rendering on real iOS Safari), and a full contact-form submission. The logo regression spec runs under both Chromium and real WebKit, since the original bug was iOS-Safari-specific; everything else runs Chromium-only to keep the suite fast.
+
+The build/start step needs *some* value for `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` or the Turnstile widget on the contact form won't render. `playwright.config.ts` already sets these to Cloudflare's publicly documented "always passes" test keypair, so no setup is required — you don't need a real Turnstile account to run the suite locally or in CI.
+
 ## Project Structure
 
 ```
