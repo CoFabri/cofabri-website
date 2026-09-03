@@ -126,10 +126,12 @@ interface ServiceRowProps {
 }
 
 function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowProps) {
-  const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'none');
-  const daysWithData = bars.filter((s) => s !== 'none').length;
+  // cofabri-core only records a history entry for a day when something
+  // other than operational happened — an absent entry means the service was
+  // operational all day, not that data is missing, so it renders green too.
+  const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'operational');
   const operationalDays = bars.filter((s) => s === 'operational').length;
-  const uptimePct = daysWithData > 0 ? ((operationalDays / daysWithData) * 100).toFixed(1) : null;
+  const uptimePct = ((operationalDays / bars.length) * 100).toFixed(1);
 
   return (
     <div className="border-t border-border px-7 py-[18px] first:border-t-0">
@@ -143,29 +145,25 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
           <span className="text-base font-semibold text-foreground">{service.name}</span>
         </div>
         <div className="order-3 w-full sm:order-none sm:w-auto">
-          {daysWithData > 0 ? (
-            <div className="flex h-[26px] items-stretch gap-[2px]">
-              {bars.map((status, i) => {
-                const date = uptimeWindow[i];
-                const barKey = `${service.name}::${date}`;
-                return (
-                  <DayBar
-                    key={barKey}
-                    date={date}
-                    status={status}
-                    barKey={barKey}
-                    isOpen={openBar === barKey}
-                    setOpenBar={setOpenBar}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="h-[26px]" />
-          )}
+          <div className="flex h-[26px] items-stretch gap-[2px]">
+            {bars.map((status, i) => {
+              const date = uptimeWindow[i];
+              const barKey = `${service.name}::${date}`;
+              return (
+                <DayBar
+                  key={barKey}
+                  date={date}
+                  status={status}
+                  barKey={barKey}
+                  isOpen={openBar === barKey}
+                  setOpenBar={setOpenBar}
+                />
+              );
+            })}
+          </div>
         </div>
         <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
-          {uptimePct !== null ? `${uptimePct}%` : '—'}
+          {uptimePct}%
         </span>
         <span
           className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${

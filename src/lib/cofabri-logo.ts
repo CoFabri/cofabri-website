@@ -79,8 +79,8 @@ const LOCKUP_SM_TONE_FILES: Record<ResolvedTone, string | null> = {
   'mono-black': 'cofabri-lockup-mono-black-1856.png',
 };
 const MARK_TONE_FILES: Record<ResolvedTone, string | null> = {
-  light: 'mark-1024-light.png',
-  dark: 'mark-1024-dark.png',
+  light: 'cofabri-mark-light-1024.png',
+  dark: 'cofabri-mark-dark-1024.png',
   'mono-ink': null,
   'mono-white': null,
   'mono-black': null,
@@ -90,8 +90,11 @@ export function cofabriPngAsset(cut: Cut, tone: ResolvedTone): PngAsset | null {
   if (cut === 'mark' || cut === 'mark-small') {
     const file = MARK_TONE_FILES[tone];
     if (!file) return null;
-    // mark-1024-*.png lives at the host root, not under /png/.
-    return { src: `${HOST}/${file}`, width: MARK_PNG_SIZE, height: MARK_PNG_SIZE };
+    // Root-level mark-1024-{light,dark}.png are opaque app-icon tiles (a
+    // baked-in solid background square, not a transparent mark) — wrong
+    // asset for inline use. The png/ versions match the lockup masters:
+    // transparent background, same paths.
+    return { src: `${HOST}/png/${file}`, width: MARK_PNG_SIZE, height: MARK_PNG_SIZE };
   }
   const file = (cut === 'lockup' ? LOCKUP_TONE_FILES : LOCKUP_SM_TONE_FILES)[tone];
   if (!file) return null;
