@@ -181,7 +181,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                       <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
                         Featured
                       </span>
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(featured.status)}`}>
+                      <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(featured.status)}`}>
                         {featured.status}
                       </span>
                     </div>

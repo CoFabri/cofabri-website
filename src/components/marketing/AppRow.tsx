@@ -37,7 +37,7 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
         </div>
       </div>
       <div className="mt-3 flex items-center gap-3 md:contents">
-        <div className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(app.status)}`}>
+        <div className={`w-fit whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(app.status)}`}>
           {app.status}
         </div>
         <div className="md:border-l md:border-border md:pl-6">
