@@ -52,10 +52,10 @@ describe('cofabriPngAsset', () => {
     );
   });
 
-  it('resolves the mark at the host root (not under /png/), sized to the mark PNG master', () => {
+  it('resolves the mark under /png/ (not the opaque root-level app-icon tile), sized to the mark PNG master', () => {
     const asset = cofabriPngAsset('mark', 'light');
     expect(asset).toEqual({
-      src: 'https://files.cofabri.com/logos/cofabri/mark-1024-light.png',
+      src: 'https://files.cofabri.com/logos/cofabri/png/cofabri-mark-light-1024.png',
       width: 1024,
       height: 1024,
     });
