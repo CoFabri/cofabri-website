@@ -1263,12 +1263,31 @@ Add to the `describe('actionLabel / actionHref', ...)` block in `app-display.tes
   });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [ ] **Step 2: Fix a pre-existing test-infrastructure bug that blocks this file from running at all**
+
+Confirmed during planning (not introduced by this task): in the current toolchain (`vitest@4.1.11` on Node 25), the `@` alias configured in `vitest.config.mts` fails to resolve for any *real* (value) import — only `import type`-only imports across the `@` alias happen to work today, because TypeScript's type-only imports are stripped before Vite ever attempts to resolve them. `app-display.ts` line 1 does a real (non-type-only) `@/lib/api-client` import (`KNOWN_LIFECYCLE_STATUSES` is a runtime value), so `app-display.test.ts` currently fails to even load, with `Error: Cannot find package '@/lib/api-client'` — before any of this task's changes. `api-client.ts` lives in the same directory as `app-display.ts`, so switch that one import to a relative path, which sidesteps the alias bug entirely without touching the shared `vitest.config.mts` (a config change would affect all ~70 files using the `@` alias, most of them in type position where it currently "works" only because it's elided — out of scope to touch broadly here).
+
+`app-display.ts` and `api-client.ts` are both directly in `src/lib/`, so change line 1 of `app-display.ts` from:
+
+```typescript
+import { KNOWN_LIFECYCLE_STATUSES, type App, type RoadmapFeature } from '@/lib/api-client';
+```
+
+to:
+
+```typescript
+import { KNOWN_LIFECYCLE_STATUSES, type App, type RoadmapFeature } from './api-client';
+```
 
 Run: `cd "/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website" && npm test -- app-display`
-Expected: FAIL — `actionLabel`/`actionHref` currently only special-case `'In Development'`, so a `Beta` app always falls through to `'Visit'`/the URL branch regardless of capacity.
+Expected: the file now loads and its existing (pre-this-task) tests pass — confirms the infra fix, independent of anything else in this task.
 
-- [ ] **Step 3: Implement**
+- [ ] **Step 3: Run the new tests to verify they fail**
+
+Run: `cd "/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website" && npm test -- app-display`
+Expected: FAIL on the 4 new tests from Step 1 — `actionLabel`/`actionHref` currently only special-case `'In Development'`, so a `Beta` app always falls through to `'Visit'`/the URL branch regardless of capacity. (Pre-existing tests from before this task still pass, per Step 2.)
+
+- [ ] **Step 4: Implement**
 
 Replace `actionLabel`/`actionHref` (lines 87-95 of `app-display.ts`) with:
 
@@ -1299,17 +1318,17 @@ export function actionHref(app: App): string {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [ ] **Step 5: Run the tests to verify they pass**
 
 Run: `cd "/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website" && npm test -- app-display`
 Expected: PASS
 
-- [ ] **Step 5: Run the full test suite to check for regressions**
+- [ ] **Step 6: Run the full test suite to check for regressions**
 
 Run: `cd "/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website" && npm test`
 Expected: PASS (all files)
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 cd "/Users/noahstahl/Desktop/CoFabri App Development/cofabri-website"
