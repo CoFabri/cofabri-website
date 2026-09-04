@@ -44,7 +44,6 @@ interface AppRow {
   app_name: string;
   high_level_description: string | null;
   app_url: string | null;
-  screenshot_url: string | null;
   favicon_url: string | null;
   lifecycle_stage: string | null;
   category: string | null;
@@ -82,12 +81,12 @@ function mapApp(row: AppRow): App {
     name: row.app_name,
     description: row.high_level_description || 'No description available',
     url: row.app_url || undefined,
-    // No generic local placeholder fallback here: falling back to a fake
-    // "screenshot" made the app detail page's real empty state (a plain
-    // "product shot coming soon" panel) unreachable for every app, since
-    // every app currently only has an auto-generated social-share banner
-    // in Supabase, never a real product screenshot.
-    screenshot: row.screenshot_url || undefined,
+    // No `screenshot` here: cofabri-api no longer returns one (the
+    // app_featured_images table it came from was removed — every row was a
+    // duplicate auto-generated social-share banner, never a real product
+    // screenshot). `screenshot` stays on the App type below only because
+    // AppPreviewCard's internal /preview tool sets it directly on a
+    // hand-built mock App, independent of this mapping.
     faviconUrl: row.favicon_url || undefined,
     status: normalizeStatus(row.lifecycle_stage),
     category: row.category || undefined,
@@ -301,32 +300,9 @@ interface AppReleasePublicRow {
   released_date: string;
 }
 
-// Reads Supabase directly (app_releases_public, a view that pre-filters to
-// publish_to_website=true rows and exposes only public-safe columns) rather
-// than going through cofabri-api — that backend has no releases endpoint,
-// and app_releases is where the team's actual weekly AI-generated release
-// notes live, unlike the largely-stale app_roadmaps feed getRoadmapFeatures()
-// reads from above.
 export async function getAppReleases(appId: string): Promise<AppRelease[]> {
-  const baseUrl = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
-  if (!baseUrl || !anonKey) return [];
-
   try {
-    const params = new URLSearchParams({
-      app_id: `eq.${appId}`,
-      select: 'release_name,public_description,released_date',
-      order: 'released_date.desc',
-      limit: '5',
-    });
-    const res = await fetch(`${baseUrl}/rest/v1/app_releases_public?${params}`, {
-      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) {
-      throw new Error(`app_releases_public returned ${res.status}`);
-    }
-    const rows = (await res.json()) as AppReleasePublicRow[];
+    const rows = await apiFetch<AppReleasePublicRow[]>(`/web/content/apps/${encodeURIComponent(appId)}/releases`);
     return rows.map((row) => ({
       name: row.release_name,
       description: row.public_description,
@@ -513,8 +489,8 @@ export async function getMarketingPopupConfig(): Promise<MarketingPopupConfig | 
   }
 }
 
-// getSystemStatus intentionally NOT defined here: a concurrent effort
-// routed the public status page through cofabri-core's own status API
-// instead of cofabri-api. See src/lib/airtable.ts for that implementation
-// (trimmed to just this function — everything else in this codebase reads
-// through this file instead).
+// getSystemStatus/getServiceUptimeHistory intentionally NOT defined here:
+// they now go through cofabri-api too (GET /web/content/status-feed, which
+// proxies cofabri-core's own status API), but stay in src/lib/airtable.ts
+// rather than moving here, to avoid a second migration on top of the
+// data-source swap. See that file's header comment.

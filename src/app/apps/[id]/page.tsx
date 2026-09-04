@@ -2,7 +2,6 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/airtable';
@@ -56,15 +55,13 @@ export async function generateMetadata({ params }: AppDetailPageProps): Promise<
       description,
       url: `https://cofabri.com/apps/${id}`,
       images: [
-        app.screenshot
-          ? { url: app.screenshot, width: 1200, height: 630, alt: app.name }
-          : { url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png', width: 1200, height: 630, alt: 'CoFabri' },
+        { url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png', width: 1200, height: 630, alt: 'CoFabri' },
       ],
     },
     twitter: {
       title: `${app.name} | CoFabri`,
       description,
-      images: [app.screenshot || 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
+      images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     },
   };
 }
@@ -109,7 +106,6 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
           name: app.name,
           description: app.description,
           url: app.url ? `https://${hostname(app.url)}` : `https://cofabri.com/apps/${app.id}`,
-          image: app.screenshot,
           applicationCategory: app.category,
         }}
       />
@@ -176,27 +172,6 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                   <span className="font-mono text-[13px] text-ink-body">{row.v}</span>
                 </div>
               ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-14">
-          {app.screenshot ? (
-            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl border border-border">
-              <Image
-                src={app.screenshot}
-                alt={app.name}
-                fill
-                className="object-cover"
-                unoptimized={process.env.NODE_ENV === 'development'}
-              />
-            </div>
-          ) : (
-            <div
-              className="flex aspect-[2/1] w-full items-center justify-center rounded-2xl border border-border"
-              style={{ backgroundImage: 'repeating-linear-gradient(135deg, var(--surface) 0 11px, var(--surface-hover) 11px 22px)' }}
-            >
-              <span className="font-mono text-[13px] text-ink-faint">product shot — {app.name}</span>
             </div>
           )}
         </div>
