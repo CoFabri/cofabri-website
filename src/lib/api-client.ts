@@ -37,6 +37,8 @@ export interface App {
   domains?: string;
   featureOnWebsite?: boolean;
   betaStatements?: BetaStatement[];
+  betaCapacity?: number | null;
+  betaSpotsFilled?: number;
 }
 
 interface AppRow {
@@ -56,6 +58,8 @@ interface AppRow {
   // Only present on the single-app endpoint (getApp); the list endpoint
   // (getApps) never includes it.
   beta_statements?: BetaStatement[];
+  beta_capacity?: number | null;
+  beta_spots_filled?: number;
 }
 
 // The only values statusPillClasses/statusDotClasses (app-display.ts) and
@@ -98,6 +102,8 @@ function mapApp(row: AppRow): App {
     domains: undefined,
     featureOnWebsite: row.featured_app,
     betaStatements: row.beta_statements,
+    betaCapacity: row.beta_capacity,
+    betaSpotsFilled: row.beta_spots_filled,
   };
 }
 
