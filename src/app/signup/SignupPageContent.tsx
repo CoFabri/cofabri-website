@@ -276,7 +276,7 @@ export default function SignupPageContent() {
                         We&apos;ve received your submission and will keep you updated on our progress.
                       </p>
                     </div>
-                  ) : !state || state.kind === 'legacy-waitlist' || state.kind === 'open' ? (
+                  ) : isLoading || (state && (state.kind === 'legacy-waitlist' || state.kind === 'open')) ? (
                     <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border border-white/20">
                       <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-foreground mb-2">Join the {appData?.name} Waitlist</h2>
@@ -417,10 +417,18 @@ export default function SignupPageContent() {
                         )}
                       </form>
                     </div>
+                  ) : !appData ? (
+                    <div className="text-center py-12">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">We couldn&apos;t load this page</h3>
+                      <p className="text-muted-foreground mb-6">Please try again later.</p>
+                      <Button asChild>
+                        <Link href="/apps">Explore our apps</Link>
+                      </Button>
+                    </div>
                   ) : (
                     <div className="text-center py-12">
                       {(() => {
-                        const { title, body } = getSignupCopy(state, appData?.name ?? 'this app');
+                        const { title, body } = getSignupCopy(state as NonNullable<typeof state>, appData?.name ?? 'this app');
                         return (
                           <>
                             <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>

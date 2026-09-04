@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
-import { actionHref, actionLabel, appMomentum, markPalette, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, appMomentum, isExternalAction, markPalette, statusPillClasses } from '@/lib/app-display';
 import { filterPillClasses } from '@/lib/filter-pill';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Breadcrumbs from './Breadcrumbs';
@@ -214,11 +214,11 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                 <div className="flex flex-shrink-0 flex-wrap gap-3">
                   <Link
                     href={actionHref(featured)}
-                    target={featured.status !== 'In Development' ? '_blank' : undefined}
-                    rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
+                    target={isExternalAction(featured) ? '_blank' : undefined}
+                    rel={isExternalAction(featured) ? 'noopener noreferrer' : undefined}
                     className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
                   >
-                    {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
+                    {actionLabel(featured)} {isExternalAction(featured) && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
                   </Link>
                   <Link
                     href={`/apps/${featured.id}`}

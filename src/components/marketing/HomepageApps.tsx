@@ -11,7 +11,7 @@ import { ArrowRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/o
 import RevealSection from './RevealSection';
 import AppRow from './AppRow';
 import { ErrorState } from './ErrorState';
-import { statusPillClasses, actionLabel, actionHref, appMomentum, markPalette } from '@/lib/app-display';
+import { statusPillClasses, actionLabel, actionHref, appMomentum, isExternalAction, markPalette } from '@/lib/app-display';
 import { shippedInLastNDays } from '@/lib/roadmap-display';
 
 interface HomepageAppsProps {
@@ -234,11 +234,11 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
             </div>
             <Link
               href={actionHref(featured)}
-              target={featured.status !== 'In Development' ? '_blank' : undefined}
-              rel={featured.status !== 'In Development' ? 'noopener noreferrer' : undefined}
+              target={isExternalAction(featured) ? '_blank' : undefined}
+              rel={isExternalAction(featured) ? 'noopener noreferrer' : undefined}
               className="inline-flex w-fit flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-[22px] py-3 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
             >
-              {actionLabel(featured)} {featured.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
+              {actionLabel(featured)} {isExternalAction(featured) && <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />}
             </Link>
           </div>
         </div>

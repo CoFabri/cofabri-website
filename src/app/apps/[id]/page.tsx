@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/airtable';
-import { actionHref, actionLabel, hasActiveRoadmap, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
@@ -146,11 +146,11 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={actionHref(app)}
-                target={app.status !== 'In Development' ? '_blank' : undefined}
-                rel={app.status !== 'In Development' ? 'noopener noreferrer' : undefined}
+                target={isExternalAction(app) ? '_blank' : undefined}
+                rel={isExternalAction(app) ? 'noopener noreferrer' : undefined}
                 className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
               >
-                {actionLabel(app)} {app.status !== 'In Development' && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
+                {actionLabel(app)} {isExternalAction(app) && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
               </Link>
               <Link
                 href="/apps"

@@ -109,6 +109,15 @@ export function actionHref(app: App): string {
   return '/apps';
 }
 
+// True only when actionHref resolves to a genuinely external URL — used to
+// decide whether a CTA link needs target="_blank"/rel/an external-link icon.
+// Checking the href (not just status) matters because a Beta app with open
+// signup spots gets an internal /signup link despite being "live", the same
+// way an In-Development app does.
+export function isExternalAction(app: App): boolean {
+  return !actionHref(app).startsWith('/');
+}
+
 export function isLaunchingToday(app: App): boolean {
   if (!app.launchDate) return false;
   const today = new Date();
