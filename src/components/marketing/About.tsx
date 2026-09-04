@@ -3,19 +3,7 @@
 import React, { useEffect } from 'react';
 import RevealSection from './RevealSection';
 import { clearHydrationCaches } from '@/lib/utils';
-
-const highlights = [
-  'Every app maintained by the people who built it',
-  'Frequent, real updates — not annual overhauls',
-  'Support from humans, not a bot',
-];
-
-const whyChoose = [
-  'A track record across industries, not just one',
-  'Each app built to do one job, not everything',
-  'Direct access to the people who ship it',
-  'Straightforward pricing, no lock-in',
-];
+import { aboutHighlights as highlights, aboutWhyChoose as whyChoose, missionStatement } from './about-content';
 
 const About = () => {
   useEffect(() => {
@@ -64,7 +52,7 @@ const About = () => {
           <div className="rounded-xl border border-border bg-card p-8">
             <h3 className="m-0 text-xl font-semibold text-foreground">Our mission</h3>
             <p className="mt-3 text-muted-foreground">
-              To build software worth trusting — one industry, one problem, at a time.
+              {missionStatement}
             </p>
 
             <div className="mt-7 border-t border-border pt-7">
