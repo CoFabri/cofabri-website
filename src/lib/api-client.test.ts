@@ -1,5 +1,78 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+describe('getTeam', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('fetches the team from cofabri-api and maps rows to TeamMember', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: 'p1',
+          first_name: 'Ada',
+          last_name: 'Lovelace',
+          full_name: 'Ada Lovelace',
+          role_title: 'Co-Founder',
+          department: 'leadership',
+          bio: 'Builds things.',
+          profile_image_url: 'https://example.com/ada.jpg',
+          is_founder: true,
+          sort_order: 1,
+          expertise_areas: ['Product'],
+        },
+      ],
+    });
+
+    const { getTeam } = await import('./api-client');
+    const team = await getTeam();
+
+    expect(global.fetch).toHaveBeenCalledWith('https://api.cofabri.com/web/content/team', expect.anything());
+    expect(team).toEqual([
+      {
+        id: 'p1',
+        name: 'Ada Lovelace',
+        roleTitle: 'Co-Founder',
+        department: 'leadership',
+        bio: 'Builds things.',
+        photoUrl: 'https://example.com/ada.jpg',
+        isFounder: true,
+        sortOrder: 1,
+        expertiseAreas: ['Product'],
+      },
+    ]);
+  });
+
+  it('falls back to first + last name when full_name is missing, and returns an empty array on failure', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { id: 'p2', first_name: 'Grace', last_name: 'Hopper', full_name: null, is_founder: false, sort_order: null },
+      ],
+    });
+
+    const { getTeam } = await import('./api-client');
+    const team = await getTeam();
+    expect(team[0].name).toBe('Grace Hopper');
+
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, statusText: 'Internal Server Error' });
+    vi.resetModules();
+    const { getTeam: getTeamAfterFailure } = await import('./api-client');
+    const empty = await getTeamAfterFailure();
+    expect(empty).toEqual([]);
+  });
+});
+
 describe('getAppReleases', () => {
   const originalFetch = global.fetch;
   const originalBaseUrl = process.env.COFABRI_API_BASE_URL;

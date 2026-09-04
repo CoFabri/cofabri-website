@@ -320,6 +320,56 @@ export async function getAppReleases(appId: string): Promise<AppRelease[]> {
   }
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  roleTitle?: string;
+  department?: string;
+  bio?: string;
+  photoUrl?: string;
+  isFounder: boolean;
+  sortOrder?: number | null;
+  expertiseAreas?: string[];
+}
+
+interface TeamMemberRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  full_name: string | null;
+  role_title: string | null;
+  department: string | null;
+  bio: string | null;
+  profile_image_url: string | null;
+  is_founder: boolean;
+  sort_order: number | null;
+  expertise_areas: string[] | null;
+}
+
+function mapTeamMember(row: TeamMemberRow): TeamMember {
+  return {
+    id: row.id,
+    name: row.full_name || `${row.first_name} ${row.last_name}`,
+    roleTitle: row.role_title || undefined,
+    department: row.department || undefined,
+    bio: row.bio || undefined,
+    photoUrl: row.profile_image_url || undefined,
+    isFounder: row.is_founder,
+    sortOrder: row.sort_order,
+    expertiseAreas: row.expertise_areas || undefined,
+  };
+}
+
+export async function getTeam(): Promise<TeamMember[]> {
+  try {
+    const rows = await apiFetch<TeamMemberRow[]>('/web/content/team');
+    return rows.map(mapTeamMember);
+  } catch (error) {
+    console.error('Error fetching team:', error);
+    return [];
+  }
+}
+
 export interface LegalDocument {
   id: string;
   title: string;
