@@ -1,6 +1,6 @@
 import { getSystemStatus, SystemStatus } from '@/lib/airtable';
-import { incidentHexColor, mostSevereStatus } from '@/lib/status-widget-colors';
-import { NextResponse } from 'next/server';
+import { escapeHtml, incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
@@ -10,10 +10,18 @@ let statusCache: SystemStatus[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Embedding sites that render this widget over a bespoke-colored section
+  // (not just light/dark mode) can pin the text color explicitly, since a
+  // cross-origin iframe can't otherwise pick up a specific local ancestor's
+  // color the way the rest of that page's text does. Parsed outside the try
+  // block below so the error-state HTML can use it too.
+  const overrideColor = request.nextUrl.searchParams.get('color');
+  const explicitColor = overrideColor && /^[0-9a-fA-F]{3,8}$/.test(overrideColor) ? `#${overrideColor}` : null;
+
   try {
     const now = Date.now();
-    
+
     // Check if we have valid cached data
     if (statusCache && (now - cacheTimestamp) < CACHE_DURATION) {
       console.log('Serving status widget from cache');
@@ -23,10 +31,11 @@ export async function GET() {
       statusCache = await getSystemStatus();
       cacheTimestamp = now;
     }
-    
+
     const statuses = statusCache;
     const mostSevere = mostSevereStatus(statuses);
     const statusColor = incidentHexColor(mostSevere?.publicStatus);
+    const statusText = escapeHtml(incidentWidgetMessage(mostSevere));
 
     const html = `
 <!DOCTYPE html>
@@ -49,7 +58,8 @@ export async function GET() {
         .status-widget {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            gap: 6px;
             text-decoration: none;
             background: transparent;
             border: none;
@@ -59,7 +69,7 @@ export async function GET() {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
             font-weight: 400;
-            color: #374151;
+            color: ${explicitColor ?? '#374151'};
             line-height: 1.4;
             width: 100%;
             height: 100%;
@@ -83,6 +93,12 @@ export async function GET() {
             max-width: 16px;
             max-height: 16px;
         }
+        .status-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
     </style>
 </head>
 <body>
@@ -90,8 +106,10 @@ export async function GET() {
         <div class="status-dot-container">
             <div class="status-dot"></div>
         </div>
+        <span class="status-text">${statusText}</span>
     </a>
     <script>
+        var explicitColor = ${explicitColor ? `'${explicitColor}'` : 'null'};
         // Function to inherit styles from parent page
         function inheritParentStyles() {
             try {
@@ -99,19 +117,19 @@ export async function GET() {
                 if (window.parent && window.parent !== window) {
                     const parentDoc = window.parent.document;
                     const parentBody = parentDoc.body;
-                    
+
                     if (parentBody) {
                         const computedStyle = window.parent.getComputedStyle(parentBody);
                         const widget = document.querySelector('.status-widget');
-                        
+
                         if (widget) {
                             // Inherit font properties
                             widget.style.fontFamily = computedStyle.fontFamily;
                             widget.style.fontSize = computedStyle.fontSize;
                             widget.style.fontWeight = computedStyle.fontWeight;
-                            widget.style.color = computedStyle.color;
+                            if (!explicitColor) widget.style.color = computedStyle.color;
                             widget.style.lineHeight = computedStyle.lineHeight;
-                            
+
                             // Adjust dot size based on font size
                             const fontSize = parseFloat(computedStyle.fontSize);
                             const dotSize = Math.max(8, Math.min(16, fontSize * 0.6));
@@ -128,7 +146,7 @@ export async function GET() {
                 console.log('Could not inherit parent styles, using defaults');
             }
         }
-        
+
         // Try to inherit styles when page loads
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', inheritParentStyles);
@@ -170,7 +188,8 @@ export async function GET() {
         .status-widget {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            gap: 6px;
             text-decoration: none;
             background: transparent;
             border: none;
@@ -178,7 +197,7 @@ export async function GET() {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
             font-weight: 400;
-            color: #374151;
+            color: ${explicitColor ?? '#374151'};
             line-height: 1.4;
             width: 100%;
             height: 100%;
@@ -193,6 +212,12 @@ export async function GET() {
             border-radius: 50%;
             background-color: #9ca3af;
         }
+        .status-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
     </style>
 </head>
 <body>
@@ -200,24 +225,26 @@ export async function GET() {
         <div class="status-dot-container">
             <div class="status-dot"></div>
         </div>
+        <span class="status-text">Status unavailable</span>
     </a>
     <script>
+        var explicitColor = ${explicitColor ? `'${explicitColor}'` : 'null'};
         // Same inheritance logic for error state
         function inheritParentStyles() {
             try {
                 if (window.parent && window.parent !== window) {
                     const parentDoc = window.parent.document;
                     const parentBody = parentDoc.body;
-                    
+
                     if (parentBody) {
                         const computedStyle = window.parent.getComputedStyle(parentBody);
                         const widget = document.querySelector('.status-widget');
-                        
+
                         if (widget) {
                             widget.style.fontFamily = computedStyle.fontFamily;
                             widget.style.fontSize = computedStyle.fontSize;
                             widget.style.fontWeight = computedStyle.fontWeight;
-                            widget.style.color = computedStyle.color;
+                            if (!explicitColor) widget.style.color = computedStyle.color;
                             widget.style.lineHeight = computedStyle.lineHeight;
                             
                             // Adjust dot size based on font size

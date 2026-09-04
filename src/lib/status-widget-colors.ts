@@ -44,3 +44,15 @@ export function incidentWidgetMessage(status: SystemStatus | null): string {
       return status.message || status.publicStatus || 'All systems operational';
   }
 }
+
+// The widget text renders admin/third-party-provider free text (incident
+// messages) directly into server-rendered HTML — escape it so an incident
+// message can never break out of the markup.
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
