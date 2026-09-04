@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { setAnalyticsConsent } from '@/lib/analytics-consent';
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -20,15 +21,15 @@ export default function CookieConsent() {
     }
   }, []);
 
-  const acceptAnalytics = () => {
-    document.cookie = 'analytics-consent=accepted; max-age=31536000; path=/; SameSite=Lax';
+  const acceptAnalytics = async () => {
+    await setAnalyticsConsent('accepted');
     setShowBanner(false);
     // Reload the page to trigger analytics loading
     window.location.reload();
   };
 
-  const denyAnalytics = () => {
-    document.cookie = 'analytics-consent=denied; max-age=31536000; path=/; SameSite=Lax';
+  const denyAnalytics = async () => {
+    await setAnalyticsConsent('denied');
     setShowBanner(false);
   };
 
