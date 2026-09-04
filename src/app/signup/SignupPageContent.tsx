@@ -7,6 +7,8 @@ import { SparklesIcon, StarIcon, HeartIcon, UserGroupIcon, CurrencyDollarIcon } 
 import AnimatedGradient from '@/components/marketing/AnimatedGradient';
 import { Button } from '@/components/ui/button';
 import { CoreLoader } from '@/components/ui/core-loader';
+import { getSignupState, getSignupCopy } from './signup-state';
+import Link from 'next/link';
 
 interface FormData {
   email: string;
@@ -24,10 +26,8 @@ interface BetaStatement {
 }
 
 interface AppData {
-  betaSpotsTotal: number;
+  betaCapacity: number | null;
   betaSpotsFilled: number;
-  betaPrice: number;
-  betaDescription: string;
   status: string;
   name: string;
   betaStatements: BetaStatement[];
@@ -45,6 +45,7 @@ export default function SignupPageContent() {
     quote: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasAppId, setHasAppId] = useState(false);
@@ -92,6 +93,7 @@ export default function SignupPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       // Ensure interestLevel is included in the form data
@@ -109,13 +111,14 @@ export default function SignupPageContent() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit form');
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || 'Failed to submit form');
       }
 
       setShowThankYou(true);
     } catch (error) {
       console.error('Error submitting form:', error);
-      // You might want to show an error message to the user
+      setSubmitError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -133,6 +136,8 @@ export default function SignupPageContent() {
       </div>
     );
   }
+
+  const state = appData ? getSignupState(appData) : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,12 +165,10 @@ export default function SignupPageContent() {
               We&apos;re building something special, and you&apos;ll be among the first to experience it.
             </p>
 
-            {/* Beta Spots Progress */}
-            {/* betaSpotsTotal/betaSpotsFilled have no backing field in cofabri-api's
-                content API and are always 0, so only render this panel once real
-                data is available (betaSpotsTotal > 0) — otherwise it shows false
-                "0 spots left" scarcity messaging. */}
-            {!isLoading && appData && appData.betaSpotsTotal > 0 && (
+            {/* Beta Spots Progress — only shown once we have real capacity/filled
+                numbers to display (the 'open' and 'full' states); every other
+                state has no meaningful numbers to show here. */}
+            {!isLoading && state && (state.kind === 'open' || state.kind === 'full') && (
               <div className="max-w-md mx-auto bg-card rounded-2xl p-6 shadow-lg mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -173,29 +176,24 @@ export default function SignupPageContent() {
                     <span className="text-sm font-medium text-muted-foreground">Beta Spots Remaining</span>
                   </div>
                   <span className="text-2xl font-bold text-primary">
-                    {appData.betaSpotsTotal - appData.betaSpotsFilled}
+                    {Math.max(state.capacity - state.filled, 0)}
                   </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2.5">
                   <div
                     className="bg-primary h-2.5 rounded-full transition-all duration-500"
-                    style={{ width: `${(appData.betaSpotsFilled / appData.betaSpotsTotal) * 100}%` }}
+                    style={{ width: `${Math.min((state.filled / state.capacity) * 100, 100)}%` }}
                   />
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
-                  {appData.betaSpotsTotal - appData.betaSpotsFilled < 10 ? (
-                    <span className="text-danger font-medium">
-                      Hurry! Only {appData.betaSpotsTotal - appData.betaSpotsFilled} spots left!
-                    </span>
+                  {state.kind === 'full' ? (
+                    <span className="text-danger font-medium">All spots are filled</span>
+                  ) : state.remaining < 10 ? (
+                    <span className="text-danger font-medium">Hurry! Only {state.remaining} spots left!</span>
                   ) : (
-                    `${appData.betaSpotsFilled} people have already joined`
+                    `${state.filled} people have already joined`
                   )}
                 </p>
-                {appData.betaPrice > 0 && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Beta access: ${appData.betaPrice}/month
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -278,14 +276,12 @@ export default function SignupPageContent() {
                         We&apos;ve received your submission and will keep you updated on our progress.
                       </p>
                     </div>
-                  ) : (
+                  ) : !state || state.kind === 'legacy-waitlist' || state.kind === 'open' ? (
                     <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border border-white/20">
                       <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-foreground mb-2">Join the {appData?.name} Waitlist</h2>
                         <p className="text-muted-foreground">Fill out the form below to secure your spot on our waitlist. We&apos;ll notify you as soon as we&apos;re ready to launch.</p>
                       </div>
-
-
 
                       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -416,7 +412,25 @@ export default function SignupPageContent() {
                             'Join Waitlist'
                           )}
                         </Button>
+                        {submitError && (
+                          <p className="text-sm text-danger text-center" role="alert">{submitError}</p>
+                        )}
                       </form>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      {(() => {
+                        const { title, body } = getSignupCopy(state, appData?.name ?? 'this app');
+                        return (
+                          <>
+                            <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
+                            <p className="text-muted-foreground mb-6">{body}</p>
+                          </>
+                        );
+                      })()}
+                      <Button asChild>
+                        <Link href="/apps">Explore our apps</Link>
+                      </Button>
                     </div>
                   )}
                 </div>
