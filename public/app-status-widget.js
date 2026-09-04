@@ -114,27 +114,11 @@
     });
   }
 
-  // Filter statuses for specific app
+  // Filter statuses for specific app: platform-wide incidents always show,
+  // plus anything specifically tagged with this app's id (appSlug).
   function filterStatusesForApp(allStatuses, appSlug) {
     return allStatuses.filter(status => {
-      // Always include CoFabri API issues
-      if (status.application === 'CoFabri API') {
-        return true;
-      }
-      
-      // Include issues affecting this specific app
-      if (status.application && status.application.toLowerCase() === appSlug.toLowerCase()) {
-        return true;
-      }
-      
-      // Include issues where this app is in the affected services
-      if (status.affectedServices && Array.isArray(status.affectedServices)) {
-        return status.affectedServices.some(service => 
-          service.toLowerCase().includes(appSlug.toLowerCase())
-        );
-      }
-      
-      return false;
+      return Boolean(status.isPlatformWide) || (Array.isArray(status.affectedAppIds) && status.affectedAppIds.includes(appSlug));
     });
   }
 
