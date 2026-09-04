@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { incidentDotClasses, incidentPillClasses, severityPillClasses, mostSevereIncident } from './incident-display';
+import { incidentDotClasses, incidentPillClasses, severityPillClasses, mostSevereIncident, matchAppIncident } from './incident-display';
 import type { SystemStatus } from '@/lib/airtable';
 
 function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
@@ -13,6 +13,8 @@ function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
     'Updated At': '',
     'Resolved Date': '',
     affectedServices: [],
+    affectedAppIds: [],
+    isPlatformWide: false,
     ...overrides,
   };
 }
@@ -46,5 +48,23 @@ describe('mostSevereIncident', () => {
     const identified = status({ publicStatus: 'Identified' });
     const investigating = status({ publicStatus: 'Investigating' });
     expect(mostSevereIncident([identified, investigating])).toBe(investigating);
+  });
+});
+
+describe('matchAppIncident', () => {
+  it('matches an incident whose affectedAppIds includes the given app id', () => {
+    const incident = status({ publicStatus: 'Investigating', affectedAppIds: ['medoura'] });
+    expect(matchAppIncident('medoura', [incident])).toBe(incident);
+    expect(matchAppIncident('praxis', [incident])).toBeUndefined();
+  });
+
+  it('matches any app when the incident is platform-wide', () => {
+    const incident = status({ publicStatus: 'Investigating', isPlatformWide: true, affectedAppIds: [] });
+    expect(matchAppIncident('medoura', [incident])).toBe(incident);
+  });
+
+  it('ignores resolved incidents even if they would otherwise match', () => {
+    const incident = status({ publicStatus: 'Resolved', affectedAppIds: ['medoura'] });
+    expect(matchAppIncident('medoura', [incident])).toBeUndefined();
   });
 });

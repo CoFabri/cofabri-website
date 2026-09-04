@@ -86,7 +86,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   // Only fully live apps get a status dot — an uptime signal reads as noise
   // (or actively misleading) on something still in development or beta.
   const showStatusDot = app.status === 'Live' || app.status === 'Active';
-  const statusIncident = showStatusDot ? matchAppIncident(app.name, await getSystemStatus()) : undefined;
+  const statusIncident = showStatusDot ? matchAppIncident(app.id, await getSystemStatus()) : undefined;
 
   const meta = (
     [

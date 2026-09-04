@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/airtable';
 import type { App } from '@/lib/api-client';
-import { incidentDotClasses, incidentPillClasses, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
+import { incidentDotClasses, incidentPillClasses, matchAppIncident, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
@@ -211,30 +211,22 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
   }, []);
 
   // Cross-reference each app (and the platform as a whole) against open
-  // incidents by name — SystemStatus.application is a free-text label from
-  // cofabri-core, not an app_id, so this is a best-effort case-insensitive
-  // match rather than a foreign key join.
+  // incidents via matchAppIncident, which checks the incident's declared
+  // affectedAppIds/isPlatformWide — see src/lib/incident-display.ts.
   const services = useMemo(() => {
-    const matchIncident = (name: string) =>
-      openIncidents.find(
-        (incident) =>
-          incident.application?.toLowerCase() === name.toLowerCase() ||
-          incident.affectedServices?.some((s) => s.toLowerCase() === name.toLowerCase())
-      );
-    // Same best-effort case-insensitive name match as matchIncident above —
-    // monitored_services (cofabri-core) has no foreign key to an app record,
-    // just a free-text name, so a service with no matching name here simply
-    // renders with no uptime bars rather than a wrong match.
+    // Same best-effort case-insensitive name match as before — monitored_services
+    // (cofabri-core) has no foreign key to an app record, just a free-text name, so
+    // a service with no matching name here simply renders with no uptime bars
+    // rather than a wrong match. (Out of scope for this change: see
+    // docs/superpowers/specs/2026-09-04-status-indicator-app-identity-design.md.)
     const matchHistory = (name: string) => uptimeHistory.find((s) => s.name.toLowerCase() === name.toLowerCase());
 
     const appRows = apps.map((app) => ({
       name: app.name,
-      incident: matchIncident(app.name),
+      incident: matchAppIncident(app.id, openIncidents),
       history: matchHistory(app.name)?.history ?? [],
     }));
-    const platformIncident = openIncidents.find(
-      (incident) => !appRows.some((row) => row.incident === incident)
-    );
+    const platformIncident = openIncidents.find((incident) => incident.isPlatformWide);
 
     // Real monitored_services are shared infra (Supabase, Vercel, Stripe,
     // GoHighLevel, GitHub, ...), not per-app feeds — none of them will ever
