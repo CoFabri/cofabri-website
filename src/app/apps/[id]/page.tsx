@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { getApp, getRoadmapFeatures } from '@/lib/api-client';
+import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/airtable';
 import { actionHref, actionLabel, hasActiveRoadmap, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
@@ -79,11 +79,11 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
   const roadmapFeatures = await getRoadmapFeatures();
   const appFeatures = hasActiveRoadmap(app.status) ? roadmapFeatures.filter((f) => f.application === app.id) : [];
+  // "Released" roadmap items excluded here — app_roadmaps is a largely-stale
+  // one-time import, not what's actually shipping. app_releases_public (via
+  // getAppReleases) is the team's real, currently-maintained release feed.
   const roadmapItems = appFeatures.filter((f) => f.status !== 'Released').slice(0, 5);
-  const shippedItems = appFeatures
-    .filter((f) => f.status === 'Released' && f.releasedDate)
-    .sort((a, b) => new Date(b.releasedDate!).getTime() - new Date(a.releasedDate!).getTime())
-    .slice(0, 5);
+  const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
 
   // Only fully live apps get a status dot — an uptime signal reads as noise
@@ -231,13 +231,15 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
               </Link>
             </div>
             <div>
-              {shippedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="grid grid-cols-[90px_1fr] items-baseline gap-6 border-t border-border py-5 first:border-t-0 first:pt-0 sm:grid-cols-[110px_1fr]"
-                >
-                  <span className="font-mono text-xs text-ink-faint">{formatRoadmapWhen(item)}</span>
-                  <span className="text-[17px] font-medium text-foreground">{item.name}</span>
+              {shippedItems.map((release) => (
+                <div key={`${release.releasedDate}-${release.name}`} className="border-t border-border py-5 first:border-t-0 first:pt-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                    <span className="text-[17px] font-medium text-foreground">{release.name}</span>
+                    <span className="font-mono text-xs text-ink-faint">{formatDate(release.releasedDate)}</span>
+                  </div>
+                  {release.description && (
+                    <p className="m-0 mt-2 max-w-[520px] text-sm leading-[1.6] text-ink-muted">{release.description}</p>
+                  )}
                 </div>
               ))}
             </div>

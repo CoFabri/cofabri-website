@@ -289,6 +289,55 @@ export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
   }
 }
 
+export interface AppRelease {
+  name: string;
+  description: string;
+  releasedDate: string;
+}
+
+interface AppReleasePublicRow {
+  release_name: string;
+  public_description: string;
+  released_date: string;
+}
+
+// Reads Supabase directly (app_releases_public, a view that pre-filters to
+// publish_to_website=true rows and exposes only public-safe columns) rather
+// than going through cofabri-api — that backend has no releases endpoint,
+// and app_releases is where the team's actual weekly AI-generated release
+// notes live, unlike the largely-stale app_roadmaps feed getRoadmapFeatures()
+// reads from above.
+export async function getAppReleases(appId: string): Promise<AppRelease[]> {
+  const baseUrl = process.env.SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  if (!baseUrl || !anonKey) return [];
+
+  try {
+    const params = new URLSearchParams({
+      app_id: `eq.${appId}`,
+      select: 'release_name,public_description,released_date',
+      order: 'released_date.desc',
+      limit: '5',
+    });
+    const res = await fetch(`${baseUrl}/rest/v1/app_releases_public?${params}`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) {
+      throw new Error(`app_releases_public returned ${res.status}`);
+    }
+    const rows = (await res.json()) as AppReleasePublicRow[];
+    return rows.map((row) => ({
+      name: row.release_name,
+      description: row.public_description,
+      releasedDate: row.released_date,
+    }));
+  } catch (error) {
+    console.error(`Error fetching releases for app ${appId}:`, error);
+    return [];
+  }
+}
+
 export interface LegalDocument {
   id: string;
   title: string;
