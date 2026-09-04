@@ -1,10 +1,10 @@
 // This file's original purpose (Airtable-backed content reads) has been
 // fully replaced by src/lib/api-client.ts, which reads from cofabri-api
-// instead. The one exception is getSystemStatus, which a separate,
-// concurrent effort routed to cofabri-core's own public status API
-// (see the function below) rather than through cofabri-api — kept here,
-// trimmed to just this function, rather than forcing a second migration
-// of status onto the cofabri-api path this file otherwise moved away from.
+// instead. getSystemStatus/getServiceUptimeHistory below now also go
+// through cofabri-api (GET /web/content/status-feed, which itself proxies
+// cofabri-core's public status API), so this file's only remaining
+// distinction from api-client.ts is which file the code happens to live
+// in, not which backend it talks to.
 // TODO: this file no longer touches Airtable at all; a follow-up rename
 // (e.g. to src/lib/status-api.ts) would better reflect what's left here.
 
@@ -33,12 +33,13 @@ export interface ServiceUptimeHistory {
   history: ServiceUptimeDay[];
 }
 
-// cofabri-core's /api/public/status response shape. Its incident objects
-// already match SystemStatus field-for-field (see cofabri-core's
+// GET /web/content/status-feed's response shape — cofabri-api passes
+// cofabri-core's /api/public/status payload through verbatim. Its incident
+// objects already match SystemStatus field-for-field (see cofabri-core's
 // app/api/public/status/route.ts, which capitalizes publicStatus/severity
 // on the way out to match this exact contract) — this function only needs
 // to fetch, unwrap, and default missing pieces, not remap field names.
-interface CofabriCorePublicStatusResponse {
+interface StatusFeedResponse {
   services?: Array<{
     id?: string;
     name?: string;
@@ -61,21 +62,19 @@ interface CofabriCorePublicStatusResponse {
 
 export async function getSystemStatus(): Promise<SystemStatus[]> {
   try {
-    const baseUrl = process.env.COFABRI_CORE_STATUS_API_URL;
-    const apiKey = process.env.COFABRI_CORE_STATUS_API_KEY;
-    if (!baseUrl || !apiKey) {
-      throw new Error('COFABRI_CORE_STATUS_API_URL / COFABRI_CORE_STATUS_API_KEY are not configured');
+    const baseUrl = process.env.COFABRI_API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('COFABRI_API_BASE_URL is not configured');
     }
 
-    const response = await fetch(baseUrl, {
-      headers: { 'x-api-key': apiKey },
+    const response = await fetch(`${baseUrl}/web/content/status-feed`, {
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
-      throw new Error(`cofabri-core status API returned ${response.status}`);
+      throw new Error(`cofabri-api status-feed returned ${response.status}`);
     }
 
-    const data = (await response.json()) as CofabriCorePublicStatusResponse;
+    const data = (await response.json()) as StatusFeedResponse;
 
     return (data.incidents ?? []).map(incident => {
       const publicStatus = incident.publicStatus || 'Monitoring';
@@ -110,21 +109,19 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
 // getSystemStatus's contract for callers that don't need it.
 export async function getServiceUptimeHistory(): Promise<ServiceUptimeHistory[]> {
   try {
-    const baseUrl = process.env.COFABRI_CORE_STATUS_API_URL;
-    const apiKey = process.env.COFABRI_CORE_STATUS_API_KEY;
-    if (!baseUrl || !apiKey) {
-      throw new Error('COFABRI_CORE_STATUS_API_URL / COFABRI_CORE_STATUS_API_KEY are not configured');
+    const baseUrl = process.env.COFABRI_API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('COFABRI_API_BASE_URL is not configured');
     }
 
-    const response = await fetch(baseUrl, {
-      headers: { 'x-api-key': apiKey },
+    const response = await fetch(`${baseUrl}/web/content/status-feed`, {
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
-      throw new Error(`cofabri-core status API returned ${response.status}`);
+      throw new Error(`cofabri-api status-feed returned ${response.status}`);
     }
 
-    const data = (await response.json()) as CofabriCorePublicStatusResponse;
+    const data = (await response.json()) as StatusFeedResponse;
 
     return (data.services ?? [])
       .filter((s): s is { id: string; name: string; history?: ServiceUptimeDay[] } => Boolean(s.id && s.name))
