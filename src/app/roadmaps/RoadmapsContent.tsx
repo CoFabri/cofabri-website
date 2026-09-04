@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import ProductRoadmap from '@/components/marketing/ProductRoadmap';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RevealSection from '@/components/marketing/RevealSection';
+import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import { displayAppName } from '@/lib/roadmap-display';
 
 interface DropdownProps {
@@ -128,6 +128,8 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
         <Breadcrumbs items={[{ name: 'Roadmaps', href: '/roadmaps' }]} />
       </div>
 
+      <UpdatesTabs active="roadmap" />
+
       <PageHero
         eyebrow="Roadmap"
         title="Built in the open."
@@ -182,9 +184,6 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/changelog" className="text-sm font-semibold text-ink-muted transition-colors hover:text-foreground">
-            Looking for what shipped? Changelog →
-          </Link>
           <Dropdown
             value={selectedStatus}
             onChange={setSelectedStatus}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
@@ -9,6 +8,7 @@ import { CoreLoader } from '@/components/ui/core-loader';
 import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RoadmapOverlay from '@/components/marketing/RoadmapOverlay';
+import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
 import { displayAppName } from '@/lib/roadmap-display';
@@ -153,6 +153,8 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
         <Breadcrumbs items={[{ name: 'Changelog', href: '/changelog' }]} />
       </div>
 
+      <UpdatesTabs active="changelog" />
+
       <PageHero
         eyebrow="Changelog"
         title="What shipped."
@@ -183,10 +185,6 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
             </button>
           ))}
         </div>
-
-        <Link href="/roadmaps" className="text-sm font-semibold text-ink-muted transition-colors hover:text-foreground">
-          Looking for what&apos;s next? Roadmap →
-        </Link>
       </div>
 
       {isLoading ? (

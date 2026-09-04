@@ -76,7 +76,12 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   }
 
   const roadmapFeatures = await getRoadmapFeatures();
-  const roadmapItems = roadmapFeatures.filter((f) => f.application === app.id).slice(0, 5);
+  const appFeatures = roadmapFeatures.filter((f) => f.application === app.id);
+  const roadmapItems = appFeatures.filter((f) => f.status !== 'Released').slice(0, 5);
+  const shippedItems = appFeatures
+    .filter((f) => f.status === 'Released' && f.releasedDate)
+    .sort((a, b) => new Date(b.releasedDate!).getTime() - new Date(a.releasedDate!).getTime())
+    .slice(0, 5);
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
 
   const meta = (
@@ -186,6 +191,33 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 <div key={f} className="grid grid-cols-[48px_1fr] gap-6 border-t border-border py-[26px] first:border-t-0 first:pt-0">
                   <span className="pt-1 font-mono text-xs text-ink-disabled">{String(i + 1).padStart(2, '0')}</span>
                   <p className="m-0 max-w-[520px] text-base leading-[1.6] text-ink-muted">{f}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {shippedItems.length > 0 && (
+          <div className="mt-[88px] grid grid-cols-1 gap-10 lg:grid-cols-[320px_1fr] lg:gap-20">
+            <div>
+              <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
+                Recently shipped
+              </h2>
+              <Link
+                href="/changelog"
+                className="mt-4 inline-block border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                All {app.name} releases →
+              </Link>
+            </div>
+            <div>
+              {shippedItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-[90px_1fr] items-baseline gap-6 border-t border-border py-5 first:border-t-0 first:pt-0 sm:grid-cols-[110px_1fr]"
+                >
+                  <span className="font-mono text-xs text-ink-faint">{formatRoadmapWhen(item)}</span>
+                  <span className="text-[17px] font-medium text-foreground">{item.name}</span>
                 </div>
               ))}
             </div>
