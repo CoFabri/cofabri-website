@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { CoreLoader } from '@/components/ui/core-loader';
 import ChangelogContent from './ChangelogContent';
 import { getApps, getRoadmapFeatures } from '@/lib/api-client';
+import { hasActiveRoadmap } from '@/lib/app-display';
 
 export const metadata: Metadata = {
   title: 'Changelog',
@@ -32,9 +33,15 @@ export const metadata: Metadata = {
 };
 
 export default async function ChangelogPage() {
-  const [features, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
+  const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
-  const shipped = features.filter((f) => f.status === 'Released');
+  // An app with no row in getApps() (retired apps are dropped from that
+  // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
+  // the public changelog with releases for a product no one's working on.
+  const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
+  const shipped = allFeatures.filter(
+    (f) => f.status === 'Released' && (!f.application || activeAppIds.has(f.application))
+  );
 
   return (
     <Suspense

@@ -1,4 +1,10 @@
-import type { App, RoadmapFeature } from '@/lib/api-client';
+import { KNOWN_LIFECYCLE_STATUSES, type App, type RoadmapFeature } from '@/lib/api-client';
+
+// Retired/sunset/anything-else-unrecognized apps shouldn't clutter the public
+// roadmap and changelog with commitments for a product that's no longer worked on.
+export function hasActiveRoadmap(status: string): boolean {
+  return KNOWN_LIFECYCLE_STATUSES.includes(status);
+}
 
 export function statusPillClasses(status: string): string {
   switch (status) {
@@ -11,6 +17,23 @@ export function statusPillClasses(status: string): string {
       return 'bg-muted text-muted-foreground';
     default:
       return 'bg-secondary text-secondary-foreground';
+  }
+}
+
+// Plain-language gloss for the status pill, shown on every app detail page
+// regardless of which app it is — status is the one field every app has,
+// so this is the one "learn more" hook that never depends on per-app facts.
+export function statusExplainer(status: string): string | undefined {
+  switch (status) {
+    case 'Live':
+    case 'Active':
+      return 'Live and available today — sign up and start using it now.';
+    case 'Beta':
+      return 'In beta — live for early users while we refine it from real feedback.';
+    case 'In Development':
+      return "In development — not open yet. Join the waitlist to get early access when it launches.";
+    default:
+      return undefined;
   }
 }
 

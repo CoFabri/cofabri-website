@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
 import { displayAppName } from '@/lib/roadmap-display';
 import { filterPillClasses } from '@/lib/filter-pill';
+import { hasActiveRoadmap } from '@/lib/app-display';
 
 interface MonthGroup {
   key: string;
@@ -88,14 +89,18 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
         fetch('/api/apps', { cache: 'no-store' }),
       ]);
 
-      if (roadmapRes.ok) {
-        const features = (await roadmapRes.json()) as RoadmapFeature[];
-        setShipped(features.filter((f) => f.status === 'Released'));
-      }
+      const features = roadmapRes.ok ? ((await roadmapRes.json()) as RoadmapFeature[]) : [];
+      const apps = appsRes.ok ? ((await appsRes.json()) as App[]) : [];
 
       if (appsRes.ok) {
-        const apps = (await appsRes.json()) as App[];
         setAppNames(Object.fromEntries(apps.map((a) => [a.id, a.name])));
+      }
+
+      if (roadmapRes.ok) {
+        const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
+        setShipped(
+          features.filter((f) => f.status === 'Released' && (!f.application || activeAppIds.has(f.application)))
+        );
       }
     } catch (err) {
       console.error('Error fetching changelog data:', err);
@@ -203,8 +208,8 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
       ) : (
         <div>
           {groups.map((group) => (
-            <div key={group.key} className="mt-14 first:mt-0">
-              <div className="mb-2 flex items-baseline gap-3.5">
+            <div key={group.key} className="mt-14">
+              <div className="mb-2 flex items-center gap-3.5">
                 <h2 className="m-0 text-[26px] font-semibold tracking-[-0.025em] text-foreground">{group.label}</h2>
                 <span className="font-mono text-xs text-ink-faint">
                   {group.features.length} {group.features.length === 1 ? 'item' : 'items'}

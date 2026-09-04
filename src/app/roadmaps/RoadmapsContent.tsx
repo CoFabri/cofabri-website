@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RevealSection from '@/components/marketing/RevealSection';
 import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import { displayAppName } from '@/lib/roadmap-display';
+import { hasActiveRoadmap } from '@/lib/app-display';
 
 interface DropdownProps {
   value: string;
@@ -95,14 +96,16 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
           fetch('/api/apps', { cache: 'no-store' }),
         ]);
 
-        if (roadmapRes.ok) {
-          const features = (await roadmapRes.json()) as RoadmapFeature[];
-          setAllFeatures(features);
-        }
+        const features = roadmapRes.ok ? ((await roadmapRes.json()) as RoadmapFeature[]) : [];
+        const apps = appsRes.ok ? ((await appsRes.json()) as App[]) : [];
 
         if (appsRes.ok) {
-          const apps = (await appsRes.json()) as App[];
           setAppNames(Object.fromEntries(apps.map((a) => [a.id, a.name])));
+        }
+
+        if (roadmapRes.ok) {
+          const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
+          setAllFeatures(features.filter((f) => !f.application || activeAppIds.has(f.application)));
         }
       } catch (error) {
         console.error('Error fetching roadmap filter data:', error);

@@ -64,7 +64,7 @@ interface AppRow {
 // Supabase column with no CHECK constraint, so normalize casing/separators here
 // rather than relying on admins to type an exact match -- a wrong-cased value
 // silently fell through to an unstyled badge before this existed.
-const KNOWN_LIFECYCLE_STATUSES = ['Live', 'Active', 'Beta', 'In Development'];
+export const KNOWN_LIFECYCLE_STATUSES = ['Live', 'Active', 'Beta', 'In Development'];
 
 function normalizeStatus(raw: string | null): string {
   const value = (raw ?? '').trim();
@@ -82,7 +82,12 @@ function mapApp(row: AppRow): App {
     name: row.app_name,
     description: row.high_level_description || 'No description available',
     url: row.app_url || undefined,
-    screenshot: row.screenshot_url || '/images/placeholder.jpg',
+    // No generic local placeholder fallback here: falling back to a fake
+    // "screenshot" made the app detail page's real empty state (a plain
+    // "product shot coming soon" panel) unreachable for every app, since
+    // every app currently only has an auto-generated social-share banner
+    // in Supabase, never a real product screenshot.
+    screenshot: row.screenshot_url || undefined,
     faviconUrl: row.favicon_url || undefined,
     status: normalizeStatus(row.lifecycle_stage),
     category: row.category || undefined,

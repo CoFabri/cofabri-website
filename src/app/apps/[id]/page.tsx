@@ -5,7 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getRoadmapFeatures } from '@/lib/api-client';
-import { actionHref, actionLabel, statusPillClasses } from '@/lib/app-display';
+import { getSystemStatus } from '@/lib/airtable';
+import { actionHref, actionLabel, hasActiveRoadmap, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import StructuredData from '@/components/marketing/StructuredData';
@@ -76,13 +78,18 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   }
 
   const roadmapFeatures = await getRoadmapFeatures();
-  const appFeatures = roadmapFeatures.filter((f) => f.application === app.id);
+  const appFeatures = hasActiveRoadmap(app.status) ? roadmapFeatures.filter((f) => f.application === app.id) : [];
   const roadmapItems = appFeatures.filter((f) => f.status !== 'Released').slice(0, 5);
   const shippedItems = appFeatures
     .filter((f) => f.status === 'Released' && f.releasedDate)
     .sort((a, b) => new Date(b.releasedDate!).getTime() - new Date(a.releasedDate!).getTime())
     .slice(0, 5);
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
+
+  // Only fully live apps get a status dot — an uptime signal reads as noise
+  // (or actively misleading) on something still in development or beta.
+  const showStatusDot = app.status === 'Live' || app.status === 'Active';
+  const statusIncident = showStatusDot ? matchAppIncident(app.name, await getSystemStatus()) : undefined;
 
   const meta = (
     [
@@ -120,12 +127,25 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
               {app.category && (
                 <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint">{app.category}</span>
               )}
+              {showStatusDot && (
+                <Link
+                  href="/status"
+                  title={`System status: ${statusIncident ? statusIncident.publicStatus : 'Operational'}`}
+                  aria-label={`System status: ${statusIncident ? statusIncident.publicStatus : 'Operational'}`}
+                  className="inline-flex h-2.5 w-2.5 rounded-full ring-1 ring-border ring-offset-2 ring-offset-background transition-opacity hover:opacity-70"
+                >
+                  <span className={`h-full w-full rounded-full ${statusIncident ? incidentDotClasses(statusIncident.publicStatus) : 'bg-success'}`} />
+                </Link>
+              )}
             </div>
             <h1 className="m-0 text-[40px] font-semibold leading-[1.03] tracking-[-0.035em] text-foreground sm:text-[56px]">
               {app.name}
             </h1>
             {app.description && (
               <p className="mt-5 max-w-[520px] text-lg leading-[1.55] text-ink-muted sm:text-xl">{app.description}</p>
+            )}
+            {statusExplainer(app.status) && (
+              <p className="mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-faint">{statusExplainer(app.status)}</p>
             )}
             <div className="mt-8 flex flex-wrap gap-3">
               <Link

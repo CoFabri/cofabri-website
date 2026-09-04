@@ -31,12 +31,21 @@ export const compareMilestones = (a: string, b: string) => {
   return milestoneB.quarter - milestoneA.quarter;
 };
 
+// A feature tied to an app that isn't in appNames belongs to a retired app
+// (retired apps are dropped from getApps() entirely) -- keep it out of the
+// public roadmap regardless of which filters are active.
+function isVisibleFeature(feature: RoadmapFeature, appNames: Record<string, string>): boolean {
+  return !feature.application || !!appNames[feature.application];
+}
+
 function groupByMilestone(
   features: RoadmapFeature[],
   selectedApp: string,
-  selectedStatus: string
+  selectedStatus: string,
+  appNames: Record<string, string>
 ): { title: string; features: RoadmapFeature[] }[] {
   const groups = features.reduce((acc: { title: string; features: RoadmapFeature[] }[], feature) => {
+    if (!isVisibleFeature(feature, appNames)) return acc;
     if (selectedApp && feature.application !== selectedApp) return acc;
     if (selectedStatus && feature.status !== selectedStatus) return acc;
 
@@ -65,7 +74,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
   const searchParams = useSearchParams();
   const [features, setFeatures] = useState<RoadmapFeature[]>(initialFeatures);
   const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>(() =>
-    groupByMilestone(initialFeatures, selectedApp, selectedStatus)
+    groupByMilestone(initialFeatures, selectedApp, selectedStatus, appNames)
   );
   // Server already fetched this page's data (see roadmaps/page.tsx) so the
   // initial HTML has real content for crawlers — this only stays "loading"
@@ -103,15 +112,16 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
       if (!response.ok) throw new Error('Failed to fetch roadmap features');
 
       const roadmapFeatures = (await response.json()) as RoadmapFeature[];
-      setFeatures(roadmapFeatures);
-      setMilestones(groupByMilestone(roadmapFeatures, selectedApp, selectedStatus));
+      const visibleFeatures = roadmapFeatures.filter((f) => isVisibleFeature(f, appNames));
+      setFeatures(visibleFeatures);
+      setMilestones(groupByMilestone(visibleFeatures, selectedApp, selectedStatus, appNames));
     } catch (err) {
       console.error('Error fetching roadmap:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch roadmap');
     } finally {
       setIsLoading(false);
     }
-  }, [selectedApp, selectedStatus]);
+  }, [selectedApp, selectedStatus, appNames]);
 
   useEffect(() => {
     if (isOverlayOpen) {
@@ -158,8 +168,8 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
     <>
       <div>
         {milestones.map((milestone) => (
-          <div key={milestone.title} className="mt-14 first:mt-0">
-            <div className="mb-2 flex items-baseline gap-3.5">
+          <div key={milestone.title} className="mt-14">
+            <div className="mb-2 flex items-center gap-3.5">
               <h2 className="m-0 text-[26px] font-semibold tracking-[-0.025em] text-foreground">{milestone.title}</h2>
               <span className="font-mono text-xs text-ink-faint">
                 {milestone.features.length} {milestone.features.length === 1 ? 'item' : 'items'}
