@@ -121,6 +121,12 @@ export const partnerSchema = z.object({
     .min(1, 'Industry is required')
     .max(FIELD_LIMITS.industry, `Industry must be ${FIELD_LIMITS.industry} characters or less`),
   message: longTextField('Tell us about your business and the idea', FIELD_LIMITS.message),
+  // Partnership inquiries are about partnering with CoFabri as a company, not
+  // about a specific app — the form has no natural app picker, so this isn't
+  // exposed in the UI today. It's kept optional here so /api/partners is
+  // ready to forward `app_id` to cofabri-api the moment a caller (or a future
+  // UI) does supply one.
+  relatedApp: z.string().trim().optional(),
 });
 
 export type ContactFormValues = z.infer<typeof contactSchema>;

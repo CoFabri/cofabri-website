@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const { firstName, lastName, email, companyName, industry, message, preferredContactMethod } = parsed.data;
+    const { firstName, lastName, email, companyName, industry, message, preferredContactMethod, relatedApp } = parsed.data;
 
     // Phone is optional on this form, but if provided it must be a real,
     // valid number. The client always sends E.164 (leading "+"), which
@@ -103,6 +103,7 @@ export async function POST(request: Request) {
           company_name: companyName || undefined,
           industry,
           message,
+          app_id: relatedApp || undefined,
         }),
       });
     } catch (fetchError) {

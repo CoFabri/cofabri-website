@@ -138,6 +138,7 @@ export async function POST(request: Request) {
           message: message.trim(),
           language_preference: toApiLanguagePreference(languagePreference),
           inquiry_type: inquiryType,
+          app_id: relatedApp || undefined,
         }),
       });
     } catch (fetchError) {
