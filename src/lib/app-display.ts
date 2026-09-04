@@ -1,4 +1,4 @@
-import { KNOWN_LIFECYCLE_STATUSES, type App, type RoadmapFeature } from '@/lib/api-client';
+import { KNOWN_LIFECYCLE_STATUSES, type App, type RoadmapFeature } from './api-client';
 
 // Retired/sunset/anything-else-unrecognized apps shouldn't clutter the public
 // roadmap and changelog with commitments for a product that's no longer worked on.
@@ -84,12 +84,27 @@ export function appMomentum(app: App, roadmap: RoadmapFeature[]): string {
   return '—';
 }
 
+// A beta app only gets the signup CTA while it's genuinely accepting people:
+// capacity must be set above zero and not yet fully claimed. Otherwise it
+// falls back to the same default a live app gets (Visit, or the apps index).
+export function hasOpenBetaSignup(app: App): boolean {
+  return (
+    app.status === 'Beta' &&
+    app.betaCapacity != null &&
+    app.betaCapacity > 0 &&
+    (app.betaSpotsFilled ?? 0) < app.betaCapacity
+  );
+}
+
 export function actionLabel(app: App): string {
-  return app.status === 'In Development' ? 'Join waitlist' : 'Visit';
+  if (app.status === 'In Development') return 'Join waitlist';
+  if (hasOpenBetaSignup(app)) return 'Join the Beta';
+  return 'Visit';
 }
 
 export function actionHref(app: App): string {
   if (app.status === 'In Development') return `/signup?appId=${app.id}`;
+  if (hasOpenBetaSignup(app)) return `/signup?appId=${app.id}`;
   if (app.url) return app.url.startsWith('http') ? app.url : `https://${app.url}`;
   return '/apps';
 }

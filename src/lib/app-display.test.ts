@@ -46,6 +46,28 @@ describe('actionLabel / actionHref', () => {
   it('falls back to the apps index when a live app has no url', () => {
     expect(actionHref(app({ status: 'Live' }))).toBe('/apps');
   });
+
+  it('offers to join the beta when a beta app has open spots', () => {
+    const a = app({ status: 'Beta', betaCapacity: 10, betaSpotsFilled: 4, url: 'app.example.com' });
+    expect(actionLabel(a)).toBe('Join the Beta');
+    expect(actionHref(a)).toBe('/signup?appId=app-1');
+  });
+
+  it('falls back to Visit once a beta app is full', () => {
+    const a = app({ status: 'Beta', betaCapacity: 10, betaSpotsFilled: 10, url: 'app.example.com' });
+    expect(actionLabel(a)).toBe('Visit');
+    expect(actionHref(a)).toBe('https://app.example.com');
+  });
+
+  it('falls back to Visit when a beta app has no capacity set', () => {
+    const a = app({ status: 'Beta', betaCapacity: null, url: 'app.example.com' });
+    expect(actionLabel(a)).toBe('Visit');
+  });
+
+  it('falls back to Visit when a beta app has capacity explicitly closed at 0', () => {
+    const a = app({ status: 'Beta', betaCapacity: 0, betaSpotsFilled: 0, url: 'app.example.com' });
+    expect(actionLabel(a)).toBe('Visit');
+  });
 });
 
 describe('appMomentum', () => {
