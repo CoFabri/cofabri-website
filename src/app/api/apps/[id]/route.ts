@@ -5,9 +5,8 @@ import { getApp, type BetaStatement } from '@/lib/api-client';
 export const dynamic = 'force-dynamic';
 
 interface AppData {
-  betaSpotsTotal: number;
+  betaCapacity: number | null;
   betaSpotsFilled: number;
-  betaDescription: string;
   status: string;
   name: string;
   betaStatements: BetaStatement[];
@@ -19,28 +18,21 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    console.log('Fetching app data for ID:', id);
 
-    // Fetch app data
     const app = await getApp(id);
-    console.log('Raw app response:', app);
 
     if (!app) {
       throw new Error('Invalid app data response');
     }
 
     const response: AppData = {
-      // Beta spot counts are not yet available from the new content API;
-      // defaulting to 0/empty until that data model gap is resolved.
-      betaSpotsTotal: 0,
-      betaSpotsFilled: 0,
-      betaDescription: '',
+      betaCapacity: app.betaCapacity ?? null,
+      betaSpotsFilled: app.betaSpotsFilled ?? 0,
       status: app.status || 'Coming Soon',
       name: app.name || 'Unknown App',
       betaStatements: app.betaStatements || [],
     };
 
-    console.log('Prepared response:', response);
     return NextResponse.json(response);
   } catch (error) {
     console.error('Error in GET /api/apps/[id]:', error);
