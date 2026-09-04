@@ -36,6 +36,10 @@ export async function GET() {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CoFabri System Status</title>
     <style>
+        html {
+            background: transparent;
+            color-scheme: light dark;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -162,6 +166,7 @@ export async function GET() {
     <meta charset="utf-8">
     <title>CoFabri System Status</title>
     <style>
+        html { background: transparent; color-scheme: light dark; }
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: transparent; overflow: hidden; }
         .status-widget {
             display: inline-flex;
