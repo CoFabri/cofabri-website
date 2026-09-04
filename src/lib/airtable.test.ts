@@ -40,6 +40,26 @@ describe('getSystemStatus', () => {
 
     expect(statuses).toEqual([]);
   });
+
+  it('passes through affectedAppIds and isPlatformWide, defaulting to empty/false when missing', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        incidents: [
+          { ticketId: 'T-1', publicStatus: 'Investigating', affectedAppIds: ['medoura'], isPlatformWide: false },
+          { ticketId: 'T-2', publicStatus: 'Investigating' },
+        ],
+      }),
+    });
+
+    const { getSystemStatus } = await import('./airtable');
+    const statuses = await getSystemStatus();
+
+    expect(statuses[0].affectedAppIds).toEqual(['medoura']);
+    expect(statuses[0].isPlatformWide).toBe(false);
+    expect(statuses[1].affectedAppIds).toEqual([]);
+    expect(statuses[1].isPlatformWide).toBe(false);
+  });
 });
 
 describe('getServiceUptimeHistory', () => {
