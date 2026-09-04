@@ -8,22 +8,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { incidentDotClasses, mostSevereIncident } from '@/lib/incident-display';
 
-const getStatusMessage = (status: SystemStatus | null) => {
-  if (!status) return 'All systems operational';
-
-  switch (status.publicStatus) {
-    case 'Investigating':
-      return status.message ? `Investigating: ${status.message}` : 'Investigating';
-    case 'Identified':
-      return status.message ? `Issue Identified: ${status.message}` : 'Issue Identified';
-    case 'Monitoring':
-      return status.message ? `Monitoring Resolution: ${status.message}` : 'Monitoring Resolution';
-    case 'Resolved':
-      return status.message ? `Resolved: ${status.message}` : 'Resolved';
-    default:
-      return status.message || status.publicStatus || 'All systems operational';
-  }
-};
+// The status label is already shown as the tooltip title, so this only
+// needs the incident detail itself — no "Identified: " style prefix that
+// would just repeat the title.
+const getStatusMessage = (status: SystemStatus | null) => status?.message?.trim() || null;
 
 export default function StatusIndicator() {
   const [statuses, setStatuses] = useState<SystemStatus[]>([]);
@@ -72,7 +60,9 @@ export default function StatusIndicator() {
       </TooltipTrigger>
       <TooltipContent side="bottom">
         <p className="font-medium">{label}</p>
-        {hasActiveIssues && <p className="text-background/70">{message}</p>}
+        {hasActiveIssues && message && (
+          <p className="mt-0.5 line-clamp-3 text-background/70">{message}</p>
+        )}
       </TooltipContent>
     </Tooltip>
   );
