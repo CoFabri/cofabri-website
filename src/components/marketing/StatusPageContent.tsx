@@ -226,7 +226,9 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
       incident: matchAppIncident(app.id, openIncidents),
       history: matchHistory(app.name)?.history ?? [],
     }));
-    const platformIncident = openIncidents.find((incident) => incident.isPlatformWide);
+    const platformIncident =
+      openIncidents.find((incident) => incident.isPlatformWide) ??
+      openIncidents.find((incident) => !appRows.some((row) => row.incident === incident));
 
     // Real monitored_services are shared infra (Supabase, Vercel, Stripe,
     // GoHighLevel, GitHub, ...), not per-app feeds — none of them will ever

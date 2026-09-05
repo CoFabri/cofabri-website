@@ -34,27 +34,10 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       cacheTimestamp = now;
     }
 
-    // Same filtering rules as the iframe route: always include CoFabri API
-    // issues, plus anything tagged directly for this app or listed in its
-    // affected services.
+    // Filter statuses to only include those affecting this app: platform-wide
+    // incidents always show, plus anything specifically tagged with this app_id.
     const relevantStatuses = statusCache.filter((status: SystemStatus) => {
-      if (status.application === 'CoFabri API') return true;
-
-      if (status.application) {
-        const normalizedAppName = status.application.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (normalizedAppName === normalizedSlug) return true;
-      }
-
-      if (status.affectedServices && Array.isArray(status.affectedServices)) {
-        return status.affectedServices.some((service: string) => {
-          const normalizedService = service.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
-          return normalizedService.includes(normalizedSlug);
-        });
-      }
-
-      return false;
+      return status.isPlatformWide || status.affectedAppIds.includes(appSlug);
     });
 
     const mostSevere = mostSevereStatus(relevantStatuses);
