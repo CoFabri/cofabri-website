@@ -131,7 +131,8 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
   // operational all day, not that data is missing, so it renders green too.
   const bars = uptimeWindow.map((date) => service.history.find((d) => d.date === date)?.status ?? 'operational');
   const operationalDays = bars.filter((s) => s === 'operational').length;
-  const uptimePct = ((operationalDays / bars.length) * 100).toFixed(1);
+  const uptimeRatio = (operationalDays / bars.length) * 100;
+  const uptimePct = uptimeRatio === 100 ? '100' : uptimeRatio.toFixed(1);
 
   return (
     <div className="border-t border-border px-7 py-[18px] first:border-t-0">
