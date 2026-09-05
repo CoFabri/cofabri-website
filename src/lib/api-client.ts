@@ -140,7 +140,7 @@ export interface KnowledgeBaseArticle {
   isPopular?: boolean;
   isFeatured?: boolean;
   tags?: string[];
-  applications?: string[];
+  applications: LinkedApp[];
   logoUrl?: string;
   relatedTopics?: string[] | string;
 }
@@ -152,6 +152,13 @@ export interface AuthorProfile {
   twitterUrl?: string;
   linkedinUrl?: string;
   headshotUrl?: string;
+}
+
+export interface LinkedApp {
+  id: string;
+  name: string;
+  faviconUrl?: string;
+  appUrl?: string;
 }
 
 interface KbArticleRow {
@@ -168,7 +175,7 @@ interface KbArticleRow {
   is_featured: boolean | null;
   tags: string[] | null;
   logo_url: string | null;
-  application_names?: string[];
+  applications?: KbApplicationRow[];
   related_topic_slugs?: string[];
   author?: KbAuthorRow | null;
 }
@@ -181,6 +188,13 @@ interface KbAuthorRow {
   twitter_url: string | null;
   linkedin_url: string | null;
   headshot_url: string | null;
+}
+
+interface KbApplicationRow {
+  app_id: string;
+  app_name: string;
+  favicon_url: string | null;
+  app_url: string | null;
 }
 
 // kb_article_category enum values from Supabase, mapped to display labels.
@@ -207,6 +221,15 @@ function mapAuthor(row: KbAuthorRow): AuthorProfile | undefined {
   };
 }
 
+function mapApplication(row: KbApplicationRow): LinkedApp {
+  return {
+    id: row.app_id,
+    name: row.app_name,
+    faviconUrl: row.favicon_url || undefined,
+    appUrl: row.app_url || undefined,
+  };
+}
+
 function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
   return {
     id: row.id,
@@ -223,7 +246,7 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
     isPopular: row.is_popular || undefined,
     isFeatured: row.is_featured || undefined,
     tags: row.tags || [],
-    applications: row.application_names || [],
+    applications: (row.applications || []).map(mapApplication),
     logoUrl: row.logo_url || undefined,
     relatedTopics: row.related_topic_slugs,
   };

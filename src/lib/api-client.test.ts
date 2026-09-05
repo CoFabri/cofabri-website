@@ -257,3 +257,80 @@ describe('getKnowledgeBaseArticle', () => {
     expect(article?.authorProfile).toBeUndefined();
   });
 });
+
+describe('getKnowledgeBaseArticle applications mapping', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('maps a populated applications array to LinkedApp objects', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+        applications: [
+          { app_id: 'medoura', app_name: 'Medoura', favicon_url: 'https://files.cofabri.com/medoura-favicon.jpg', app_url: 'https://medoura.com' },
+        ],
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.applications).toEqual([
+      { id: 'medoura', name: 'Medoura', faviconUrl: 'https://files.cofabri.com/medoura-favicon.jpg', appUrl: 'https://medoura.com' },
+    ]);
+  });
+
+  it('maps null favicon_url/app_url to undefined, not null', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+        applications: [
+          { app_id: 'medoura', app_name: 'Medoura', favicon_url: null, app_url: null },
+        ],
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.applications).toEqual([{ id: 'medoura', name: 'Medoura' }]);
+  });
+
+  it('returns an empty array when applications is absent from the response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.applications).toEqual([]);
+  });
+});
