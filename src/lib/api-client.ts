@@ -133,6 +133,7 @@ export interface KnowledgeBaseArticle {
   category: string;
   slug: string;
   author: string;
+  authorProfile?: AuthorProfile;
   readTime: number;
   publishedAt: string;
   lastUpdated?: string;
@@ -142,6 +143,15 @@ export interface KnowledgeBaseArticle {
   applications?: string[];
   logoUrl?: string;
   relatedTopics?: string[] | string;
+}
+
+export interface AuthorProfile {
+  name: string;
+  role?: string;
+  bio?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  headshotUrl?: string;
 }
 
 interface KbArticleRow {
@@ -160,6 +170,17 @@ interface KbArticleRow {
   logo_url: string | null;
   application_names?: string[];
   related_topic_slugs?: string[];
+  author?: KbAuthorRow | null;
+}
+
+interface KbAuthorRow {
+  id: string;
+  name: string | null;
+  role: string | null;
+  bio: string | null;
+  twitter_url: string | null;
+  linkedin_url: string | null;
+  headshot_url: string | null;
 }
 
 // kb_article_category enum values from Supabase, mapped to display labels.
@@ -174,6 +195,18 @@ const KB_CATEGORY_LABELS: Record<string, string> = {
   brand_brief: 'Brand Brief',
 };
 
+function mapAuthor(row: KbAuthorRow): AuthorProfile | undefined {
+  if (!row.name) return undefined;
+  return {
+    name: row.name,
+    role: row.role || undefined,
+    bio: row.bio || undefined,
+    twitterUrl: row.twitter_url || undefined,
+    linkedinUrl: row.linkedin_url || undefined,
+    headshotUrl: row.headshot_url || undefined,
+  };
+}
+
 function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
   return {
     id: row.id,
@@ -183,6 +216,7 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
     category: KB_CATEGORY_LABELS[row.category] || row.category,
     slug: row.site_url_slug || row.id,
     author: row.author_name || '',
+    authorProfile: row.author ? mapAuthor(row.author) : undefined,
     readTime: row.read_time || 0,
     publishedAt: row.last_updated || '',
     lastUpdated: row.last_updated || undefined,

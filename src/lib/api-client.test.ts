@@ -166,3 +166,94 @@ describe('getApp', () => {
     expect(app?.betaSpotsFilled).toBeUndefined();
   });
 });
+
+describe('getKnowledgeBaseArticle', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('maps a populated author object to authorProfile', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+        author_name: 'Jane Doe',
+        author: {
+          id: 'author-1',
+          name: 'Jane Doe',
+          role: 'Support Lead',
+          bio: 'Short bio.',
+          twitter_url: 'https://x.com/jane',
+          linkedin_url: 'https://linkedin.com/in/jane',
+          headshot_url: 'https://files.cofabri.com/authors/jane.jpg',
+        },
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.author).toBe('Jane Doe');
+    expect(article?.authorProfile).toEqual({
+      name: 'Jane Doe',
+      role: 'Support Lead',
+      bio: 'Short bio.',
+      twitterUrl: 'https://x.com/jane',
+      linkedinUrl: 'https://linkedin.com/in/jane',
+      headshotUrl: 'https://files.cofabri.com/authors/jane.jpg',
+    });
+  });
+
+  it('leaves authorProfile undefined when author is null', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+        author_name: 'Jane Doe',
+        author: null,
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.author).toBe('Jane Doe');
+    expect(article?.authorProfile).toBeUndefined();
+  });
+
+  it('leaves authorProfile undefined when author is absent from the response', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: '1',
+        article_title: 'Getting Started',
+        article_content: 'Content',
+        category: 'how_to_guide',
+        site_url_slug: 'getting-started',
+        author_name: 'Jane Doe',
+      }),
+    });
+
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+
+    expect(article?.authorProfile).toBeUndefined();
+  });
+});
