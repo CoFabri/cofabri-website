@@ -114,14 +114,18 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
             >
               {singleApp.faviconUrl && (
-                <Image src={singleApp.faviconUrl} alt="" width={16} height={16} className="h-4 w-4 flex-shrink-0 rounded-sm object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
+                <div className="relative h-4 w-4 flex-shrink-0 overflow-hidden rounded-sm border border-border">
+                  <Image src={singleApp.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
+                </div>
               )}
               {singleApp.name}
             </a>
           ) : (
             <span className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body">
               {singleApp.faviconUrl && (
-                <Image src={singleApp.faviconUrl} alt="" width={16} height={16} className="h-4 w-4 flex-shrink-0 rounded-sm object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
+                <div className="relative h-4 w-4 flex-shrink-0 overflow-hidden rounded-sm border border-border">
+                  <Image src={singleApp.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
+                </div>
               )}
               {singleApp.name}
             </span>
