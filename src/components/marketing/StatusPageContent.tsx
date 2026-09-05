@@ -303,41 +303,64 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
           <h2 className="m-0 mt-[72px] mb-6 text-[32px] font-semibold tracking-[-0.025em] text-foreground">
             Recent incidents
           </h2>
-          {[...openIncidents, ...resolvedIncidents].slice(0, 10).map((incident) => (
-            <div key={incident.ticketId} className="mb-4 rounded-xl border border-border p-7">
-              <div className="flex flex-wrap items-start justify-between gap-8">
-                <div>
-                  <div className="mb-3 flex flex-wrap items-center gap-3">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${incidentPillClasses(incident.publicStatus)}`}>
-                      {incident.publicStatus}
-                    </span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${severityPillClasses(incident.severity)}`}>
-                      {incident.severity}
-                    </span>
-                    <span className="font-mono text-[11px] text-ink-disabled">{incident.ticketId}</span>
-                  </div>
-                  <h3 className="m-0 text-xl font-semibold tracking-[-0.02em] text-foreground">{incident.title}</h3>
-                  {incident.message && (
-                    <p className="mt-2.5 max-w-[680px] text-base leading-[1.6] text-ink-muted">{incident.message}</p>
-                  )}
-                </div>
-                <div className="flex-shrink-0 text-right font-mono text-[11px] leading-[1.9] text-ink-faint">
-                  {incident.application && <div>{incident.application}</div>}
-                  <div>{formatDate(incident['Created Date'])}</div>
-                </div>
-              </div>
-              {incident.affectedServices && incident.affectedServices.length > 0 && (
-                <div className="mt-[22px] flex flex-wrap gap-2.5 border-t border-border pt-5">
-                  {incident.affectedServices.map((service) => (
-                    <span key={service} className="rounded-md bg-muted px-2.5 py-1 text-[13px] text-ink-body">
-                      {service}
-                    </span>
-                  ))}
-                </div>
-              )}
+          {openIncidents.length > 0 && (
+            <div className="mb-8">
+              <h3 className="m-0 mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+                Active
+              </h3>
+              {openIncidents.map((incident) => (
+                <IncidentCard key={incident.ticketId} incident={incident} />
+              ))}
             </div>
-          ))}
+          )}
+          {resolvedIncidents.length > 0 && (
+            <div>
+              <h3 className="m-0 mb-4 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-faint">
+                Resolved
+              </h3>
+              {resolvedIncidents.slice(0, 10).map((incident) => (
+                <IncidentCard key={incident.ticketId} incident={incident} />
+              ))}
+            </div>
+          )}
         </RevealSection>
+      )}
+    </div>
+  );
+}
+
+function IncidentCard({ incident }: { incident: SystemStatus }) {
+  return (
+    <div className="mb-4 rounded-xl border border-border p-7">
+      <div className="flex flex-wrap items-start justify-between gap-8">
+        <div>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${incidentPillClasses(incident.publicStatus)}`}>
+              {incident.publicStatus}
+            </span>
+            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${severityPillClasses(incident.severity)}`}>
+              {incident.severity}
+            </span>
+            <span className="font-mono text-[11px] text-ink-disabled">{incident.ticketId}</span>
+          </div>
+          <h3 className="m-0 text-xl font-semibold tracking-[-0.02em] text-foreground">{incident.title}</h3>
+          {incident.message && (
+            <p className="mt-2.5 max-w-[680px] text-base leading-[1.6] text-ink-muted">{incident.message}</p>
+          )}
+        </div>
+        <div className="flex-shrink-0 text-right font-mono text-[11px] leading-[1.9] text-ink-faint">
+          {incident.application && <div>{incident.application}</div>}
+          <div>{formatDate(incident['Created Date'])}</div>
+        </div>
+      </div>
+      {incident.affectedServices && incident.affectedServices.length > 0 && (
+        <div className="mt-[22px] flex flex-wrap gap-2.5 border-t border-border pt-5">
+          {incident.affectedServices.map((service) => (
+            <span key={service} className="rounded-md bg-muted px-2.5 py-1 text-[13px] text-ink-body">
+              {service}
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );
