@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Metadata } from 'next';
 import { marked } from 'marked';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import { Twitter, Linkedin } from 'lucide-react';
 
 marked.setOptions({
   breaks: true,
@@ -99,7 +100,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
     [
       { k: 'Category', v: article.category },
       { k: 'Application', v: article.applications && article.applications.length > 0 ? article.applications.join(', ') : undefined },
-      { k: 'Author', v: article.author || undefined },
+      { k: 'Author', v: article.authorProfile ? undefined : article.author || undefined },
       { k: 'Published', v: formatDate(article.publishedAt) },
       { k: 'Last updated', v: formatDate(article.lastUpdated) },
       { k: 'Read time', v: article.readTime > 0 ? `${article.readTime} min` : undefined },
@@ -154,6 +155,60 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                     {tag}
                   </span>
                 ))}
+              </div>
+            )}
+
+            {article.authorProfile && (
+              <div className="group mt-8 flex items-center gap-4">
+                {article.authorProfile.headshotUrl ? (
+                  <Image
+                    src={article.authorProfile.headshotUrl}
+                    alt={article.authorProfile.name}
+                    width={56}
+                    height={56}
+                    className="hover-image-avatar h-14 w-14 flex-shrink-0 rounded-full object-cover"
+                    unoptimized={process.env.NODE_ENV === 'development'}
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-surface-raised text-lg font-semibold text-ink-faint">
+                    {article.authorProfile.name.charAt(0)}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{article.authorProfile.name}</p>
+                  {article.authorProfile.role && (
+                    <p className="text-xs text-ink-faint">{article.authorProfile.role}</p>
+                  )}
+                  {article.authorProfile.bio && (
+                    <p className="mt-1 max-w-[480px] text-xs leading-relaxed text-ink-muted">
+                      {article.authorProfile.bio}
+                    </p>
+                  )}
+                  {(article.authorProfile.twitterUrl || article.authorProfile.linkedinUrl) && (
+                    <div className="mt-1.5 flex items-center gap-3">
+                      {article.authorProfile.twitterUrl && (
+                        <a
+                          href={article.authorProfile.twitterUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-ink-faint transition-colors hover:text-foreground"
+                        >
+                          <Twitter className="h-4 w-4" />
+                        </a>
+                      )}
+                      {article.authorProfile.linkedinUrl && (
+                        <a
+                          href={article.authorProfile.linkedinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-ink-faint transition-colors hover:text-foreground"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
