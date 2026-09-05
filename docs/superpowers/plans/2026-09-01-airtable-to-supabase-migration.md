@@ -14,7 +14,7 @@
 
 - Supabase project: `iwpgwnapxuhpsdndvsrv` ("CoFabri Core & API"), already the target of cofabri-api's existing `COFABRI_SUPABASE_URL` / `COFABRI_SUPABASE_SERVICE_ROLE_KEY` env vars — reuse them, no new Supabase secrets needed in cofabri-api.
 - New cofabri-website env vars: `COFABRI_API_BASE_URL` (e.g. `https://api.cofabri.com`) and `COFABRI_API_KEY` (must equal cofabri-api's `API_KEY_SECRET`, used only for the write endpoints).
-- Public image storage: bucket `airtable-attachments` (public). Build URLs as `` `${COFABRI_SUPABASE_URL}/storage/v1/object/public/airtable-attachments/${storage_path}` ``.
+- Public image storage: bucket `attachments` (public). Build URLs as `` `${COFABRI_SUPABASE_URL}/storage/v1/object/public/attachments/${storage_path}` ``. (Renamed from `airtable-attachments` on 2026-09-04 — see cofabri-core's `docs/superpowers/specs/2026-09-04-kb-author-bios-design.md` "Bucket rename" section. This plan was never executed, so update the name here before implementing rather than treating this as historical.)
 - New read endpoints (`/web/content/*`) are public, unauthenticated — same posture as the existing `/web/*` routes, covered by the app-wide rate limiter already in `src/index.js`.
 - New write endpoints (`/web/forms/*`) reuse the existing `authenticateApiKey` middleware (`Authorization: Bearer <API_KEY_SECRET>`) — the same pattern already used by `/signup` and `/checkout` in `src/index.js`.
 - `support_cases.public_status` (nullable enum: `investigating`/`identified`/`monitoring`/`resolved`) is the only public-status gate — filter `WHERE public_status IS NOT NULL`. Do **not** filter by `support_cases.type`; verified all 41 existing rows are `type='internal_issue'` with `public_status` correctly `NULL` (Airtable "Private"), so the public feed is legitimately empty today, not a bug. New support-form submissions insert `type='customer_ticket'`, `public_status=NULL`.
@@ -242,7 +242,7 @@ class WebContentService {
 
     return (data || []).map((app) => ({
       ...app,
-      screenshot_url: this.buildPublicStorageUrl('airtable-attachments', imageByAppId.get(app.app_id)),
+      screenshot_url: this.buildPublicStorageUrl('attachments', imageByAppId.get(app.app_id)),
     }));
   }
 
@@ -272,7 +272,7 @@ class WebContentService {
 
     return {
       ...app,
-      screenshot_url: this.buildPublicStorageUrl('airtable-attachments', images?.[0]?.storage_path),
+      screenshot_url: this.buildPublicStorageUrl('attachments', images?.[0]?.storage_path),
       beta_statements: statements || [],
     };
   }
