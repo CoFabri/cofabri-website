@@ -65,7 +65,7 @@ function FounderCard({ person }: { person: TeamMember }) {
 
 function TeamCard({ person }: { person: TeamMember }) {
   return (
-    <div className="rounded-xl border border-border p-6 transition-colors duration-200 hover:border-border-strong">
+    <div className="w-full flex-none basis-full rounded-xl border border-border p-6 transition-colors duration-200 hover:border-border-strong sm:basis-[calc(33.333%-0.834rem)]">
       <Avatar person={person} />
       <div className="mt-4.5 text-[17px] font-semibold tracking-[-0.01em] text-foreground">{person.name}</div>
       {person.roleTitle && <div className="mt-1 text-sm text-muted-foreground">{person.roleTitle}</div>}
@@ -74,6 +74,7 @@ function TeamCard({ person }: { person: TeamMember }) {
           {person.department}
         </div>
       )}
+      {person.bio && <p className="mt-3.5 text-[15px] leading-[1.6] text-muted-foreground">{person.bio}</p>}
     </div>
   );
 }
@@ -301,7 +302,7 @@ const AboutPageContent = ({ team }: AboutPageContentProps) => {
             )}
 
             {rest.length > 0 && (
-              <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+              <div className="mt-5 flex flex-wrap justify-center gap-5">
                 {rest.map((person) => (
                   <TeamCard key={person.id} person={person} />
                 ))}
