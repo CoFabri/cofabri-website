@@ -13,3 +13,17 @@ export const aboutWhyChoose = [
 
 export const missionStatement =
   'To build software worth trusting — one industry, one problem, at a time.';
+
+export const nameEtymology = {
+  co: {
+    word: 'Co',
+    origin: 'company',
+    caption: 'The businesses we build, back, and share the upside with.',
+  },
+  fabri: {
+    word: 'Fabri',
+    origin: 'fabricāre',
+    caption: 'Latin for “to build, to make” — root of fabricate, fabricator.',
+  },
+  synthesis: 'Put together: a company that builds companies.',
+};

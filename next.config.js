@@ -18,6 +18,15 @@ const nextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  async redirects() {
+    return [
+      {
+        source: '/team',
+        destination: '/about',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

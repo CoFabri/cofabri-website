@@ -15,7 +15,7 @@ import StatusIndicator from './StatusIndicator';
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
-  { name: 'Team', href: '/team', icon: UserGroupIcon },
+  { name: 'About', href: '/about', icon: UserGroupIcon },
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
   { name: 'Support', href: '/support', icon: LifebuoyIcon },

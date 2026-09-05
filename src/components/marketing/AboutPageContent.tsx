@@ -1,10 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
+import { Cinzel } from 'next/font/google';
 import RevealSection from './RevealSection';
-import { aboutHighlights, aboutWhyChoose, missionStatement } from './about-content';
+import CofabriLogo from './CofabriLogo';
+import { aboutHighlights, aboutWhyChoose, missionStatement, nameEtymology } from './about-content';
 import type { TeamMember } from '@/lib/api-client';
 
-interface TeamPageContentProps {
+const cinzel = Cinzel({
+  weight: '600',
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['Georgia', 'Times New Roman', 'serif'],
+});
+
+interface AboutPageContentProps {
   team: TeamMember[];
 }
 
@@ -30,7 +39,17 @@ function PersonCard({ person, large = false }: { person: TeamMember; large?: boo
   );
 }
 
-const TeamPageContent = ({ team }: TeamPageContentProps) => {
+function LogoChip({ children, tone }: { children: React.ReactNode; tone: 'light' | 'dark' | 'ink' }) {
+  const bg =
+    tone === 'dark' ? 'bg-[#0a0a0a]' : tone === 'ink' ? 'bg-[#f4f1ea]' : 'bg-[#fafafa] border border-border';
+  return (
+    <div className={`flex items-center justify-center rounded-xl py-10 ${bg}`}>
+      {children}
+    </div>
+  );
+}
+
+const AboutPageContent = ({ team }: AboutPageContentProps) => {
   const founders = team.filter((p) => p.isFounder);
   const rest = team.filter((p) => !p.isFounder);
 
@@ -40,12 +59,79 @@ const TeamPageContent = ({ team }: TeamPageContentProps) => {
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <div className="max-w-[620px]">
             <div className="mb-3.5 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
-              Our team
+              About us
             </div>
             <h1 className="m-0 text-[32px] leading-[1.1] tracking-[-0.03em] font-semibold text-foreground sm:text-[42px]">
               One studio. Every industry.
             </h1>
             <p className="mt-5 text-lg leading-[1.6] text-muted-foreground">{missionStatement}</p>
+          </div>
+        </div>
+      </RevealSection>
+
+      <RevealSection className="py-16 md:py-24 border-t border-border overflow-hidden">
+        <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
+          <div className="mb-3.5 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            Where the name comes from
+          </div>
+
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-end sm:gap-8">
+            <div>
+              <span className="block text-[88px] font-semibold leading-[0.9] tracking-[-0.04em] text-foreground sm:text-[140px]">
+                {nameEtymology.co.word}
+              </span>
+              <p className="mt-4 max-w-[260px] text-sm leading-[1.6] text-muted-foreground">
+                <span className="font-medium text-foreground">{nameEtymology.co.origin}</span> — {nameEtymology.co.caption}
+              </p>
+            </div>
+
+            <span className="hidden pb-8 text-3xl text-muted-foreground/40 sm:block sm:text-4xl">+</span>
+
+            <div>
+              <span
+                className={`${cinzel.className} block text-[88px] leading-[0.9] tracking-[-0.01em] text-primary sm:text-[140px]`}
+              >
+                {nameEtymology.fabri.word}
+              </span>
+              <p className="mt-4 max-w-[300px] text-sm leading-[1.6] text-muted-foreground">
+                Latin <span className={`${cinzel.className} text-foreground`}>{nameEtymology.fabri.origin}</span> —{' '}
+                {nameEtymology.fabri.caption}
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-10 max-w-[560px] text-lg leading-[1.6] text-foreground">
+            {nameEtymology.synthesis}
+          </p>
+        </div>
+      </RevealSection>
+
+      <RevealSection className="py-16 md:py-20 border-t border-border">
+        <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
+          <div className="mb-3.5 font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            The mark
+          </div>
+          <h2 className="m-0 text-2xl font-semibold text-foreground">One mark, every context</h2>
+
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <LogoChip tone="light">
+              <CofabriLogo height={72} tone="light" />
+            </LogoChip>
+            <LogoChip tone="dark">
+              <CofabriLogo height={72} tone="dark" />
+            </LogoChip>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <LogoChip tone="light">
+              <CofabriLogo height={96} variant="mark" tone="light" />
+            </LogoChip>
+            <LogoChip tone="ink">
+              <CofabriLogo height={56} tone="mono-ink" />
+            </LogoChip>
+            <LogoChip tone="dark">
+              <CofabriLogo height={56} tone="mono-white" />
+            </LogoChip>
           </div>
         </div>
       </RevealSection>
@@ -115,4 +201,4 @@ const TeamPageContent = ({ team }: TeamPageContentProps) => {
   );
 };
 
-export default TeamPageContent;
+export default AboutPageContent;
