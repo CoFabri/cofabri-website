@@ -221,11 +221,13 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
     // docs/superpowers/specs/2026-09-04-status-indicator-app-identity-design.md.)
     const matchHistory = (name: string) => uptimeHistory.find((s) => s.name.toLowerCase() === name.toLowerCase());
 
-    const appRows = apps.map((app) => ({
-      name: app.name,
-      incident: matchAppIncident(app.id, openIncidents),
-      history: matchHistory(app.name)?.history ?? [],
-    }));
+    const appRows = apps
+      .map((app) => ({
+        name: app.name,
+        incident: matchAppIncident(app.id, openIncidents),
+        history: matchHistory(app.name)?.history ?? [],
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     const platformIncident =
       openIncidents.find((incident) => incident.isPlatformWide) ??
       openIncidents.find((incident) => !appRows.some((row) => row.incident === incident));
