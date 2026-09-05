@@ -114,8 +114,8 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
             >
               {singleApp.faviconUrl && (
-                <div className="relative h-4 w-4 flex-shrink-0 overflow-hidden rounded-sm border border-border">
-                  <Image src={singleApp.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
+                <div className="relative h-5 w-5 flex-shrink-0 overflow-hidden rounded-md border border-border bg-white p-0.5">
+                  <Image src={singleApp.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
                 </div>
               )}
               {singleApp.name}
@@ -123,8 +123,8 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
           ) : (
             <span className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body">
               {singleApp.faviconUrl && (
-                <div className="relative h-4 w-4 flex-shrink-0 overflow-hidden rounded-sm border border-border">
-                  <Image src={singleApp.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
+                <div className="relative h-5 w-5 flex-shrink-0 overflow-hidden rounded-md border border-border bg-white p-0.5">
+                  <Image src={singleApp.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
                 </div>
               )}
               {singleApp.name}
