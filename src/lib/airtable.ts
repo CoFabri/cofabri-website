@@ -20,6 +20,8 @@ export interface SystemStatus {
   affectedServices: string[];
   application?: string;
   updates?: string;
+  affectedAppIds: string[];
+  isPlatformWide: boolean;
 }
 
 export interface ServiceUptimeDay {
@@ -57,6 +59,8 @@ interface StatusFeedResponse {
     affectedServices?: string[];
     application?: string;
     updates?: string;
+    affectedAppIds?: string[];
+    isPlatformWide?: boolean;
   }>;
 }
 
@@ -93,6 +97,8 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
         affectedServices: incident.affectedServices || [],
         application: incident.application || 'CoFabri System',
         updates: incident.updates || '',
+        affectedAppIds: incident.affectedAppIds || [],
+        isPlatformWide: incident.isPlatformWide || false,
       };
     });
   } catch (error) {
