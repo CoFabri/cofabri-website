@@ -38,36 +38,11 @@ export async function GET(
     }
     
     const allStatuses = statusCache;
-    
-    // Filter statuses to only include those affecting this app or CoFabri API
+
+    // Filter statuses to only include those affecting this app: platform-wide
+    // incidents always show, plus anything specifically tagged with this app_id.
     const relevantStatuses = allStatuses.filter((status: SystemStatus) => {
-      // Always include CoFabri API issues
-      if (status.application === 'CoFabri API') {
-        return true;
-      }
-      
-      // Include issues affecting this specific app
-      if (status.application) {
-        // Normalize both strings for comparison
-        const normalizedAppName = status.application.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
-        
-        if (normalizedAppName === normalizedSlug) {
-          return true;
-        }
-      }
-      
-      // Include issues where this app is in the affected services
-      if (status.affectedServices && Array.isArray(status.affectedServices)) {
-        const hasMatch = status.affectedServices.some((service: string) => {
-          const normalizedService = service.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const normalizedSlug = appSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
-          return normalizedService.includes(normalizedSlug);
-        });
-        return hasMatch;
-      }
-      
-      return false;
+      return status.isPlatformWide || status.affectedAppIds.includes(appSlug);
     });
     
     const mostSevere = mostSevereStatus(relevantStatuses);

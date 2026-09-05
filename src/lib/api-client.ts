@@ -34,7 +34,6 @@ export interface App {
   feature3?: string;
   launchDate?: string;
   releaseDate?: string;
-  domains?: string;
   featureOnWebsite?: boolean;
   betaStatements?: BetaStatement[];
   betaCapacity?: number | null;
@@ -99,7 +98,6 @@ function mapApp(row: AppRow): App {
     feature3: row.feature_3 || undefined,
     launchDate: row.launch_date || undefined,
     releaseDate: row.latest_release_date || undefined,
-    domains: undefined,
     featureOnWebsite: row.featured_app,
     betaStatements: row.beta_statements,
     betaCapacity: row.beta_capacity,

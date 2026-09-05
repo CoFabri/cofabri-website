@@ -57,15 +57,12 @@ export function mostSevereIncident(incidents: SystemStatus[]): SystemStatus | un
   );
 }
 
-// Same best-effort case-insensitive name match StatusPageContent uses to
-// cross-reference an app against open incidents — pulled out here so the app
-// detail page's status dot stays in sync with what /status itself shows,
-// instead of re-implementing the match logic a second time.
-export function matchAppIncident(appName: string, statuses: SystemStatus[]): SystemStatus | undefined {
+// Cross-references an app against open incidents by its declared app_id
+// (SystemStatus.affectedAppIds / isPlatformWide), not free-text name/domain
+// matching — pulled out here so the app detail page's status dot stays in
+// sync with what /status itself shows, instead of re-implementing the match
+// logic a second time.
+export function matchAppIncident(appId: string, statuses: SystemStatus[]): SystemStatus | undefined {
   const open = statuses.filter((s) => s.publicStatus !== 'Resolved');
-  return open.find(
-    (incident) =>
-      incident.application?.toLowerCase() === appName.toLowerCase() ||
-      incident.affectedServices?.some((s) => s.toLowerCase() === appName.toLowerCase())
-  );
+  return open.find((incident) => incident.isPlatformWide || incident.affectedAppIds.includes(appId));
 }

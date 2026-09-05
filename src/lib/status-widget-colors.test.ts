@@ -13,6 +13,8 @@ function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
     'Updated At': '',
     'Resolved Date': '',
     affectedServices: [],
+    affectedAppIds: [],
+    isPlatformWide: false,
     ...overrides,
   };
 }
