@@ -96,16 +96,44 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
   })();
   relatedArticles = relatedArticles.filter((a) => a.slug !== article.slug);
 
+  const singleApp = article.applications.length === 1 ? article.applications[0] : null;
+  const applicationNames = article.applications.map((a) => a.name);
+
   const meta = (
     [
       { k: 'Category', v: article.category },
-      { k: 'Application', v: article.applications && article.applications.length > 0 ? article.applications.join(', ') : undefined },
+      {
+        k: 'Application',
+        v: singleApp ? singleApp.name : applicationNames.length > 0 ? applicationNames.join(', ') : undefined,
+        node: singleApp ? (
+          singleApp.appUrl ? (
+            <a
+              href={singleApp.appUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
+            >
+              {singleApp.faviconUrl && (
+                <Image src={singleApp.faviconUrl} alt="" width={16} height={16} className="h-4 w-4 flex-shrink-0 rounded-sm object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
+              )}
+              {singleApp.name}
+            </a>
+          ) : (
+            <span className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body">
+              {singleApp.faviconUrl && (
+                <Image src={singleApp.faviconUrl} alt="" width={16} height={16} className="h-4 w-4 flex-shrink-0 rounded-sm object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
+              )}
+              {singleApp.name}
+            </span>
+          )
+        ) : undefined,
+      },
       { k: 'Author', v: article.authorProfile ? undefined : article.author || undefined },
       { k: 'Published', v: formatDate(article.publishedAt) },
       { k: 'Last updated', v: formatDate(article.lastUpdated) },
       { k: 'Read time', v: article.readTime > 0 ? `${article.readTime} min` : undefined },
-    ] as { k: string; v: string | undefined }[]
-  ).filter((row): row is { k: string; v: string } => !!row.v);
+    ] as { k: string; v: string | undefined; node?: React.ReactNode }[]
+  ).filter((row): row is { k: string; v: string; node?: React.ReactNode } => !!row.v);
 
   return (
     <div className="min-h-screen bg-background">
@@ -221,7 +249,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                   className="flex items-center justify-between gap-6 border-b border-border px-5 py-[15px] last:border-b-0"
                 >
                   <span className="text-sm text-ink-faint">{row.k}</span>
-                  <span className="font-mono text-[13px] text-ink-body">{row.v}</span>
+                  {row.node ?? <span className="font-mono text-[13px] text-ink-body">{row.v}</span>}
                 </div>
               ))}
             </div>
