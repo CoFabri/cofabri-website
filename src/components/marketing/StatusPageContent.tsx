@@ -36,9 +36,9 @@ function worseStatus(a: ServiceUptimeDay['status'], b: ServiceUptimeDay['status'
 }
 
 // Folds several services' day-by-day status into one, taking the worst status
-// any of them had on a given day — used for the "CoFabri Platform" row, which
+// any of them had on a given day — used for the "External Services" row, which
 // represents every monitored service not attributable to one specific app
-// (in practice: shared infra like Supabase/Vercel/Stripe, not per-app feeds).
+// (in practice: shared vendors like Supabase/Vercel/Stripe, not per-app feeds).
 function mergeHistories(histories: ServiceUptimeDay[][]): ServiceUptimeDay[] {
   const byDate = new Map<string, ServiceUptimeDay['status']>();
   for (const history of histories) {
@@ -245,7 +245,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
 
     return [
       ...appRows,
-      { name: 'CoFabri Platform', incident: platformIncident, history: platformHistory },
+      { name: 'External Services', incident: platformIncident, history: platformHistory },
     ].sort((a, b) => a.name.localeCompare(b.name));
   }, [apps, openIncidents, uptimeHistory]);
 
