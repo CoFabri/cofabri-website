@@ -222,13 +222,11 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
     // docs/superpowers/specs/2026-09-04-status-indicator-app-identity-design.md.)
     const matchHistory = (name: string) => uptimeHistory.find((s) => s.name.toLowerCase() === name.toLowerCase());
 
-    const appRows = apps
-      .map((app) => ({
-        name: app.name,
-        incident: matchAppIncident(app.id, openIncidents),
-        history: matchHistory(app.name)?.history ?? [],
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const appRows = apps.map((app) => ({
+      name: app.name,
+      incident: matchAppIncident(app.id, openIncidents),
+      history: matchHistory(app.name)?.history ?? [],
+    }));
     const platformIncident =
       openIncidents.find((incident) => incident.isPlatformWide) ??
       openIncidents.find((incident) => !appRows.some((row) => row.incident === incident));
@@ -248,7 +246,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
     return [
       ...appRows,
       { name: 'CoFabri Platform', incident: platformIncident, history: platformHistory },
-    ];
+    ].sort((a, b) => a.name.localeCompare(b.name));
   }, [apps, openIncidents, uptimeHistory]);
 
   // Folds every service's day-by-day status into one, so the page has a
