@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { App, RoadmapFeature } from '@/lib/api-client';
-import type { SystemStatus } from '@/lib/airtable';
+import type { SystemStatus } from '@/lib/status-api';
 import { CoreLoader } from '@/components/ui/core-loader';
 import confetti from 'canvas-confetti';
 import { ArrowRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';

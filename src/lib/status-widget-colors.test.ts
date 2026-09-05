@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mostSevereStatus, incidentHexColor, incidentWidgetMessage } from './status-widget-colors';
-import type { SystemStatus } from '@/lib/airtable';
+import type { SystemStatus } from '@/lib/status-api';
 
 function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
   return {

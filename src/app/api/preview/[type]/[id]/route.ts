@@ -7,7 +7,7 @@ import {
   getBanners,
   getMarketingPopupConfig,
 } from '@/lib/api-client';
-import { getSystemStatus } from '@/lib/airtable';
+import { getSystemStatus } from '@/lib/status-api';
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';

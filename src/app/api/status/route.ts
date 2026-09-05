@@ -1,4 +1,4 @@
-import { getSystemStatus, SystemStatus } from '@/lib/airtable';
+import { getSystemStatus, SystemStatus } from '@/lib/status-api';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route

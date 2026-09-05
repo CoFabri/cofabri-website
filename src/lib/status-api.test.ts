@@ -22,7 +22,7 @@ describe('getSystemStatus', () => {
       }),
     });
 
-    const { getSystemStatus } = await import('./airtable');
+    const { getSystemStatus } = await import('./status-api');
     const statuses = await getSystemStatus();
 
     expect(global.fetch).toHaveBeenCalledWith('https://api.cofabri.com/web/content/status-feed', expect.anything());
@@ -35,7 +35,7 @@ describe('getSystemStatus', () => {
   it('returns an empty array when the request fails', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { getSystemStatus } = await import('./airtable');
+    const { getSystemStatus } = await import('./status-api');
     const statuses = await getSystemStatus();
 
     expect(statuses).toEqual([]);
@@ -52,7 +52,7 @@ describe('getSystemStatus', () => {
       }),
     });
 
-    const { getSystemStatus } = await import('./airtable');
+    const { getSystemStatus } = await import('./status-api');
     const statuses = await getSystemStatus();
 
     expect(statuses[0].affectedAppIds).toEqual(['medoura']);
@@ -87,7 +87,7 @@ describe('getServiceUptimeHistory', () => {
       }),
     });
 
-    const { getServiceUptimeHistory } = await import('./airtable');
+    const { getServiceUptimeHistory } = await import('./status-api');
     const services = await getServiceUptimeHistory();
 
     expect(global.fetch).toHaveBeenCalledWith('https://api.cofabri.com/web/content/status-feed', expect.anything());
@@ -97,7 +97,7 @@ describe('getServiceUptimeHistory', () => {
   it('returns an empty array when the request fails', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
 
-    const { getServiceUptimeHistory } = await import('./airtable');
+    const { getServiceUptimeHistory } = await import('./status-api');
     const services = await getServiceUptimeHistory();
 
     expect(services).toEqual([]);

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/airtable';
+import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/status-api';
 import type { App } from '@/lib/api-client';
 import { incidentDotClasses, incidentPillClasses, matchAppIncident, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';

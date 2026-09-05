@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getSystemStatus, getServiceUptimeHistory } from '@/lib/airtable';
+import { getSystemStatus, getServiceUptimeHistory } from '@/lib/status-api';
 import { getApps } from '@/lib/api-client';
 import { StatusPageContent } from '@/components/marketing/StatusPageContent';
 

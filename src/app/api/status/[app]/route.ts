@@ -1,4 +1,4 @@
-import { getSystemStatus, SystemStatus } from '@/lib/airtable';
+import { getSystemStatus, SystemStatus } from '@/lib/status-api';
 import { escapeHtml, incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
 import { NextRequest, NextResponse } from 'next/server';
 

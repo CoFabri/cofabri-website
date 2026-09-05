@@ -1,4 +1,4 @@
-import type { SystemStatus } from '@/lib/airtable';
+import type { SystemStatus } from '@/lib/status-api';
 
 // Shared by the embeddable status-dot widgets (src/app/api/status-widget,
 // src/app/api/status/[app]), which render raw HTML/CSS server-side rather

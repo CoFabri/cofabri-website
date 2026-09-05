@@ -1,12 +1,6 @@
-// This file's original purpose (Airtable-backed content reads) has been
-// fully replaced by src/lib/api-client.ts, which reads from cofabri-api
-// instead. getSystemStatus/getServiceUptimeHistory below now also go
-// through cofabri-api (GET /web/content/status-feed, which itself proxies
-// cofabri-core's public status API), so this file's only remaining
-// distinction from api-client.ts is which file the code happens to live
-// in, not which backend it talks to.
-// TODO: this file no longer touches Airtable at all; a follow-up rename
-// (e.g. to src/lib/status-api.ts) would better reflect what's left here.
+// Fetches system status and uptime history from cofabri-api's
+// GET /web/content/status-feed, which itself proxies cofabri-core's
+// public status API.
 
 export interface SystemStatus {
   ticketId: string;

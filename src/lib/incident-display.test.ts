@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { incidentDotClasses, incidentPillClasses, severityPillClasses, mostSevereIncident, matchAppIncident } from './incident-display';
-import type { SystemStatus } from '@/lib/airtable';
+import type { SystemStatus } from '@/lib/status-api';
 
 function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
   return {

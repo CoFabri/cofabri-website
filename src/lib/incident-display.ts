@@ -1,4 +1,4 @@
-import type { SystemStatus } from '@/lib/airtable';
+import type { SystemStatus } from '@/lib/status-api';
 
 export function incidentDotClasses(publicStatus: SystemStatus['publicStatus']): string {
   switch (publicStatus) {
