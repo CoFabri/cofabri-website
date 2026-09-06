@@ -129,9 +129,15 @@ export const partnerSchema = z.object({
   relatedApp: z.string().trim().optional(),
 });
 
+export const changelogSubscribeSchema = z.object({
+  appId: z.string().trim().min(1, 'App is required'),
+  email: emailField,
+});
+
 export type ContactFormValues = z.infer<typeof contactSchema>;
 export type SupportFormValues = z.infer<typeof supportSchema>;
 export type PartnerFormValues = z.infer<typeof partnerSchema>;
+export type ChangelogSubscribeValues = z.infer<typeof changelogSubscribeSchema>;
 
 export interface ContactMethodErrors {
   email?: string;
