@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Turnstile from './Turnstile';
 
 interface ChangelogSubscribeWidgetProps {
@@ -59,17 +59,20 @@ export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWi
     }
   };
 
-  const handleTurnstileError = () => {
+  // Stable identity required: Turnstile.tsx's effect depends on onError/onExpire,
+  // so an inline arrow function here would reset the widget on every re-render
+  // (e.g. every keystroke in the email field below), not just on a real error.
+  const handleTurnstileError = useCallback(() => {
     setTurnstileToken('');
     setStatus('error');
     setErrorMessage('Security verification failed. Please try again.');
-  };
+  }, []);
 
-  const handleTurnstileExpire = () => {
+  const handleTurnstileExpire = useCallback(() => {
     setTurnstileToken('');
     setStatus('error');
     setErrorMessage('Security verification expired. Please try again.');
-  };
+  }, []);
 
   if (!isOpen) {
     return (
