@@ -6,6 +6,7 @@ import Footer from "@/components/marketing/Footer";
 import SitewideBanner from "@/components/marketing/SitewideBanner";
 import MarketingPopupWrapper from "@/components/MarketingPopupWrapper";
 import Analytics from "@/components/marketing/Analytics";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import CookieConsent from "@/components/marketing/CookieConsent";
 import StructuredData from "@/components/marketing/StructuredData";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -144,6 +145,7 @@ export default function RootLayout({
           <MarketingPopupWrapper />
           <CookieConsent />
         </ThemeProvider>
+        <VercelAnalytics />
       </body>
     </html>
   );
