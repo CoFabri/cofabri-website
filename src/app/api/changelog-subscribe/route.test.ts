@@ -34,8 +34,8 @@ describe('POST /api/changelog-subscribe', () => {
     const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'dev-token' }))
 
     expect(res.status).toBe(200)
-    const [, forwardInit] = (fetch as any).mock.calls[1]
-    expect((fetch as any).mock.calls[1][0]).toBe('https://api.test.cofabri.com/web/forms/changelog-subscribe')
+    const [, forwardInit] = vi.mocked(fetch).mock.calls[1] as [string, { headers: Record<string, string>; body: string }]
+    expect(vi.mocked(fetch).mock.calls[1][0]).toBe('https://api.test.cofabri.com/web/forms/changelog-subscribe')
     expect(forwardInit.headers.Authorization).toBe('Bearer test-key')
     expect(JSON.parse(forwardInit.body)).toEqual({ app_id: 'medoura', email: 'a@b.com' })
   })
@@ -85,7 +85,7 @@ describe('POST /api/changelog-subscribe', () => {
     const res = await POST(request({ appId: 'medoura', email: 'attacker@example.com', turnstileToken: 'development-mode' }))
 
     expect(fetch).toHaveBeenCalledTimes(1)
-    expect((fetch as any).mock.calls[0][0]).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify')
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify')
     expect(res.status).toBe(400)
   })
 
