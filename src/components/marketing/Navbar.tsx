@@ -120,7 +120,7 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                 <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="cover" showCloseButton={false} className="px-5 pt-6 pb-9">
+            <SheetContent side="cover" showCloseButton={false} className="lg:hidden px-5 pt-6 pb-9">
               <SheetTitle className="sr-only">Menu</SheetTitle>
 
               <div className="flex items-center justify-between">
