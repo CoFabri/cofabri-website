@@ -69,8 +69,14 @@ function SheetContent({
             "inset-x-0 top-0 h-auto border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
           side === "bottom" &&
             "inset-x-0 bottom-0 h-auto border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-          side === "cover" &&
-            "z-[60] inset-0 h-full w-full overflow-y-auto overscroll-contain data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:duration-150 data-[state=open]:duration-200",
+          // No opacity/transform transition of its own: a "cover" sits
+          // directly on top of the page's own sticky header, whose logo sits
+          // in the exact same spot (see Navbar.tsx) — fading this in would
+          // make it briefly translucent and let that logo show through,
+          // cross-fading into a visible "ghost" of itself. It must render
+          // instantly and stay fully opaque; callers animate their own
+          // content below the logo row instead.
+          side === "cover" && "z-[60] inset-0 h-full w-full overflow-y-auto overscroll-contain animate-none",
           className
         )}
         {...props}

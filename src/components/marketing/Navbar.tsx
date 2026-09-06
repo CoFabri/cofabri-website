@@ -120,10 +120,20 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                 <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="cover" showCloseButton={false} className="lg:hidden px-5 pt-6 pb-9">
+            <SheetContent side="cover" showCloseButton={false} className="lg:hidden">
               <SheetTitle className="sr-only">Menu</SheetTitle>
 
-              <div className="flex items-center justify-between">
+              {/* Pixel-matches the nav row above (max-w-[1200px] mx-auto,
+                  h-[68px], same px-6/sm:px-10 padding, same logo) so it never
+                  visibly jumps position/size when the cover opens. `w-full`
+                  is load-bearing here (the header's <nav> doesn't need it —
+                  it's a block element that already fills its container, so
+                  `mx-auto` is a no-op there — but this row is a flex child
+                  of SheetContent's `flex flex-col`, where an item with
+                  auto cross-axis margins shrinks to its content width and
+                  centers itself instead of stretching, which threw the logo
+                  out of alignment). */}
+              <div className="w-full max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex shrink-0 items-center justify-between">
                 <div className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>{logo}</div>
                 <SheetClose asChild>
                   <button
@@ -135,6 +145,10 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                 </SheetClose>
               </div>
 
+              <div
+                data-state={open ? 'open' : 'closed'}
+                className="flex flex-1 flex-col px-5 pb-9 ease-out data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-3 data-[state=open]:slide-in-from-bottom-3 data-[state=closed]:duration-150 data-[state=open]:duration-200"
+              >
               <nav className="mt-7 flex flex-col" aria-label="Primary">
                 {navigation.map((item, i) => (
                   <Link
@@ -159,6 +173,7 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                     Explore apps
                   </Button>
                 </Link>
+              </div>
               </div>
             </SheetContent>
           </Sheet>
