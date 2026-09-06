@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-// NOTE: Using relative import instead of @/ alias to support Vitest's node environment.
-// The @/ alias (resolve.alias in vitest.config) works for bundled modules but not for
-// ESM runtime imports in node environment. This route runs fine in Next.js production
-// where @ path mapping is handled by Next.js's module resolution.
+// NOTE: Using relative import instead of @/ alias due to Vitest limitation with route handlers.
+// No route handler files in this repo are currently unit-tested via Vitest. Importing next/server
+// appears to trigger SSR dependency externalization that bypasses the @ alias for this file's own
+// imports (verified: @/lib/status-api works fine in non-route test files like incident-display.test.ts).
+// Next.js production environment resolves @ paths natively regardless.
 import { changelogSubscribeSchema } from '../../../lib/validation/schemas'
 
 function getTurnstileSecretKey(): string {
