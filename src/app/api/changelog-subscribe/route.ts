@@ -21,7 +21,18 @@ export async function POST(request: NextRequest) {
     }
 
     const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : ''
-    if (turnstileToken !== 'development-mode') {
+    // The 'development-mode' bypass token is only ever emitted by the widget when no
+    // NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured (see ChangelogSubscribeWidget.tsx).
+    // That is a client-side signal only — it must never be trusted on its own, since
+    // anyone can send this literal string in a request body. Independently gate on
+    // NODE_ENV so the bypass can only ever apply in local development.
+    const isDevBypass = process.env.NODE_ENV === 'development' && turnstileToken === 'development-mode'
+    if (!isDevBypass) {
+      if (process.env.NODE_ENV !== 'development' && !process.env.TURNSTILE_SECRET_KEY) {
+        console.error('changelog-subscribe: TURNSTILE_SECRET_KEY not configured')
+        return NextResponse.json({ error: 'Subscribe service temporarily unavailable' }, { status: 503 })
+      }
+
       const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -33,6 +44,7 @@ export async function POST(request: NextRequest) {
       })
       const turnstileResult = await turnstileResponse.json()
       if (!turnstileResult.success) {
+        console.error('changelog-subscribe: Turnstile verification failed')
         return NextResponse.json({ error: 'Security verification failed. Please try again.' }, { status: 400 })
       }
     }
@@ -48,15 +60,18 @@ export async function POST(request: NextRequest) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.COFABRI_API_KEY}` },
         body: JSON.stringify({ app_id: parsed.data.appId, email: parsed.data.email }),
       })
-    } catch {
+    } catch (fetchError) {
+      console.error('changelog-subscribe: cofabri-api unreachable:', fetchError)
       return NextResponse.json({ error: 'Failed to subscribe. Please try again later.' }, { status: 502 })
     }
     if (!apiRes.ok) {
+      console.error('changelog-subscribe: cofabri-api returned non-ok response:', apiRes.status)
       return NextResponse.json({ error: 'Failed to subscribe. Please try again later.' }, { status: 502 })
     }
 
     return NextResponse.json({ message: 'Subscribed' }, { status: 200 })
-  } catch {
+  } catch (error) {
+    console.error('changelog-subscribe: unexpected error processing request:', error)
     return NextResponse.json({ error: 'Failed to process request. Please try again later.' }, { status: 500 })
   }
 }

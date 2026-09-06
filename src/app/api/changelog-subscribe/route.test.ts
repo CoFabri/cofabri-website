@@ -57,4 +57,31 @@ describe('POST /api/changelog-subscribe', () => {
     expect(res.status).toBe(400)
     expect(global.fetch).not.toHaveBeenCalled()
   })
+
+  it('does NOT bypass Turnstile verification for the "development-mode" token when NODE_ENV is not development', async () => {
+    // Regression test for a critical bypass: the literal string 'development-mode' must
+    // only skip verification when the server is actually running in development. Outside
+    // of that, it must be treated like any other (invalid) token and rejected.
+    expect(process.env.NODE_ENV).not.toBe('development')
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 200 })) // turnstile
+
+    const { POST } = await import('./route')
+    const res = await POST(request({ appId: 'medoura', email: 'attacker@example.com', turnstileToken: 'development-mode' }))
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    expect((global.fetch as any).mock.calls[0][0]).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify')
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 503 without attempting verification when TURNSTILE_SECRET_KEY is unset outside development', async () => {
+    delete process.env.TURNSTILE_SECRET_KEY
+    global.fetch = vi.fn()
+
+    const { POST } = await import('./route')
+    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'some-token' }))
+
+    expect(res.status).toBe(503)
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
 })

@@ -46,13 +46,29 @@ export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWi
         const data = await res.json().catch(() => ({}));
         setStatus('error');
         setErrorMessage(data.error || 'Failed to subscribe. Please try again.');
+        // The Turnstile token is single-use — after a failed submit it's dead even if
+        // the widget still shows it as verified, so clear it to force a fresh challenge.
+        setTurnstileToken('');
         return;
       }
       setStatus('success');
     } catch {
       setStatus('error');
       setErrorMessage('Failed to subscribe. Please try again.');
+      setTurnstileToken('');
     }
+  };
+
+  const handleTurnstileError = () => {
+    setTurnstileToken('');
+    setStatus('error');
+    setErrorMessage('Security verification failed. Please try again.');
+  };
+
+  const handleTurnstileExpire = () => {
+    setTurnstileToken('');
+    setStatus('error');
+    setErrorMessage('Security verification expired. Please try again.');
   };
 
   if (!isOpen) {
@@ -83,7 +99,14 @@ export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWi
         </button>
       </div>
       {getTurnstileSiteKey() && (
-        <Turnstile siteKey={getTurnstileSiteKey()!} onVerify={setTurnstileToken} theme="light" size="normal" />
+        <Turnstile
+          siteKey={getTurnstileSiteKey()!}
+          onVerify={setTurnstileToken}
+          onError={handleTurnstileError}
+          onExpire={handleTurnstileExpire}
+          theme="light"
+          size="normal"
+        />
       )}
       {status === 'error' && <p className="text-xs text-danger">{errorMessage}</p>}
     </form>
