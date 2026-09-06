@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const parsed = changelogSubscribeSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+      return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid request' }, { status: 400 })
     }
 
     const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : ''
@@ -63,6 +63,9 @@ export async function POST(request: NextRequest) {
     } catch (fetchError) {
       console.error('changelog-subscribe: cofabri-api unreachable:', fetchError)
       return NextResponse.json({ error: 'Failed to subscribe. Please try again later.' }, { status: 502 })
+    }
+    if (apiRes.status === 429) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
     }
     if (!apiRes.ok) {
       console.error('changelog-subscribe: cofabri-api returned non-ok response:', apiRes.status)

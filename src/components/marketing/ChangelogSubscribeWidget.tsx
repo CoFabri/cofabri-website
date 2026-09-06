@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import Turnstile from './Turnstile';
 
 interface ChangelogSubscribeWidgetProps {
@@ -8,6 +8,7 @@ interface ChangelogSubscribeWidgetProps {
 }
 
 export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWidgetProps) {
+  const emailInputId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
@@ -83,13 +84,21 @@ export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWi
   }
 
   if (status === 'success') {
-    return <p className="text-xs text-success">Check your email to confirm your subscription.</p>;
+    return (
+      <p className="text-xs text-success" role="status" aria-live="polite">
+        Check your email to confirm your subscription.
+      </p>
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <div className="flex gap-2">
+        <label htmlFor={emailInputId} className="sr-only">
+          Email address
+        </label>
         <input
+          id={emailInputId}
           type="email"
           required
           value={email}
@@ -111,7 +120,11 @@ export default function ChangelogSubscribeWidget({ appId }: ChangelogSubscribeWi
           size="normal"
         />
       )}
-      {status === 'error' && <p className="text-xs text-danger">{errorMessage}</p>}
+      {status === 'error' && (
+        <p className="text-xs text-danger" role="status" aria-live="polite">
+          {errorMessage}
+        </p>
+      )}
     </form>
   );
 }
