@@ -124,7 +124,7 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
               <SheetTitle className="sr-only">Menu</SheetTitle>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center flex-shrink-0">{logo}</div>
+                <div className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>{logo}</div>
                 <SheetClose asChild>
                   <button
                     aria-label="Close menu"
@@ -145,7 +145,7 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                       i < navigation.length - 1 ? 'border-b border-border' : ''
                     }`}
                   >
-                    <span className="w-5 shrink-0 font-mono text-[10px] tracking-[.14em] text-accent">
+                    <span className="w-5 shrink-0 font-mono text-[10px] tracking-[.14em] text-accent-solid">
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span className="text-[26px] font-semibold leading-[1.05] tracking-[-0.035em]">{item.name}</span>
