@@ -27,21 +27,61 @@ const mobileNavigation = navigation.filter((item) => item.name !== 'Support');
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
 const THEME_ICONS = { light: SunIcon, dark: MoonIcon, system: ComputerDesktopIcon } as const;
+const THEME_ROW_OPTIONS = [
+  { value: 'light', label: 'Light', icon: SunIcon },
+  { value: 'dark', label: 'Dark', icon: MoonIcon },
+  { value: 'system', label: 'Auto', icon: ComputerDesktopIcon },
+] as const;
 
-function ThemeToggle() {
+function useMountedTheme() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   React.useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="h-9 w-9" />;
+  if (!mounted) return null;
 
   const current = THEME_CYCLE.includes(theme as (typeof THEME_CYCLE)[number])
     ? (theme as (typeof THEME_CYCLE)[number])
     : 'system';
-  const ActiveIcon = THEME_ICONS[current];
+  return { current, setTheme };
+}
+
+function ThemeToggle({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
+  const theme = useMountedTheme();
+
+  if (variant === 'row') {
+    if (!theme) return <div className="h-14 w-full rounded-[11px] border border-border" />;
+    return (
+      <div className="flex h-14 w-full items-center justify-between rounded-[11px] border border-border px-4">
+        <span className="text-[14px] font-semibold text-foreground">Theme</span>
+        <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+          {THEME_ROW_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              aria-label={`Theme: ${label}`}
+              aria-pressed={theme.current === value}
+              onClick={() => theme.setTheme(value)}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150 ${
+                theme.current === value
+                  ? 'bg-background text-foreground shadow-xs'
+                  : 'text-muted-foreground'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!theme) return <div className="h-9 w-9" />;
+  const ActiveIcon = THEME_ICONS[theme.current];
 
   const cycleTheme = () => {
-    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
-    setTheme(next);
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme.current) + 1) % THEME_CYCLE.length];
+    theme.setTheme(next);
   };
 
   return (
@@ -50,14 +90,14 @@ function ThemeToggle() {
         <Button
           variant="outline"
           size="icon"
-          aria-label={`Theme: ${current}. Click to change.`}
+          aria-label={`Theme: ${theme.current}. Click to change.`}
           onClick={cycleTheme}
         >
           <ActiveIcon className="h-4 w-4" />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="capitalize">
-        Theme: {current}
+        Theme: {theme.current}
       </TooltipContent>
     </Tooltip>
   );
@@ -172,10 +212,8 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
               </nav>
 
               <div className="mt-auto flex flex-col gap-2.5 pt-6">
-                <div className="flex items-center gap-2.5">
-                  <StatusIndicator />
-                  <ThemeToggle />
-                </div>
+                <StatusIndicator variant="row" />
+                <ThemeToggle variant="row" />
 
                 <div className="flex items-center gap-2.5">
                   <Link href="/support" onClick={() => setOpen(false)} className="flex-1">
