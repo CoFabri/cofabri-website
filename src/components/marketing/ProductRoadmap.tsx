@@ -170,10 +170,9 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
         {milestones.map((milestone) => (
           <div key={milestone.title} className="mt-14">
             <div className="mb-2 flex items-center gap-3.5">
+              <span className="font-mono text-[26px] font-normal text-ink-faint" aria-hidden="true">{'//'}</span>
               <h2 className="m-0 text-[26px] font-semibold tracking-[-0.025em] text-foreground">{milestone.title}</h2>
-              <span className="font-mono text-xs text-ink-faint">
-                {milestone.features.length} {milestone.features.length === 1 ? 'item' : 'items'}
-              </span>
+              <span className="font-mono text-xs text-ink-faint">[{milestone.features.length}]</span>
             </div>
             {milestone.features.map((item) => (
               <button

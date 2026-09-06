@@ -34,7 +34,13 @@ export function roadmapStatusDotClasses(status: string): string {
 
 export function formatRoadmapWhen(feature: Pick<RoadmapFeature, 'releasedDate' | 'milestone'>): string {
   if (feature.releasedDate) {
-    return new Date(feature.releasedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    // See the matching comment in ChangelogContent.tsx: read the leading Y-M-D
+    // off the string directly, rather than parsing as UTC and reading local
+    // date parts back, which rolls the date back a day west of UTC.
+    const match = feature.releasedDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[2]}-${match[3]}-${match[1]}`;
+    const d = new Date(feature.releasedDate);
+    return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`;
   }
   return feature.milestone || 'TBD';
 }

@@ -21,13 +21,32 @@ interface MonthGroup {
   features: RoadmapFeature[];
 }
 
+// `releasedDate` is a calendar date ("shipped on Sep 4"), not an instant — parsing
+// it with `new Date(dateStr)` reads a date-only string as UTC midnight, which
+// rolls back a day (and into the wrong month group) in any timezone behind UTC.
+// Read the leading Y-M-D straight off the string instead of round-tripping
+// through UTC parsing.
+function parseFeatureDate(dateStr: string): Date {
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const [, y, m, d] = match;
+    return new Date(Number(y), Number(m) - 1, Number(d));
+  }
+  return new Date(dateStr);
+}
+
 function monthKey(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseFeatureDate(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function monthLabel(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return parseFeatureDate(dateStr).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function formatDate(dateStr: string): string {
+  const d = parseFeatureDate(dateStr);
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`;
 }
 
 function groupByMonth(features: RoadmapFeature[]): MonthGroup[] {
@@ -210,10 +229,9 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
           {groups.map((group) => (
             <div key={group.key} className="mt-14">
               <div className="mb-2 flex items-center gap-3.5">
+                <span className="font-mono text-[26px] font-normal text-ink-faint" aria-hidden="true">{'//'}</span>
                 <h2 className="m-0 text-[26px] font-semibold tracking-[-0.025em] text-foreground">{group.label}</h2>
-                <span className="font-mono text-xs text-ink-faint">
-                  {group.features.length} {group.features.length === 1 ? 'item' : 'items'}
-                </span>
+                <span className="font-mono text-xs text-ink-faint">[{group.features.length}]</span>
               </div>
               {group.features.map((item) => (
                 <button
@@ -238,7 +256,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
                     )}
                     {item.releasedDate && (
                       <span className="mt-3 block font-mono text-xs text-ink-faint sm:mt-0 sm:flex-shrink-0">
-                        {new Date(item.releasedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {formatDate(item.releasedDate)}
                       </span>
                     )}
                     <span className="hidden text-sm font-semibold text-ink-muted sm:block sm:flex-shrink-0">Details →</span>

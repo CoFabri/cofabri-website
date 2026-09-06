@@ -14,8 +14,15 @@ describe('roadmapStatusPillClasses', () => {
 });
 
 describe('formatRoadmapWhen', () => {
-  it('formats a released date as short month + day', () => {
-    expect(formatRoadmapWhen(feature({ releasedDate: '2026-03-05' }))).toBe('Mar 5');
+  it('formats a released date as MM-DD-YYYY', () => {
+    expect(formatRoadmapWhen(feature({ releasedDate: '2026-03-05' }))).toBe('03-05-2026');
+  });
+
+  it('reads the calendar date straight off a date-only string, ignoring local timezone', () => {
+    // A date-only string parses as UTC midnight; naively reading local date parts
+    // back off that would roll the date back a day west of UTC. See the same
+    // regression covered for ChangelogContent.tsx's parseFeatureDate.
+    expect(formatRoadmapWhen(feature({ releasedDate: '2026-09-01' }))).toBe('09-01-2026');
   });
 
   it('falls back to the milestone, then "TBD", when there is no released date', () => {
