@@ -178,9 +178,11 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                   )}
                   <div>
                     <div className="mb-1.5 flex items-center gap-2">
-                      <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
-                        Featured
-                      </span>
+                      {featured.featureOnWebsite && (
+                        <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                          Featured
+                        </span>
+                      )}
                       <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClasses(featured.status)}`}>
                         {featured.status}
                       </span>
