@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   Squares2X2Icon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon, UserGroupIcon,
-  Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon,
+  Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon, EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -20,6 +20,10 @@ const navigation = [
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
   { name: 'Support', href: '/support', icon: LifebuoyIcon },
 ];
+
+// Support is promoted to a bottom action button inside the mobile sheet, so
+// it's excluded here to avoid listing it twice.
+const mobileNavigation = navigation.filter((item) => item.name !== 'Support');
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
 const THEME_ICONS = { light: SunIcon, dark: MoonIcon, system: ComputerDesktopIcon } as const;
@@ -150,13 +154,13 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                 className="flex flex-1 flex-col px-5 pb-9 ease-out data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom-3 data-[state=open]:slide-in-from-bottom-3 data-[state=closed]:duration-150 data-[state=open]:duration-200"
               >
               <nav className="mt-7 flex flex-col" aria-label="Primary">
-                {navigation.map((item, i) => (
+                {mobileNavigation.map((item, i) => (
                   <Link
                     key={item.name}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={`flex items-baseline gap-3.5 py-3.5 text-foreground ${
-                      i < navigation.length - 1 ? 'border-b border-border' : ''
+                      i < mobileNavigation.length - 1 ? 'border-b border-border' : ''
                     }`}
                   >
                     <span className="w-5 shrink-0 font-mono text-[10px] tracking-[.14em] text-accent-solid">
@@ -168,6 +172,26 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
               </nav>
 
               <div className="mt-auto flex flex-col gap-2.5 pt-6">
+                <div className="flex items-center gap-2.5">
+                  <StatusIndicator />
+                  <ThemeToggle />
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <Link href="/support" onClick={() => setOpen(false)} className="flex-1">
+                    <Button variant="outline" className="h-11 w-full gap-1.5 rounded-[11px] text-[14px] font-semibold">
+                      <LifebuoyIcon className="h-4 w-4" />
+                      Support
+                    </Button>
+                  </Link>
+                  <Link href="/contact" onClick={() => setOpen(false)} className="flex-1">
+                    <Button variant="outline" className="h-11 w-full gap-1.5 rounded-[11px] text-[14px] font-semibold">
+                      <EnvelopeIcon className="h-4 w-4" />
+                      Contact
+                    </Button>
+                  </Link>
+                </div>
+
                 <Link href="/apps" onClick={() => setOpen(false)}>
                   <Button className="h-[54px] w-full rounded-[11px] text-[15px] font-semibold">
                     Explore apps
