@@ -7,6 +7,7 @@ import type { App } from '@/lib/api-client';
 import { incidentDotClasses, incidentPillClasses, matchAppIncident, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Breadcrumbs from './Breadcrumbs';
+import ChangelogSubscribeWidget from './ChangelogSubscribeWidget';
 import PageHero from './PageHero';
 import RevealSection from './RevealSection';
 
@@ -114,6 +115,7 @@ function DayBar({ date, status, barKey, isOpen, setOpenBar }: DayBarProps) {
 
 interface ServiceRowData {
   name: string;
+  appId?: string;
   incident?: SystemStatus;
   history: ServiceUptimeDay[];
 }
@@ -174,6 +176,11 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
           {service.incident ? service.incident.publicStatus : 'Operational'}
         </span>
       </div>
+      {service.appId && (
+        <div className="mt-2">
+          <ChangelogSubscribeWidget appId={service.appId} />
+        </div>
+      )}
     </div>
   );
 }
@@ -224,6 +231,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
 
     const appRows = apps.map((app) => ({
       name: app.name,
+      appId: app.id,
       incident: matchAppIncident(app.id, openIncidents),
       history: matchHistory(app.name)?.history ?? [],
     }));
