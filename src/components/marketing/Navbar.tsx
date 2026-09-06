@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   Squares2X2Icon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon, UserGroupIcon,
-  Bars3Icon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon,
+  Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import StatusIndicator from './StatusIndicator';
 
@@ -120,25 +120,45 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
                 <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
-              <div className="flex flex-col gap-1 mt-8">
-                {navigation.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-base transition-colors ${
-                        isActive(item.href) ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-muted'
-                      }`}
-                    >
-                      <Icon className="h-[18px] w-[18px]" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
+            <SheetContent side="cover" showCloseButton={false} className="px-5 pt-6 pb-9">
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center flex-shrink-0">{logo}</div>
+                <SheetClose asChild>
+                  <button
+                    aria-label="Close menu"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-muted text-foreground"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </SheetClose>
+              </div>
+
+              <nav className="mt-7 flex flex-col" aria-label="Primary">
+                {navigation.map((item, i) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={`flex items-baseline gap-3.5 py-3.5 text-foreground ${
+                      i < navigation.length - 1 ? 'border-b border-border' : ''
+                    }`}
+                  >
+                    <span className="w-5 shrink-0 font-mono text-[10px] tracking-[.14em] text-accent">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-[26px] font-semibold leading-[1.05] tracking-[-0.035em]">{item.name}</span>
+                  </Link>
+                ))}
+              </nav>
+
+              <div className="mt-auto flex flex-col gap-2.5 pt-6">
+                <Link href="/apps" onClick={() => setOpen(false)}>
+                  <Button className="h-[54px] w-full rounded-[11px] text-[15px] font-semibold">
+                    Explore apps
+                  </Button>
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
