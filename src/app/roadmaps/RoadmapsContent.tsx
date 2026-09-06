@@ -105,7 +105,9 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
 
         if (roadmapRes.ok) {
           const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
-          setAllFeatures(features.filter((f) => !f.application || activeAppIds.has(f.application)));
+          setAllFeatures(
+            features.filter((f) => (f.application ? activeAppIds.has(f.application) : f.status !== 'Released'))
+          );
         }
       } catch (error) {
         console.error('Error fetching roadmap filter data:', error);

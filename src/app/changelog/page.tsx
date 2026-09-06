@@ -38,9 +38,14 @@ export default async function ChangelogPage() {
   // An app with no row in getApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public changelog with releases for a product no one's working on.
+  // A Released item with no app_id at all used to bypass this filter
+  // entirely — that's how stale, unlinked entries (a couple of "CoFabri
+  // Website" items, an old "CertiFi Central" alpha note) stayed visible
+  // indefinitely. Require a live, active app tie instead of defaulting an
+  // unlinked item to visible.
   const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
   const shipped = allFeatures.filter(
-    (f) => f.status === 'Released' && (!f.application || activeAppIds.has(f.application))
+    (f) => f.status === 'Released' && !!f.application && activeAppIds.has(f.application)
   );
 
   return (

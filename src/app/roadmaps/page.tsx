@@ -38,8 +38,16 @@ export default async function RoadmapsPage() {
   // An app with no row in getApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public roadmap with commitments for a product no one's working on.
+  // An app-less item is allowed through (e.g. an early-stage initiative that
+  // hasn't been onboarded as a formal app yet) UNLESS it claims to already be
+  // Released — a shipped thing should always trace back to a real, active
+  // app; an app-less "Released" item is exactly how stale entries (old
+  // "CoFabri Website"/"CertiFi Central" rows) stayed visible indefinitely on
+  // /changelog.
   const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
-  const features = allFeatures.filter((f) => !f.application || activeAppIds.has(f.application));
+  const features = allFeatures.filter((f) =>
+    f.application ? activeAppIds.has(f.application) : f.status !== 'Released'
+  );
 
   return (
     <Suspense

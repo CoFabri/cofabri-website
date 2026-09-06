@@ -99,7 +99,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
       if (roadmapRes.ok) {
         const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
         setShipped(
-          features.filter((f) => f.status === 'Released' && (!f.application || activeAppIds.has(f.application)))
+          features.filter((f) => f.status === 'Released' && !!f.application && activeAppIds.has(f.application))
         );
       }
     } catch (err) {
