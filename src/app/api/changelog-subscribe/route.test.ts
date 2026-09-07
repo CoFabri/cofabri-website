@@ -31,13 +31,13 @@ describe('POST /api/changelog-subscribe', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))) // cofabri-api
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'dev-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
 
     expect(res.status).toBe(200)
     const [, forwardInit] = vi.mocked(fetch).mock.calls[1] as [string, { headers: Record<string, string>; body: string }]
     expect(vi.mocked(fetch).mock.calls[1][0]).toBe('https://api.test.cofabri.com/web/forms/changelog-subscribe')
     expect(forwardInit.headers.Authorization).toBe('Bearer test-key')
-    expect(JSON.parse(forwardInit.body)).toEqual({ app_id: 'medoura', email: 'a@b.com' })
+    expect(JSON.parse(forwardInit.body)).toEqual({ app_ids: ['medoura'], email: 'a@b.com', notify_updates: true, notify_incidents: false })
   })
 
   it('rejects a failed Turnstile verification with 400', async () => {
@@ -45,7 +45,7 @@ describe('POST /api/changelog-subscribe', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 200 })))
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'bad-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'bad-token' }))
     expect(res.status).toBe(400)
   })
 
@@ -53,7 +53,7 @@ describe('POST /api/changelog-subscribe', () => {
     vi.stubGlobal('fetch', vi.fn())
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'not-an-email', turnstileToken: 'dev-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'not-an-email', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     const body = await res.json()
 
     expect(res.status).toBe(400)
@@ -62,15 +62,32 @@ describe('POST /api/changelog-subscribe', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  it('rejects an empty appId with a specific message', async () => {
+  it('rejects an empty appIds array with a specific message', async () => {
     vi.stubGlobal('fetch', vi.fn())
-
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: '', email: 'a@b.com', turnstileToken: 'dev-token' }))
+    const res = await POST(request({ appIds: [], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     const body = await res.json()
-
     expect(res.status).toBe(400)
-    expect(body.error).toMatch(/app/i)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects when neither notifyUpdates nor notifyIncidents is true', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+    const { POST } = await import('./route')
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: false, notifyIncidents: false, turnstileToken: 'dev-token' }))
+    expect(res.status).toBe(400)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('forwards multiple app ids in one request', async () => {
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 })))
+    const { POST } = await import('./route')
+    const res = await POST(request({ appIds: ['medoura', 'rx-bridge'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: true, turnstileToken: 'dev-token' }))
+    expect(res.status).toBe(200)
+    const [, forwardInit] = vi.mocked(fetch).mock.calls[1] as [string, { body: string }]
+    expect(JSON.parse(forwardInit.body)).toEqual({ app_ids: ['medoura', 'rx-bridge'], email: 'a@b.com', notify_updates: true, notify_incidents: true })
   })
 
   it('does NOT bypass Turnstile verification for the "development-mode" token when NODE_ENV is not development', async () => {
@@ -82,7 +99,7 @@ describe('POST /api/changelog-subscribe', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 200 }))) // turnstile
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'attacker@example.com', turnstileToken: 'development-mode' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'attacker@example.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'development-mode' }))
 
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(vi.mocked(fetch).mock.calls[0][0]).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify')
@@ -94,7 +111,7 @@ describe('POST /api/changelog-subscribe', () => {
     vi.stubGlobal('fetch', vi.fn())
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'some-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'some-token' }))
 
     expect(res.status).toBe(503)
     expect(fetch).not.toHaveBeenCalled()
@@ -106,7 +123,7 @@ describe('POST /api/changelog-subscribe', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 429 }))) // cofabri-api rate limited
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'dev-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     const body = await res.json()
 
     expect(res.status).toBe(429)
@@ -119,7 +136,7 @@ describe('POST /api/changelog-subscribe', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: false }), { status: 500 })))
 
     const { POST } = await import('./route')
-    const res = await POST(request({ appId: 'medoura', email: 'a@b.com', turnstileToken: 'dev-token' }))
+    const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     expect(res.status).toBe(502)
   })
 })

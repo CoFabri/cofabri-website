@@ -58,7 +58,12 @@ export async function POST(request: NextRequest) {
       apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/changelog-subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.COFABRI_API_KEY}` },
-        body: JSON.stringify({ app_id: parsed.data.appId, email: parsed.data.email }),
+        body: JSON.stringify({
+          app_ids: parsed.data.appIds,
+          email: parsed.data.email,
+          notify_updates: parsed.data.notifyUpdates,
+          notify_incidents: parsed.data.notifyIncidents,
+        }),
       })
     } catch (fetchError) {
       console.error('changelog-subscribe: cofabri-api unreachable:', fetchError)

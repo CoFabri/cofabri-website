@@ -129,10 +129,17 @@ export const partnerSchema = z.object({
   relatedApp: z.string().trim().optional(),
 });
 
-export const changelogSubscribeSchema = z.object({
-  appId: z.string().trim().min(1, 'App is required'),
-  email: emailField,
-});
+export const changelogSubscribeSchema = z
+  .object({
+    appIds: z.array(z.string().trim().min(1)).min(1, 'Select at least one app'),
+    email: emailField,
+    notifyUpdates: z.boolean(),
+    notifyIncidents: z.boolean(),
+  })
+  .refine((data) => data.notifyUpdates || data.notifyIncidents, {
+    message: 'Select at least one notification type',
+    path: ['notifyUpdates'],
+  });
 
 export type ContactFormValues = z.infer<typeof contactSchema>;
 export type SupportFormValues = z.infer<typeof supportSchema>;
