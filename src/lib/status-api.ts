@@ -33,7 +33,7 @@ export interface ServiceUptimeHistory {
   name: string;
   // 'third_party_provider' (Stripe, Supabase, Vercel, ...) vs 'internal_app'
   // (CoFabri's own infra) — lets the status page group first-party services
-  // under "CoFabri" separately from vendor status under "External Services".
+  // under "CoFabri Services" separately from vendor status under "External Services".
   serviceType: string;
   history: ServiceUptimeDay[];
 }

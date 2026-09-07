@@ -71,7 +71,7 @@ export function matchAppIncident(appId: string, statuses: SystemStatus[]): Syste
 // picks the one that's CoFabri's own responsibility, not a vendor's: a
 // platform-wide incident (by definition affects CoFabri as a whole, not one
 // third-party provider) or one tied to a monitored 'internal_app' / reported
-// manually (isThirdParty false either way). Used for the "CoFabri" status row.
+// manually (isThirdParty false either way). Used for the "CoFabri Services" status row.
 export function matchCofabriIncident(unclaimedStatuses: SystemStatus[]): SystemStatus | undefined {
   const open = unclaimedStatuses.filter((s) => s.publicStatus !== 'Resolved');
   return open.find((incident) => incident.isPlatformWide) ?? open.find((incident) => !incident.isThirdParty);
