@@ -68,6 +68,7 @@ describe('POST /api/changelog-subscribe', () => {
     const res = await POST(request({ appIds: [], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     const body = await res.json()
     expect(res.status).toBe(400)
+    expect(body.error).toMatch(/app/i)
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -75,7 +76,9 @@ describe('POST /api/changelog-subscribe', () => {
     vi.stubGlobal('fetch', vi.fn())
     const { POST } = await import('./route')
     const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: false, notifyIncidents: false, turnstileToken: 'dev-token' }))
+    const body = await res.json()
     expect(res.status).toBe(400)
+    expect(body.error).toMatch(/notification/i)
     expect(fetch).not.toHaveBeenCalled()
   })
 
