@@ -16,6 +16,11 @@ export interface SystemStatus {
   updates?: string;
   affectedAppIds: string[];
   isPlatformWide: boolean;
+  // True only for an incident tied to a monitored *third-party* provider
+  // (Stripe, Supabase, Vercel, ...), never for a manually-reported incident
+  // or one tied to a monitored 'internal_app' (CoFabri's own infra) — see
+  // cofabri-core's getPublicStatusFeed.
+  isThirdParty: boolean;
 }
 
 export interface ServiceUptimeDay {
@@ -26,6 +31,10 @@ export interface ServiceUptimeDay {
 export interface ServiceUptimeHistory {
   id: string;
   name: string;
+  // 'third_party_provider' (Stripe, Supabase, Vercel, ...) vs 'internal_app'
+  // (CoFabri's own infra) — lets the status page group first-party services
+  // under "CoFabri" separately from vendor status under "External Services".
+  serviceType: string;
   history: ServiceUptimeDay[];
 }
 
@@ -39,6 +48,7 @@ interface StatusFeedResponse {
   services?: Array<{
     id?: string;
     name?: string;
+    service_type?: string;
     history?: ServiceUptimeDay[];
   }>;
   incidents?: Array<{
@@ -55,6 +65,7 @@ interface StatusFeedResponse {
     updates?: string;
     affectedAppIds?: string[];
     isPlatformWide?: boolean;
+    isThirdParty?: boolean;
   }>;
 }
 
@@ -93,6 +104,7 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
         updates: incident.updates || '',
         affectedAppIds: incident.affectedAppIds || [],
         isPlatformWide: incident.isPlatformWide || false,
+        isThirdParty: incident.isThirdParty || false,
       };
     });
   } catch (error) {
@@ -124,8 +136,15 @@ export async function getServiceUptimeHistory(): Promise<ServiceUptimeHistory[]>
     const data = (await response.json()) as StatusFeedResponse;
 
     return (data.services ?? [])
-      .filter((s): s is { id: string; name: string; history?: ServiceUptimeDay[] } => Boolean(s.id && s.name))
-      .map((s) => ({ id: s.id, name: s.name, history: s.history ?? [] }));
+      .filter((s): s is { id: string; name: string; service_type?: string; history?: ServiceUptimeDay[] } =>
+        Boolean(s.id && s.name)
+      )
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        serviceType: s.service_type ?? 'third_party_provider',
+        history: s.history ?? [],
+      }));
   } catch (error) {
     console.error('Error fetching service uptime history:', error);
     return [];

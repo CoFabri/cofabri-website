@@ -66,3 +66,22 @@ export function matchAppIncident(appId: string, statuses: SystemStatus[]): Syste
   const open = statuses.filter((s) => s.publicStatus !== 'Resolved');
   return open.find((incident) => incident.isPlatformWide || incident.affectedAppIds.includes(appId));
 }
+
+// Of the incidents no specific app has already claimed (see matchAppIncident),
+// picks the one that's CoFabri's own responsibility, not a vendor's: a
+// platform-wide incident (by definition affects CoFabri as a whole, not one
+// third-party provider) or one tied to a monitored 'internal_app' / reported
+// manually (isThirdParty false either way). Used for the "CoFabri" status row.
+export function matchCofabriIncident(unclaimedStatuses: SystemStatus[]): SystemStatus | undefined {
+  const open = unclaimedStatuses.filter((s) => s.publicStatus !== 'Resolved');
+  return open.find((incident) => incident.isPlatformWide) ?? open.find((incident) => !incident.isThirdParty);
+}
+
+// The remaining bucket for the same unclaimed incidents: a genuine
+// third-party vendor incident, not already claimed as CoFabri's own above.
+// Used for the "External Services" status row.
+export function matchExternalServiceIncident(unclaimedStatuses: SystemStatus[]): SystemStatus | undefined {
+  const open = unclaimedStatuses.filter((s) => s.publicStatus !== 'Resolved');
+  const cofabriIncident = matchCofabriIncident(unclaimedStatuses);
+  return open.find((incident) => incident.isThirdParty && incident !== cofabriIncident);
+}

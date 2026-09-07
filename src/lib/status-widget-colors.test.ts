@@ -15,6 +15,7 @@ function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
     affectedServices: [],
     affectedAppIds: [],
     isPlatformWide: false,
+    isThirdParty: false,
     ...overrides,
   };
 }

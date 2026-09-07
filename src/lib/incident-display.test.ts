@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { incidentDotClasses, incidentPillClasses, severityPillClasses, mostSevereIncident, matchAppIncident } from './incident-display';
+import {
+  incidentDotClasses,
+  incidentPillClasses,
+  severityPillClasses,
+  mostSevereIncident,
+  matchAppIncident,
+  matchCofabriIncident,
+  matchExternalServiceIncident,
+} from './incident-display';
 import type { SystemStatus } from '@/lib/status-api';
 
 function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
@@ -15,6 +23,7 @@ function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
     affectedServices: [],
     affectedAppIds: [],
     isPlatformWide: false,
+    isThirdParty: false,
     ...overrides,
   };
 }
@@ -66,5 +75,38 @@ describe('matchAppIncident', () => {
   it('ignores resolved incidents even if they would otherwise match', () => {
     const incident = status({ publicStatus: 'Resolved', affectedAppIds: ['medoura'] });
     expect(matchAppIncident('medoura', [incident])).toBeUndefined();
+  });
+});
+
+describe('matchCofabriIncident / matchExternalServiceIncident', () => {
+  it('gives a platform-wide incident to CoFabri, never to External Services', () => {
+    const incident = status({ publicStatus: 'Investigating', isPlatformWide: true, isThirdParty: false });
+    expect(matchCofabriIncident([incident])).toBe(incident);
+    expect(matchExternalServiceIncident([incident])).toBeUndefined();
+  });
+
+  it('gives a non-third-party incident to CoFabri', () => {
+    const incident = status({ publicStatus: 'Investigating', isThirdParty: false });
+    expect(matchCofabriIncident([incident])).toBe(incident);
+    expect(matchExternalServiceIncident([incident])).toBeUndefined();
+  });
+
+  it('gives a third-party incident to External Services, never to CoFabri', () => {
+    const incident = status({ publicStatus: 'Investigating', isThirdParty: true });
+    expect(matchCofabriIncident([incident])).toBeUndefined();
+    expect(matchExternalServiceIncident([incident])).toBe(incident);
+  });
+
+  it('splits a mix of both correctly', () => {
+    const cofabri = status({ publicStatus: 'Investigating', isThirdParty: false });
+    const external = status({ publicStatus: 'Identified', isThirdParty: true });
+    expect(matchCofabriIncident([cofabri, external])).toBe(cofabri);
+    expect(matchExternalServiceIncident([cofabri, external])).toBe(external);
+  });
+
+  it('ignores resolved incidents', () => {
+    const incident = status({ publicStatus: 'Resolved', isThirdParty: true });
+    expect(matchCofabriIncident([incident])).toBeUndefined();
+    expect(matchExternalServiceIncident([incident])).toBeUndefined();
   });
 });

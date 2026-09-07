@@ -4,7 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/status-api';
 import type { App } from '@/lib/api-client';
-import { incidentDotClasses, incidentPillClasses, matchAppIncident, mostSevereIncident, severityPillClasses } from '@/lib/incident-display';
+import {
+  incidentDotClasses,
+  incidentPillClasses,
+  matchAppIncident,
+  matchCofabriIncident,
+  matchExternalServiceIncident,
+  mostSevereIncident,
+  severityPillClasses,
+} from '@/lib/incident-display';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Breadcrumbs from './Breadcrumbs';
 import ChangelogSubscribeWidget from './ChangelogSubscribeWidget';
@@ -37,9 +45,11 @@ function worseStatus(a: ServiceUptimeDay['status'], b: ServiceUptimeDay['status'
 }
 
 // Folds several services' day-by-day status into one, taking the worst status
-// any of them had on a given day — used for the "External Services" row, which
-// represents every monitored service not attributable to one specific app
-// (in practice: shared vendors like Supabase/Vercel/Stripe, not per-app feeds).
+// any of them had on a given day — used for the "CoFabri" and "External
+// Services" rows, each of which represents every monitored service of that
+// kind not attributable to one specific app (in practice: shared vendors like
+// Supabase/Vercel/Stripe for External Services, cofabri.com/api.cofabri.com
+// for CoFabri, never per-app feeds).
 function mergeHistories(histories: ServiceUptimeDay[][]): ServiceUptimeDay[] {
   const byDate = new Map<string, ServiceUptimeDay['status']>();
   for (const history of histories) {
@@ -235,25 +245,36 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
       incident: matchAppIncident(app.id, openIncidents),
       history: matchHistory(app.name)?.history ?? [],
     }));
-    const platformIncident =
-      openIncidents.find((incident) => incident.isPlatformWide) ??
-      openIncidents.find((incident) => !appRows.some((row) => row.incident === incident));
+
+    // Incidents no specific app has claimed split into CoFabri's own (a
+    // platform-wide incident, or one tied to a monitored 'internal_app' /
+    // reported manually) vs a genuine third-party vendor incident — see
+    // matchCofabriIncident/matchExternalServiceIncident.
+    const unclaimedIncidents = openIncidents.filter((incident) => !appRows.some((row) => row.incident === incident));
+    const cofabriIncident = matchCofabriIncident(unclaimedIncidents);
+    const externalIncident = matchExternalServiceIncident(unclaimedIncidents);
 
     // Real monitored_services are shared infra (Supabase, Vercel, Stripe,
-    // GoHighLevel, GitHub, ...), not per-app feeds — none of them will ever
-    // match an app name. Anything not claimed by a specific app rolls up into
-    // the platform row's bar, mirroring how an unattributed incident already
-    // falls through to platformIncident above.
+    // GoHighLevel, GitHub, cofabri.com, api.cofabri.com, ...), not per-app
+    // feeds — none of them will ever match an app name. Anything not claimed
+    // by a specific app rolls up into the CoFabri or External Services row's
+    // bar depending on its serviceType, mirroring how an unattributed
+    // incident already falls through to one of those rows above.
     const matchedServiceIds = new Set(
       apps.map((app) => matchHistory(app.name)?.id).filter((id): id is string => Boolean(id))
     );
-    const platformHistory = mergeHistories(
-      uptimeHistory.filter((s) => !matchedServiceIds.has(s.id)).map((s) => s.history)
+    const unmatchedServices = uptimeHistory.filter((s) => !matchedServiceIds.has(s.id));
+    const cofabriHistory = mergeHistories(
+      unmatchedServices.filter((s) => s.serviceType === 'internal_app').map((s) => s.history)
+    );
+    const externalHistory = mergeHistories(
+      unmatchedServices.filter((s) => s.serviceType !== 'internal_app').map((s) => s.history)
     );
 
     return [
       ...appRows,
-      { name: 'External Services', incident: platformIncident, history: platformHistory },
+      { name: 'CoFabri', incident: cofabriIncident, history: cofabriHistory },
+      { name: 'External Services', incident: externalIncident, history: externalHistory },
     ].sort((a, b) => a.name.localeCompare(b.name));
   }, [apps, openIncidents, uptimeHistory]);
 

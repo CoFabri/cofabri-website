@@ -81,7 +81,7 @@ describe('getServiceUptimeHistory', () => {
       ok: true,
       json: async () => ({
         services: [
-          { id: 's1', name: 'API', history: [{ date: '2026-01-01', status: 'operational' }] },
+          { id: 's1', name: 'API', service_type: 'third_party_provider', history: [{ date: '2026-01-01', status: 'operational' }] },
           { name: 'Missing id' },
         ],
       }),
@@ -91,7 +91,23 @@ describe('getServiceUptimeHistory', () => {
     const services = await getServiceUptimeHistory();
 
     expect(global.fetch).toHaveBeenCalledWith('https://api.cofabri.com/web/content/status-feed', expect.anything());
-    expect(services).toEqual([{ id: 's1', name: 'API', history: [{ date: '2026-01-01', status: 'operational' }] }]);
+    expect(services).toEqual([
+      { id: 's1', name: 'API', serviceType: 'third_party_provider', history: [{ date: '2026-01-01', status: 'operational' }] },
+    ]);
+  });
+
+  it('defaults serviceType to third_party_provider when cofabri-api omits it', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        services: [{ id: 's1', name: 'API' }],
+      }),
+    });
+
+    const { getServiceUptimeHistory } = await import('./status-api');
+    const services = await getServiceUptimeHistory();
+
+    expect(services[0].serviceType).toBe('third_party_provider');
   });
 
   it('returns an empty array when the request fails', async () => {
