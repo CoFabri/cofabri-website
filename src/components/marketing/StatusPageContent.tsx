@@ -15,7 +15,7 @@ import {
 } from '@/lib/incident-display';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Breadcrumbs from './Breadcrumbs';
-import ChangelogSubscribeWidget from './ChangelogSubscribeWidget';
+import NotifyMeButton from './NotifyMeButton';
 import PageHero from './PageHero';
 import RevealSection from './RevealSection';
 
@@ -186,11 +186,6 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
           {service.incident ? service.incident.publicStatus : 'Operational'}
         </span>
       </div>
-      {service.appId && (
-        <div className="mt-2">
-          <ChangelogSubscribeWidget appId={service.appId} />
-        </div>
-      )}
     </div>
   );
 }
@@ -303,9 +298,12 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
         title={allOperational ? 'All systems operational.' : `${openIncidents.length} active ${openIncidents.length === 1 ? 'incident' : 'incidents'}.`}
         subtitle="Live status for every CoFabri service. Updated automatically, and by a human when something needs saying."
         right={
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
-            <ArrowPathIcon className="h-3.5 w-3.5" />
-            Refreshes in {formatCountdown(secondsUntilRefresh)}
+          <div className="flex items-center gap-4">
+            <NotifyMeButton apps={apps.map((app) => ({ id: app.id, name: app.name }))} defaultKind="incidents" />
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
+              <ArrowPathIcon className="h-3.5 w-3.5" />
+              Refreshes in {formatCountdown(secondsUntilRefresh)}
+            </div>
           </div>
         }
       />
