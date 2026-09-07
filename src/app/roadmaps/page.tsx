@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 export default async function RoadmapsPage() {
   const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
+  const notifyApps = apps.map((a) => ({ id: a.id, name: a.name }));
   // An app with no row in getApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public roadmap with commitments for a product no one's working on.
@@ -57,7 +58,7 @@ export default async function RoadmapsPage() {
         </div>
       }
     >
-      <RoadmapsContent initialFeatures={features} initialAppNames={appNames} />
+      <RoadmapsContent initialFeatures={features} initialAppNames={appNames} notifyApps={notifyApps} />
     </Suspense>
   );
 }

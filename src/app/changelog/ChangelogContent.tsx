@@ -11,6 +11,7 @@ import RoadmapOverlay from '@/components/marketing/RoadmapOverlay';
 import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
+import NotifyMeButton from '@/components/marketing/NotifyMeButton';
 import { displayAppName } from '@/lib/roadmap-display';
 import { filterPillClasses } from '@/lib/filter-pill';
 import { hasActiveRoadmap } from '@/lib/app-display';
@@ -79,9 +80,10 @@ function groupByMonth(features: RoadmapFeature[]): MonthGroup[] {
 interface ChangelogContentProps {
   initialShipped: RoadmapFeature[];
   initialAppNames: Record<string, string>;
+  notifyApps: { id: string; name: string }[];
 }
 
-export default function ChangelogContent({ initialShipped, initialAppNames }: ChangelogContentProps) {
+export default function ChangelogContent({ initialShipped, initialAppNames, notifyApps }: ChangelogContentProps) {
   const searchParams = useSearchParams();
   const [selectedApp, setSelectedApp] = useState<string>('');
   const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
@@ -209,6 +211,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
             </button>
           ))}
         </div>
+        <NotifyMeButton apps={notifyApps} defaultKind="updates" />
       </div>
 
       {isLoading ? (

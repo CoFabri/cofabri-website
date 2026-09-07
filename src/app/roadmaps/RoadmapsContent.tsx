@@ -8,6 +8,7 @@ import PageHero from '@/components/marketing/PageHero';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RevealSection from '@/components/marketing/RevealSection';
 import UpdatesTabs from '@/components/marketing/UpdatesTabs';
+import NotifyMeButton from '@/components/marketing/NotifyMeButton';
 import { displayAppName } from '@/lib/roadmap-display';
 import { hasActiveRoadmap } from '@/lib/app-display';
 
@@ -70,9 +71,10 @@ const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled'];
 interface RoadmapsContentProps {
   initialFeatures: RoadmapFeature[];
   initialAppNames: Record<string, string>;
+  notifyApps: { id: string; name: string }[];
 }
 
-export default function RoadmapsContent({ initialFeatures, initialAppNames }: RoadmapsContentProps) {
+export default function RoadmapsContent({ initialFeatures, initialAppNames, notifyApps }: RoadmapsContentProps) {
   const [selectedApp, setSelectedApp] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
@@ -195,6 +197,7 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames }: Ro
             placeholder="All statuses"
             options={[{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
           />
+          <NotifyMeButton apps={notifyApps} defaultKind="updates" />
         </div>
       </div>
 

@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 export default async function ChangelogPage() {
   const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
+  const notifyApps = apps.map((a) => ({ id: a.id, name: a.name }));
   // An app with no row in getApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public changelog with releases for a product no one's working on.
@@ -56,7 +57,7 @@ export default async function ChangelogPage() {
         </div>
       }
     >
-      <ChangelogContent initialShipped={shipped} initialAppNames={appNames} />
+      <ChangelogContent initialShipped={shipped} initialAppNames={appNames} notifyApps={notifyApps} />
     </Suspense>
   );
 }
