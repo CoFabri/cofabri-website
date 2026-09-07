@@ -125,7 +125,6 @@ function DayBar({ date, status, barKey, isOpen, setOpenBar }: DayBarProps) {
 
 interface ServiceRowData {
   name: string;
-  appId?: string;
   incident?: SystemStatus;
   history: ServiceUptimeDay[];
 }
@@ -236,7 +235,6 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
 
     const appRows = apps.map((app) => ({
       name: app.name,
-      appId: app.id,
       incident: matchAppIncident(app.id, openIncidents),
       history: matchHistory(app.name)?.history ?? [],
     }));

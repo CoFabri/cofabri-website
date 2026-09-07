@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const turnstileToken = typeof body.turnstileToken === 'string' ? body.turnstileToken : ''
     // The 'development-mode' bypass token is only ever emitted by the widget when no
-    // NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured (see ChangelogSubscribeWidget.tsx).
+    // NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured (see NotifyMeModal.tsx / Turnstile.tsx).
     // That is a client-side signal only — it must never be trusted on its own, since
     // anyone can send this literal string in a request body. Independently gate on
     // NODE_ENV so the bypass can only ever apply in local development.
