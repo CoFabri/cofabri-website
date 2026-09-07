@@ -98,8 +98,8 @@ export default function Turnstile({
 
         // Load script if not already loaded
         await loadTurnstileScript();
-        
-        if (!mounted || !containerRef.current || isRendered) return;
+
+        if (!mounted || !containerRef.current || widgetIdRef.current) return;
 
         // Clear any existing content
         if (containerRef.current) {
@@ -143,7 +143,7 @@ export default function Turnstile({
         }
       }
     };
-  }, [siteKey, theme, size, onVerify, onError, onExpire, isRendered]);
+  }, [siteKey, theme, size, onVerify, onError, onExpire]);
 
   // If site key is not configured, show a fallback message
   if (hasError) {
