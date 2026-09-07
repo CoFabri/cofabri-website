@@ -15,6 +15,7 @@ export const FIELD_LIMITS = {
   companyName: 100,
   industry: 100,
   phone: 30,
+  appIds: 50,
 } as const;
 
 function nameField(label: string) {
@@ -131,7 +132,11 @@ export const partnerSchema = z.object({
 
 export const changelogSubscribeSchema = z
   .object({
-    appIds: z.array(z.string().trim().min(1)).min(1, 'Select at least one app'),
+    appIds: z
+      .array(z.string().trim().min(1))
+      .min(1, 'Select at least one app')
+      .max(FIELD_LIMITS.appIds, 'Too many apps selected')
+      .transform((ids) => Array.from(new Set(ids))),
     email: emailField,
     notifyUpdates: z.boolean(),
     notifyIncidents: z.boolean(),

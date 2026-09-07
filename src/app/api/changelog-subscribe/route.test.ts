@@ -142,4 +142,30 @@ describe('POST /api/changelog-subscribe', () => {
     const res = await POST(request({ appIds: ['medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
     expect(res.status).toBe(502)
   })
+
+  it('rejects an appIds array over the max length with 400, before ever calling fetch', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+    const tooManyAppIds = Array.from({ length: 51 }, (_, i) => `app-${i}`)
+
+    const { POST } = await import('./route')
+    const res = await POST(request({ appIds: tooManyAppIds, email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
+    const body = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(body.error).toMatch(/too many/i)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('dedupes repeated app ids before forwarding to cofabri-api', async () => {
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 })) // turnstile
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))) // cofabri-api
+
+    const { POST } = await import('./route')
+    const res = await POST(request({ appIds: ['medoura', 'medoura', 'rx-bridge', 'medoura'], email: 'a@b.com', notifyUpdates: true, notifyIncidents: false, turnstileToken: 'dev-token' }))
+
+    expect(res.status).toBe(200)
+    const [, forwardInit] = vi.mocked(fetch).mock.calls[1] as [string, { body: string }]
+    expect(JSON.parse(forwardInit.body).app_ids).toEqual(['medoura', 'rx-bridge'])
+  })
 })
