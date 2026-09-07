@@ -212,7 +212,7 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
               </nav>
 
               <div className="mt-auto flex flex-col gap-2.5 pt-6">
-                <StatusIndicator variant="row" />
+                <StatusIndicator variant="row" onNavigate={() => setOpen(false)} />
                 <ThemeToggle variant="row" />
 
                 <div className="flex items-center gap-2.5">

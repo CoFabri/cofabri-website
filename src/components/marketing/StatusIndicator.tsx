@@ -49,7 +49,13 @@ function useSystemStatus() {
   };
 }
 
-export default function StatusIndicator({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
+export default function StatusIndicator({
+  variant = 'icon',
+  onNavigate,
+}: {
+  variant?: 'icon' | 'row';
+  onNavigate?: () => void;
+}) {
   const status = useSystemStatus();
 
   if (variant === 'row') {
@@ -57,6 +63,7 @@ export default function StatusIndicator({ variant = 'icon' }: { variant?: 'icon'
     return (
       <Link
         href="/status"
+        onClick={onNavigate}
         className="flex h-14 w-full items-center justify-between rounded-[11px] border border-border px-4 text-foreground"
       >
         <span className="flex items-center gap-2.5">
