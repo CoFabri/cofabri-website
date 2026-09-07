@@ -1,16 +1,26 @@
 'use client';
 
 import { useCallback, useId, useState } from 'react';
+import { MagnifyingGlassIcon, Squares2X2Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import Turnstile from './Turnstile';
+
+export type NotifyKind = 'updates' | 'incidents' | 'both';
 
 interface NotifyMeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   apps: { id: string; name: string }[];
-  defaultKind: 'updates' | 'incidents';
+  defaultKind: NotifyKind;
 }
+
+const NOTIFY_KIND_OPTIONS: { value: NotifyKind; label: string }[] = [
+  { value: 'updates', label: 'Updates' },
+  { value: 'incidents', label: 'Incidents' },
+  { value: 'both', label: 'Both' },
+];
 
 function getTurnstileSiteKey(): string | undefined {
   if (process.env.NODE_ENV === 'development') {
@@ -19,22 +29,99 @@ function getTurnstileSiteKey(): string | undefined {
   return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 }
 
+function AppsMultiSelectField({
+  apps,
+  selectedIds,
+  onChange,
+}: {
+  apps: { id: string; name: string }[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const selectedApps = apps.filter((a) => selectedIds.includes(a.id));
+  const filtered = apps.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()));
+
+  const toggle = (id: string) => {
+    onChange(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
+  };
+  const remove = (id: string) => onChange(selectedIds.filter((x) => x !== id));
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">Apps</p>
+      <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen((o) => !o)}>
+        <Squares2X2Icon className="h-4 w-4" />
+        Select apps
+      </Button>
+      {selectedApps.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedApps.map((a) => (
+            <Badge key={a.id} variant="outline" className="gap-1 pr-1">
+              {a.name}
+              <button
+                type="button"
+                onClick={() => remove(a.id)}
+                className="rounded-full p-0.5 hover:bg-muted"
+                aria-label={`Remove ${a.name}`}
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      {pickerOpen && (
+        <div className="rounded-lg border border-border">
+          <div className="flex items-center gap-2 border-b border-border px-3 py-2">
+            <MagnifyingGlassIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              placeholder="Search apps..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="max-h-40 overflow-y-auto p-1">
+            {filtered.length === 0 ? (
+              <p className="px-2 py-3 text-center text-sm text-muted-foreground">No apps found.</p>
+            ) : (
+              filtered.map((a) => (
+                <label
+                  key={a.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
+                >
+                  <input type="checkbox" checked={selectedIds.includes(a.id)} onChange={() => toggle(a.id)} />
+                  {a.name}
+                </label>
+              ))
+            )}
+          </div>
+          <div className="flex justify-end border-t border-border px-2 py-1.5">
+            <Button type="button" size="sm" onClick={() => setPickerOpen(false)}>
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }: NotifyMeModalProps) {
   const emailInputId = useId();
   const [selectedAppIds, setSelectedAppIds] = useState<string[]>([]);
-  const [notifyUpdates, setNotifyUpdates] = useState(defaultKind === 'updates');
-  const [notifyIncidents, setNotifyIncidents] = useState(defaultKind === 'incidents');
+  const [notifyKind, setNotifyKind] = useState<NotifyKind>(defaultKind);
   const [email, setEmail] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [turnstileKey, setTurnstileKey] = useState(0);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const toggleApp = (id: string) => {
-    setSelectedAppIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
-
-  const canSubmit = selectedAppIds.length > 0 && (notifyUpdates || notifyIncidents) && email.length > 0 && !!turnstileToken;
+  const canSubmit = selectedAppIds.length > 0 && email.length > 0 && !!turnstileToken;
 
   // Stable identity required: Turnstile.tsx's effect depends on onError/onExpire,
   // so an inline arrow function here would reset the widget on every re-render
@@ -62,6 +149,8 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
     }
     setStatus('submitting');
     try {
+      const notifyUpdates = notifyKind === 'updates' || notifyKind === 'both';
+      const notifyIncidents = notifyKind === 'incidents' || notifyKind === 'both';
       const res = await fetch('/api/changelog-subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,8 +185,7 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
     // if a flash is visible in manual testing, revisit with a delayed reset.
     setStatus('idle');
     setSelectedAppIds([]);
-    setNotifyUpdates(defaultKind === 'updates');
-    setNotifyIncidents(defaultKind === 'incidents');
+    setNotifyKind(defaultKind);
     setEmail('');
     setTurnstileToken('');
     setTurnstileKey(0);
@@ -116,27 +204,24 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Apps</p>
-              <div className="space-y-1">
-                {apps.map((app) => (
-                  <label key={app.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={selectedAppIds.includes(app.id)} onChange={() => toggleApp(app.id)} />
-                    {app.name}
-                  </label>
-                ))}
-              </div>
-            </div>
+            <AppsMultiSelectField apps={apps} selectedIds={selectedAppIds} onChange={setSelectedAppIds} />
             <div className="space-y-2">
               <p className="text-sm font-medium">Notify me about</p>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={notifyUpdates} onChange={(e) => setNotifyUpdates(e.target.checked)} />
-                Product updates
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={notifyIncidents} onChange={(e) => setNotifyIncidents(e.target.checked)} />
-                Incident &amp; status alerts
-              </label>
+              <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+                {NOTIFY_KIND_OPTIONS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={notifyKind === value}
+                    onClick={() => setNotifyKind(value)}
+                    className={`flex-1 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors duration-150 ${
+                      notifyKind === value ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="space-y-2">
               <label htmlFor={emailInputId} className="text-sm font-medium">
