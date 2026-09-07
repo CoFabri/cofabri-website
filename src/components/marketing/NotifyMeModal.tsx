@@ -26,6 +26,7 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
   const [notifyIncidents, setNotifyIncidents] = useState(defaultKind === 'incidents');
   const [email, setEmail] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -40,12 +41,14 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
   // (e.g. every keystroke in the email field below), not just on a real error.
   const handleTurnstileError = useCallback(() => {
     setTurnstileToken('');
+    setTurnstileKey((k) => k + 1);
     setStatus('error');
     setErrorMessage('Security verification failed. Please try again.');
   }, []);
 
   const handleTurnstileExpire = useCallback(() => {
     setTurnstileToken('');
+    setTurnstileKey((k) => k + 1);
     setStatus('error');
     setErrorMessage('Security verification expired. Please try again.');
   }, []);
@@ -70,8 +73,10 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
         setErrorMessage(data.error || 'Failed to subscribe. Please try again.');
         // Turnstile tokens are single-use -- a failed submit leaves the widget
         // showing "verified" even though the token is now dead, so clear it
-        // to force a fresh challenge (same convention ChangelogSubscribeWidget used).
+        // and bump turnstileKey to force the widget to remount and issue a
+        // fresh challenge (see Turnstile.tsx: it only resets on unmount).
         setTurnstileToken('');
+        setTurnstileKey((k) => k + 1);
         return;
       }
       setStatus('success');
@@ -79,6 +84,7 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
       setStatus('error');
       setErrorMessage('Failed to subscribe. Please try again.');
       setTurnstileToken('');
+      setTurnstileKey((k) => k + 1);
     }
   };
 
@@ -94,6 +100,7 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
     setNotifyIncidents(defaultKind === 'incidents');
     setEmail('');
     setTurnstileToken('');
+    setTurnstileKey(0);
   };
 
   return (
@@ -147,6 +154,7 @@ export default function NotifyMeModal({ open, onOpenChange, apps, defaultKind }:
             </div>
             {getTurnstileSiteKey() && (
               <Turnstile
+                key={turnstileKey}
                 siteKey={getTurnstileSiteKey()!}
                 onVerify={setTurnstileToken}
                 onError={handleTurnstileError}
