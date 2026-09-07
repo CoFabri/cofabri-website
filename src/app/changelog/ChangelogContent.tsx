@@ -254,12 +254,14 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
                     {item.description && (
                       <p className="mt-1.5 text-[15px] leading-[1.5] text-ink-muted sm:mt-0 sm:min-w-0 sm:flex-1">{item.description}</p>
                     )}
-                    {item.releasedDate && (
-                      <span className="mt-3 block font-mono text-xs text-ink-faint sm:mt-0 sm:flex-shrink-0">
-                        {formatDate(item.releasedDate)}
-                      </span>
-                    )}
-                    <span className="hidden text-sm font-semibold text-ink-muted sm:block sm:flex-shrink-0">Details →</span>
+                    <div className="flex items-center gap-3 sm:ml-auto sm:flex-shrink-0">
+                      {item.releasedDate && (
+                        <span className="mt-3 block font-mono text-xs text-ink-faint sm:mt-0">
+                          {formatDate(item.releasedDate)}
+                        </span>
+                      )}
+                      <span className="hidden text-sm font-semibold text-ink-muted sm:block">Details →</span>
+                    </div>
                   </div>
                 </button>
               ))}
@@ -269,7 +271,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames }: Ch
       )}
 
       {selectedFeature && (
-        <RoadmapOverlay isOpen={isOverlayOpen} onClose={closeOverlay} roadmap={selectedFeature} />
+        <RoadmapOverlay isOpen={isOverlayOpen} onClose={closeOverlay} roadmap={selectedFeature} appNames={appNames} />
       )}
     </div>
   );

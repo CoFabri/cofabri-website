@@ -3,28 +3,17 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
-import { roadmapStatusPillClasses } from '@/lib/roadmap-display';
+import { roadmapStatusPillClasses, displayAppName } from '@/lib/roadmap-display';
+import { RoadmapFeature } from '@/lib/api-client';
 
 interface RoadmapOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  roadmap: {
-    id: string;
-    name: string;
-    description: string;
-    status: string;
-    category?: string;
-    launchDate?: string;
-    featuresAndChanges?: string;
-    releaseNotes?: string;
-    releaseType?: string;
-    application?: string;
-    applicationUrl?: string;
-    milestone?: string;
-  };
+  roadmap: RoadmapFeature;
+  appNames?: Record<string, string>;
 }
 
-export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOverlayProps) {
+export default function RoadmapOverlay({ isOpen, onClose, roadmap, appNames = {} }: RoadmapOverlayProps) {
   // Handle escape key
   React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -46,6 +35,8 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
+  const hasBodyContent = Boolean(roadmap.description || roadmap.featuresAndChanges || roadmap.releaseNotes);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -70,7 +61,7 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
                 </span>
                 {roadmap.application && (
                   <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
-                    {roadmap.application}
+                    {displayAppName(roadmap.application, appNames)}
                   </span>
                 )}
               </div>
@@ -134,17 +125,17 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
               </div>
             )}
 
-            <div className="mt-6 flex flex-wrap gap-x-8 gap-y-4 border-t border-border pt-6">
+            <div className={`flex flex-wrap gap-x-8 gap-y-4 ${hasBodyContent ? 'mt-6 border-t border-border pt-6' : ''}`}>
               {roadmap.milestone && (
                 <div>
                   <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">Milestone</div>
                   <div className="text-sm text-foreground">{roadmap.milestone}</div>
                 </div>
               )}
-              {roadmap.launchDate && (
+              {roadmap.releasedDate && (
                 <div>
                   <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">Released</div>
-                  <div className="text-sm text-foreground">{new Date(roadmap.launchDate).toLocaleDateString()}</div>
+                  <div className="text-sm text-foreground">{new Date(roadmap.releasedDate).toLocaleDateString()}</div>
                 </div>
               )}
             </div>

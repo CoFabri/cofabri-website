@@ -195,7 +195,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
                   {item.description && (
                     <p className="mt-1.5 text-[15px] leading-[1.5] text-ink-muted sm:mt-0 sm:min-w-0 sm:flex-1">{item.description}</p>
                   )}
-                  <div className="mt-3 flex items-center gap-3 sm:mt-0 sm:flex-shrink-0">
+                  <div className="mt-3 flex items-center gap-3 sm:ml-auto sm:mt-0 sm:flex-shrink-0">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${roadmapStatusPillClasses(item.status)}`}>
                       {item.status}
                     </span>
@@ -214,6 +214,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
       {selectedFeature && (
         <RoadmapOverlay
           isOpen={isOverlayOpen}
+          appNames={appNames}
           onClose={() => {
             setIsOverlayOpen(false);
             setSelectedFeature(null);
