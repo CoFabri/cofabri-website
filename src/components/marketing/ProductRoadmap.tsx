@@ -199,7 +199,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${roadmapStatusPillClasses(item.status)}`}>
                       {item.status}
                     </span>
-                    <span className="font-mono text-xs text-ink-faint sm:hidden">{formatRoadmapWhen(item)}</span>
+                    <span className="font-mono text-xs text-ink-faint">{formatRoadmapWhen(item)}</span>
                   </div>
                   <span className="hidden text-sm font-semibold text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5 sm:block sm:flex-shrink-0">
                     Details →

@@ -86,7 +86,9 @@ export default function RoadmapOverlay({ isOpen, onClose, roadmap }: RoadmapOver
 
           {/* Content */}
           <div className="max-h-[calc(90vh-104px)] overflow-y-auto p-6">
-            <p className="m-0 text-base leading-relaxed text-ink-body">{roadmap.description}</p>
+            {roadmap.description && (
+              <p className="m-0 text-base leading-relaxed text-ink-body">{roadmap.description}</p>
+            )}
 
             {/* Features & Changes — only populated once cofabri-api exposes this field */}
             {roadmap.featuresAndChanges && (
