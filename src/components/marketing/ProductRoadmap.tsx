@@ -35,7 +35,7 @@ export const compareMilestones = (a: string, b: string) => {
 // (retired apps are dropped from getApps() entirely) -- keep it out of the
 // public roadmap regardless of which filters are active.
 function isVisibleFeature(feature: RoadmapFeature, appNames: Record<string, string>): boolean {
-  return !feature.application || !!appNames[feature.application];
+  return feature.apps.length === 0 || feature.apps.some((app) => !!appNames[app.id]);
 }
 
 function groupByMilestone(
@@ -46,7 +46,7 @@ function groupByMilestone(
 ): { title: string; features: RoadmapFeature[] }[] {
   const groups = features.reduce((acc: { title: string; features: RoadmapFeature[] }[], feature) => {
     if (!isVisibleFeature(feature, appNames)) return acc;
-    if (selectedApp && feature.application !== selectedApp) return acc;
+    if (selectedApp && !feature.apps.some((app) => app.id === selectedApp)) return acc;
     if (selectedStatus && feature.status !== selectedStatus) return acc;
 
     const milestone = acc.find((m) => m.title === feature.milestone);
@@ -186,9 +186,9 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
                 <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
                   <div className="min-w-0 sm:w-[260px] sm:flex-shrink-0">
                     <div className="text-lg font-semibold tracking-[-0.015em] text-foreground">{item.name}</div>
-                    {item.application && (
+                    {item.apps.length > 0 && (
                       <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
-                        {appNames[item.application] || item.application}
+                        {item.apps.map((app) => appNames[app.id] || app.name).join(', ')}
                       </div>
                     )}
                   </div>
