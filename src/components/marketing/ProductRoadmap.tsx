@@ -66,11 +66,23 @@ interface ProductRoadmapProps {
   selectedApp: string;
   selectedStatus: string;
   appNames: Record<string, string>;
+  // The true "active" set (narrower than Object.keys(appNames) -- appNames
+  // includes every display_on_website app, including Paused/Sunset ones).
+  // Passed down from roadmaps/page.tsx via RoadmapsContent so this
+  // component's own refetch applies the same rule the server render does.
+  activeAppIds: string[];
   initialFeatures: RoadmapFeature[];
   onClearFilters?: () => void;
 }
 
-export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, initialFeatures, onClearFilters }: ProductRoadmapProps) {
+export default function ProductRoadmap({
+  selectedApp,
+  selectedStatus,
+  appNames,
+  activeAppIds,
+  initialFeatures,
+  onClearFilters,
+}: ProductRoadmapProps) {
   const searchParams = useSearchParams();
   const [features, setFeatures] = useState<RoadmapFeature[]>(initialFeatures);
   const [milestones, setMilestones] = useState<{ title: string; features: RoadmapFeature[] }[]>(() =>
@@ -112,13 +124,17 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
       if (!response.ok) throw new Error('Failed to fetch roadmap features');
 
       const roadmapFeatures = (await response.json()) as RoadmapFeature[];
-      // isVisibleFeature keeps out features tied to a retired app; isRoadmapVisible
-      // applies the same Cancelled/active-app rule roadmaps/page.tsx applies
-      // server-side, using the same appNames-derived id set as the "known app"
-      // check above (this component only receives app names, not full app
-      // status, so a known app here doubles as an active one).
-      const activeAppIds = new Set(Object.keys(appNames));
-      const visibleFeatures = roadmapFeatures.filter((f) => isVisibleFeature(f, appNames) && isRoadmapVisible(f, activeAppIds));
+      // isRoadmapVisible applies the same Cancelled/active-app rule
+      // roadmaps/page.tsx applies server-side, using the same activeAppIds
+      // set passed down from there (via RoadmapsContent) -- not the wider
+      // Object.keys(appNames), which includes Paused/Sunset apps that are
+      // still display_on_website. That set is strictly narrower than
+      // appNames' keys, so it subsumes isVisibleFeature's own app-membership
+      // check for any feature with linked apps; isVisibleFeature is only a
+      // no-op passthrough for app-less features anyway, so dropping it here
+      // doesn't change behavior.
+      const activeAppIdsSet = new Set(activeAppIds);
+      const visibleFeatures = roadmapFeatures.filter((f) => isRoadmapVisible(f, activeAppIdsSet));
       setFeatures(visibleFeatures);
       setMilestones(groupByMilestone(visibleFeatures, selectedApp, selectedStatus, appNames));
     } catch (err) {
@@ -127,7 +143,7 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
     } finally {
       setIsLoading(false);
     }
-  }, [selectedApp, selectedStatus, appNames]);
+  }, [selectedApp, selectedStatus, appNames, activeAppIds]);
 
   useEffect(() => {
     if (isOverlayOpen) {

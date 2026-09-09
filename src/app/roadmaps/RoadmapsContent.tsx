@@ -71,14 +71,25 @@ const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned'];
 interface RoadmapsContentProps {
   initialFeatures: RoadmapFeature[];
   initialAppNames: Record<string, string>;
+  initialActiveAppIds: string[];
   notifyApps: { id: string; name: string }[];
 }
 
-export default function RoadmapsContent({ initialFeatures, initialAppNames, notifyApps }: RoadmapsContentProps) {
+export default function RoadmapsContent({
+  initialFeatures,
+  initialAppNames,
+  initialActiveAppIds,
+  notifyApps,
+}: RoadmapsContentProps) {
   const [selectedApp, setSelectedApp] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
   const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>(initialFeatures);
+  // The true "active" set (narrower than Object.keys(appNames) -- appNames
+  // includes every display_on_website app, including Paused/Sunset ones).
+  // Threaded down to ProductRoadmap so its own refetch applies the same rule
+  // page.tsx used server-side, instead of re-deriving a weaker approximation.
+  const [activeAppIds, setActiveAppIds] = useState<string[]>(initialActiveAppIds);
 
   const applications = useMemo(
     () => Array.from(new Set(allFeatures.flatMap((f) => f.apps.map((app) => app.id)))),
@@ -106,8 +117,9 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames, noti
         }
 
         if (roadmapRes.ok) {
-          const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
-          setAllFeatures(features.filter((f) => isRoadmapVisible(f, activeAppIds)));
+          const activeAppIdsSet = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
+          setActiveAppIds(Array.from(activeAppIdsSet));
+          setAllFeatures(features.filter((f) => isRoadmapVisible(f, activeAppIdsSet)));
         }
       } catch (error) {
         console.error('Error fetching roadmap filter data:', error);
@@ -204,6 +216,7 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames, noti
           selectedApp={selectedApp}
           selectedStatus={selectedStatus}
           appNames={appNames}
+          activeAppIds={activeAppIds}
           initialFeatures={allFeatures}
           onClearFilters={() => {
             setSelectedApp('');

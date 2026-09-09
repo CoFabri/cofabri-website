@@ -58,7 +58,12 @@ export default async function RoadmapsPage() {
         </div>
       }
     >
-      <RoadmapsContent initialFeatures={features} initialAppNames={appNames} notifyApps={notifyApps} />
+      <RoadmapsContent
+        initialFeatures={features}
+        initialAppNames={appNames}
+        initialActiveAppIds={Array.from(activeAppIds)}
+        notifyApps={notifyApps}
+      />
     </Suspense>
   );
 }
