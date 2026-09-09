@@ -69,7 +69,7 @@ const QUARTER_MS = 90 * 24 * 60 * 60 * 1000;
 
 export function appMomentum(app: App, roadmap: RoadmapFeature[]): string {
   const now = Date.now();
-  const items = roadmap.filter((item) => item.application === app.id);
+  const items = roadmap.filter((item) => item.apps.some((linkedApp) => linkedApp.id === app.id));
 
   const shippedThisQuarter = items.filter(
     (item) => item.status === 'Released' && item.releasedDate && now - new Date(item.releasedDate).getTime() <= QUARTER_MS

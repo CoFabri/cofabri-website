@@ -7,7 +7,7 @@ function app(overrides: Partial<App> = {}): App {
 }
 
 function roadmapItem(overrides: Partial<RoadmapFeature> = {}): RoadmapFeature {
-  return { id: 'r-1', name: 'Feature', description: '', status: 'Planned', milestone: '', releaseType: '', ...overrides };
+  return { id: 'r-1', name: 'Feature', description: '', status: 'Planned', milestone: '', releaseType: '', apps: [], ...overrides };
 }
 
 afterEach(() => {
@@ -75,9 +75,9 @@ describe('appMomentum', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-02T00:00:00Z'));
     const roadmap: RoadmapFeature[] = [
-      roadmapItem({ application: 'app-1', status: 'Released', releasedDate: '2026-08-01' }),
-      roadmapItem({ application: 'app-1', status: 'Released', releasedDate: '2026-08-15' }),
-      roadmapItem({ application: 'other-app', status: 'Released', releasedDate: '2026-08-15' }),
+      roadmapItem({ apps: [{ id: 'app-1', name: 'App 1' }], status: 'Released', releasedDate: '2026-08-01' }),
+      roadmapItem({ apps: [{ id: 'app-1', name: 'App 1' }], status: 'Released', releasedDate: '2026-08-15' }),
+      roadmapItem({ apps: [{ id: 'other-app', name: 'Other App' }], status: 'Released', releasedDate: '2026-08-15' }),
     ];
     expect(appMomentum(app(), roadmap)).toBe('2 shipped this quarter');
   });
@@ -85,7 +85,9 @@ describe('appMomentum', () => {
   it('falls back to the next in-progress or planned item', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-02T00:00:00Z'));
-    const roadmap: RoadmapFeature[] = [roadmapItem({ application: 'app-1', status: 'Planned', name: 'Next feature' })];
+    const roadmap: RoadmapFeature[] = [
+      roadmapItem({ apps: [{ id: 'app-1', name: 'App 1' }], status: 'Planned', name: 'Next feature' }),
+    ];
     expect(appMomentum(app(), roadmap)).toBe('Next: Next feature');
   });
 
