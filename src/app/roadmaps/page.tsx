@@ -46,9 +46,11 @@ export default async function RoadmapsPage() {
   // "CoFabri Website"/"CertiFi Central" rows) stayed visible indefinitely on
   // /changelog.
   const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
-  const features = allFeatures.filter((f) =>
-    f.application ? activeAppIds.has(f.application) : f.status !== 'Released'
-  );
+  // Cancelled excluded here too -- a cancelled release isn't "on the roadmap".
+  const features = allFeatures.filter((f) => {
+    if (f.status === 'Cancelled') return false;
+    return f.apps.length > 0 ? f.apps.some((app) => activeAppIds.has(app.id)) : f.status !== 'Released';
+  });
 
   return (
     <Suspense

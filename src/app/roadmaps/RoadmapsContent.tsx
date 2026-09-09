@@ -81,7 +81,7 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames, noti
   const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>(initialFeatures);
 
   const applications = useMemo(
-    () => Array.from(new Set(allFeatures.map((f) => f.application).filter((a): a is string => !!a))),
+    () => Array.from(new Set(allFeatures.flatMap((f) => f.apps.map((app) => app.id)))),
     [allFeatures]
   );
 
@@ -108,7 +108,10 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames, noti
         if (roadmapRes.ok) {
           const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
           setAllFeatures(
-            features.filter((f) => (f.application ? activeAppIds.has(f.application) : f.status !== 'Released'))
+            features.filter((f) => {
+              if (f.status === 'Cancelled') return false;
+              return f.apps.length > 0 ? f.apps.some((app) => activeAppIds.has(app.id)) : f.status !== 'Released';
+            })
           );
         }
       } catch (error) {
