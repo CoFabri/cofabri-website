@@ -115,6 +115,101 @@ describe('getAppReleases', () => {
   });
 });
 
+describe('getRoadmapFeatures', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('fetches public releases from cofabri-api and maps them to RoadmapFeature, deriving `application` from the first linked app', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: 'rel-1',
+          release_name: 'Medoura Redesign',
+          public_description: 'A fresh look',
+          release_type: 'major',
+          milestone: 'Q3 2026',
+          target_release_date: '2026-09-11',
+          released_date: null,
+          status: 'in_progress',
+          apps: [{ app_id: 'medoura', app_name: 'Medoura' }],
+        },
+      ],
+    });
+
+    const { getRoadmapFeatures } = await import('./api-client');
+    const features = await getRoadmapFeatures();
+
+    expect(global.fetch).toHaveBeenCalledWith('https://api.cofabri.com/web/content/releases', expect.anything());
+    expect(features).toEqual([
+      {
+        id: 'rel-1',
+        name: 'Medoura Redesign',
+        description: 'A fresh look',
+        status: 'In Progress',
+        milestone: 'Q3 2026',
+        releaseType: 'major',
+        releasedDate: '2026-09-11',
+        apps: [{ id: 'medoura', name: 'Medoura' }],
+        application: 'medoura',
+        applicationUrl: undefined,
+        featuresAndChanges: undefined,
+        releaseNotes: undefined,
+      },
+    ]);
+  });
+
+  it('lists every linked app for a multi-app release, keeping `application` as just the first', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: 'rel-2',
+          release_name: 'Shared infra upgrade',
+          public_description: null,
+          release_type: 'minor',
+          milestone: null,
+          target_release_date: null,
+          released_date: '2026-09-01',
+          status: 'released',
+          apps: [
+            { app_id: 'medoura', app_name: 'Medoura' },
+            { app_id: 'praxis', app_name: 'Praxis' },
+          ],
+        },
+      ],
+    });
+
+    const { getRoadmapFeatures } = await import('./api-client');
+    const [feature] = await getRoadmapFeatures();
+
+    expect(feature.apps).toEqual([
+      { id: 'medoura', name: 'Medoura' },
+      { id: 'praxis', name: 'Praxis' },
+    ]);
+    expect(feature.application).toBe('medoura');
+  });
+
+  it('returns an empty array when the request fails', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500, statusText: 'Internal Server Error' });
+
+    const { getRoadmapFeatures } = await import('./api-client');
+    const features = await getRoadmapFeatures();
+
+    expect(features).toEqual([]);
+  });
+});
+
 describe('getApp', () => {
   const originalFetch = global.fetch;
   const originalBaseUrl = process.env.COFABRI_API_BASE_URL;

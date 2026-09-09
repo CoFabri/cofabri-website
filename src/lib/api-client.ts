@@ -289,6 +289,11 @@ export async function getFeaturedKnowledgeBaseArticles(): Promise<KnowledgeBaseA
   }
 }
 
+export interface RoadmapFeatureApp {
+  id: string;
+  name: string;
+}
+
 export interface RoadmapFeature {
   id: string;
   name: string;
@@ -297,23 +302,36 @@ export interface RoadmapFeature {
   milestone: string;
   releaseType: string;
   releasedDate?: string;
+  // Every app linked to this release, in app_release_applications order.
+  // `application` below is always apps[0]?.id -- kept only because a few call
+  // sites (CompactRoadmap, RoadmapOverlay) still only ever show one app per
+  // item. Anything that needs to account for every linked app should read
+  // `apps` instead of `application`.
+  apps: RoadmapFeatureApp[];
   application?: string;
   applicationUrl?: string;
   featuresAndChanges?: string;
   releaseNotes?: string;
 }
 
-interface RoadmapRow {
-  id: string;
-  roadmap_item_name: string;
-  description: string | null;
-  status: string;
-  target_quarter: string | null;
-  target_date: string | null;
-  app_id: string | null;
+interface PublicReleaseAppRow {
+  app_id: string;
+  app_name: string;
 }
 
-// Real values of the roadmap_item status enum in Supabase, mapped to the
+interface PublicReleaseRow {
+  id: string;
+  release_name: string;
+  public_description: string | null;
+  release_type: string | null;
+  milestone: string | null;
+  target_release_date: string | null;
+  released_date: string | null;
+  status: string;
+  apps: PublicReleaseAppRow[];
+}
+
+// Real values of the app_release_status enum in Supabase, mapped to the
 // Title Case labels the UI (filters, badges) expects.
 const ROADMAP_STATUS_MAP: Record<string, string> = {
   planned: 'Planned',
@@ -323,16 +341,18 @@ const ROADMAP_STATUS_MAP: Record<string, string> = {
   cancelled: 'Cancelled',
 };
 
-function mapRoadmapItem(row: RoadmapRow): RoadmapFeature {
+function mapRoadmapItem(row: PublicReleaseRow): RoadmapFeature {
+  const apps = (row.apps || []).map((a) => ({ id: a.app_id, name: a.app_name }));
   return {
     id: row.id,
-    name: row.roadmap_item_name,
-    description: row.description || '',
+    name: row.release_name,
+    description: row.public_description || '',
     status: ROADMAP_STATUS_MAP[row.status] || row.status,
-    milestone: row.target_quarter || '',
-    releaseType: '',
-    releasedDate: row.target_date || undefined,
-    application: row.app_id || undefined,
+    milestone: row.milestone || '',
+    releaseType: row.release_type || '',
+    releasedDate: row.released_date || row.target_release_date || undefined,
+    apps,
+    application: apps[0]?.id,
     applicationUrl: undefined,
     featuresAndChanges: undefined,
     releaseNotes: undefined,
@@ -341,7 +361,7 @@ function mapRoadmapItem(row: RoadmapRow): RoadmapFeature {
 
 export async function getRoadmapFeatures(): Promise<RoadmapFeature[]> {
   try {
-    const rows = await apiFetch<RoadmapRow[]>('/web/content/roadmap');
+    const rows = await apiFetch<PublicReleaseRow[]>('/web/content/releases');
     return rows.map(mapRoadmapItem);
   } catch (error) {
     console.error('Error fetching roadmap features:', error);
