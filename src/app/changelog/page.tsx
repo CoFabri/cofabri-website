@@ -46,7 +46,7 @@ export default async function ChangelogPage() {
   // unlinked item to visible.
   const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
   const shipped = allFeatures.filter(
-    (f) => f.status === 'Released' && !!f.application && activeAppIds.has(f.application)
+    (f) => f.status === 'Released' && f.apps.length > 0 && f.apps.some((app) => activeAppIds.has(app.id))
   );
 
   return (

@@ -97,7 +97,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
   const applications = useMemo(
-    () => Array.from(new Set(shipped.map((f) => f.application).filter((a): a is string => !!a))),
+    () => Array.from(new Set(shipped.flatMap((f) => f.apps.map((app) => app.id)))),
     [shipped]
   );
 
@@ -120,7 +120,9 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
       if (roadmapRes.ok) {
         const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
         setShipped(
-          features.filter((f) => f.status === 'Released' && !!f.application && activeAppIds.has(f.application))
+          features.filter(
+            (f) => f.status === 'Released' && f.apps.length > 0 && f.apps.some((app) => activeAppIds.has(app.id))
+          )
         );
       }
     } catch (err) {
@@ -152,7 +154,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
   }, [searchParams, shipped, isOverlayOpen]);
 
   const filtered = useMemo(
-    () => (selectedApp ? shipped.filter((f) => f.application === selectedApp) : shipped),
+    () => (selectedApp ? shipped.filter((f) => f.apps.some((app) => app.id === selectedApp)) : shipped),
     [shipped, selectedApp]
   );
 
@@ -248,9 +250,9 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
                   <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
                     <div className="min-w-0 sm:w-[260px] sm:flex-shrink-0">
                       <div className="text-lg font-semibold tracking-[-0.015em] text-foreground">{item.name}</div>
-                      {item.application && (
+                      {item.apps.length > 0 && (
                         <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
-                          {displayAppName(item.application, appNames)}
+                          {item.apps.map((app) => displayAppName(app.id, appNames)).join(', ')}
                         </div>
                       )}
                     </div>
