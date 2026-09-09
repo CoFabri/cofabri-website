@@ -75,11 +75,13 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   }
 
   const roadmapFeatures = await getRoadmapFeatures();
-  const appFeatures = hasActiveRoadmap(app.status) ? roadmapFeatures.filter((f) => f.application === app.id) : [];
-  // "Released" roadmap items excluded here — app_roadmaps is a largely-stale
-  // one-time import, not what's actually shipping. app_releases_public (via
-  // getAppReleases) is the team's real, currently-maintained release feed.
-  const roadmapItems = appFeatures.filter((f) => f.status !== 'Released').slice(0, 5);
+  const appFeatures = hasActiveRoadmap(app.status)
+    ? roadmapFeatures.filter((f) => f.apps.some((linkedApp) => linkedApp.id === app.id))
+    : [];
+  // getRoadmapFeatures() and getAppReleases() below both read app_releases now --
+  // this is that same release data filtered to "not yet released", the sibling
+  // "shipped" list below is the same data filtered to "released".
+  const roadmapItems = appFeatures.filter((f) => f.status !== 'Released' && f.status !== 'Cancelled').slice(0, 5);
   const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
 
