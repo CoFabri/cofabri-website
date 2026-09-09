@@ -9,7 +9,7 @@ import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import RevealSection from '@/components/marketing/RevealSection';
 import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import NotifyMeButton from '@/components/marketing/NotifyMeButton';
-import { displayAppName } from '@/lib/roadmap-display';
+import { displayAppName, isRoadmapVisible } from '@/lib/roadmap-display';
 import { hasActiveRoadmap } from '@/lib/app-display';
 
 interface DropdownProps {
@@ -66,7 +66,7 @@ function Dropdown({ value, onChange, options, placeholder }: DropdownProps) {
   );
 }
 
-const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned', 'Cancelled'];
+const STATUSES = ['Released', 'In Progress', 'Delayed', 'Planned'];
 
 interface RoadmapsContentProps {
   initialFeatures: RoadmapFeature[];
@@ -107,12 +107,7 @@ export default function RoadmapsContent({ initialFeatures, initialAppNames, noti
 
         if (roadmapRes.ok) {
           const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
-          setAllFeatures(
-            features.filter((f) => {
-              if (f.status === 'Cancelled') return false;
-              return f.apps.length > 0 ? f.apps.some((app) => activeAppIds.has(app.id)) : f.status !== 'Released';
-            })
-          );
+          setAllFeatures(features.filter((f) => isRoadmapVisible(f, activeAppIds)));
         }
       } catch (error) {
         console.error('Error fetching roadmap filter data:', error);

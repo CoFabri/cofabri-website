@@ -4,6 +4,7 @@ import { CoreLoader } from '@/components/ui/core-loader';
 import RoadmapsContent from './RoadmapsContent';
 import { getApps, getRoadmapFeatures } from '@/lib/api-client';
 import { hasActiveRoadmap } from '@/lib/app-display';
+import { isRoadmapVisible } from '@/lib/roadmap-display';
 
 export const metadata: Metadata = {
   title: 'Roadmap',
@@ -47,10 +48,7 @@ export default async function RoadmapsPage() {
   // /changelog.
   const activeAppIds = new Set(apps.filter((a) => hasActiveRoadmap(a.status)).map((a) => a.id));
   // Cancelled excluded here too -- a cancelled release isn't "on the roadmap".
-  const features = allFeatures.filter((f) => {
-    if (f.status === 'Cancelled') return false;
-    return f.apps.length > 0 ? f.apps.some((app) => activeAppIds.has(app.id)) : f.status !== 'Released';
-  });
+  const features = allFeatures.filter((f) => isRoadmapVisible(f, activeAppIds));
 
   return (
     <Suspense

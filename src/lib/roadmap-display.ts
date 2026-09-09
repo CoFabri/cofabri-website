@@ -53,6 +53,17 @@ export function displayAppName(id: string, appNames: Record<string, string>): st
   return id.charAt(0).toUpperCase() + id.slice(1);
 }
 
+// Shared visibility rule for the public roadmap surfaces (/roadmaps' server
+// render, its client-side recovery fetch, and ProductRoadmap's own refetch):
+// a cancelled release never belongs on the roadmap, and a release with
+// linked apps needs at least one of them to still be active. An app-less
+// item is allowed through unless it claims to already be Released (see the
+// longer comment in roadmaps/page.tsx for why).
+export function isRoadmapVisible(feature: Pick<RoadmapFeature, 'status' | 'apps'>, activeAppIds: Set<string>): boolean {
+  if (feature.status === 'Cancelled') return false;
+  return feature.apps.length > 0 ? feature.apps.some((app) => activeAppIds.has(app.id)) : feature.status !== 'Released';
+}
+
 export function shippedInLastNDays(roadmap: RoadmapFeature[], days: number): number {
   const windowMs = days * 24 * 60 * 60 * 1000;
   return roadmap.filter(

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import { useSearchParams } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { roadmapStatusPillClasses, roadmapStatusDotClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
+import { roadmapStatusPillClasses, roadmapStatusDotClasses, formatRoadmapWhen, isRoadmapVisible } from '@/lib/roadmap-display';
 import { CoreLoader } from '@/components/ui/core-loader';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
@@ -112,7 +112,13 @@ export default function ProductRoadmap({ selectedApp, selectedStatus, appNames, 
       if (!response.ok) throw new Error('Failed to fetch roadmap features');
 
       const roadmapFeatures = (await response.json()) as RoadmapFeature[];
-      const visibleFeatures = roadmapFeatures.filter((f) => isVisibleFeature(f, appNames));
+      // isVisibleFeature keeps out features tied to a retired app; isRoadmapVisible
+      // applies the same Cancelled/active-app rule roadmaps/page.tsx applies
+      // server-side, using the same appNames-derived id set as the "known app"
+      // check above (this component only receives app names, not full app
+      // status, so a known app here doubles as an active one).
+      const activeAppIds = new Set(Object.keys(appNames));
+      const visibleFeatures = roadmapFeatures.filter((f) => isVisibleFeature(f, appNames) && isRoadmapVisible(f, activeAppIds));
       setFeatures(visibleFeatures);
       setMilestones(groupByMilestone(visibleFeatures, selectedApp, selectedStatus, appNames));
     } catch (err) {

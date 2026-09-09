@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { roadmapStatusPillClasses, formatRoadmapWhen, displayAppName, shippedInLastNDays } from './roadmap-display';
+import { roadmapStatusPillClasses, formatRoadmapWhen, displayAppName, shippedInLastNDays, isRoadmapVisible } from './roadmap-display';
 import type { RoadmapFeature } from '@/lib/api-client';
 
 function feature(overrides: Partial<RoadmapFeature> = {}): RoadmapFeature {
-  return { id: 'r-1', name: 'Feature', description: '', status: 'Planned', milestone: '', releaseType: '', ...overrides };
+  return { id: 'r-1', name: 'Feature', description: '', status: 'Planned', milestone: '', releaseType: '', apps: [], ...overrides };
 }
 
 describe('roadmapStatusPillClasses', () => {
@@ -38,6 +38,30 @@ describe('displayAppName', () => {
 
   it('title-cases the raw id as a fallback for an unknown app', () => {
     expect(displayAppName('unknown-app', {})).toBe('Unknown-app');
+  });
+});
+
+describe('isRoadmapVisible', () => {
+  it('excludes a Cancelled release regardless of its linked apps', () => {
+    const activeAppIds = new Set(['app-1']);
+    expect(isRoadmapVisible(feature({ status: 'Cancelled', apps: [{ id: 'app-1', name: 'App 1' }] }), activeAppIds)).toBe(false);
+  });
+
+  it('excludes a Released release with no active linked app', () => {
+    const activeAppIds = new Set(['app-1']);
+    expect(isRoadmapVisible(feature({ status: 'Released', apps: [{ id: 'app-2', name: 'App 2' }] }), activeAppIds)).toBe(false);
+  });
+
+  it('includes a non-Released release with no active linked app when it has no linked apps at all', () => {
+    const activeAppIds = new Set(['app-1']);
+    expect(isRoadmapVisible(feature({ status: 'Planned', apps: [] }), activeAppIds)).toBe(true);
+  });
+
+  it('includes a release with at least one active linked app', () => {
+    const activeAppIds = new Set(['app-1']);
+    expect(
+      isRoadmapVisible(feature({ status: 'Released', apps: [{ id: 'app-2', name: 'App 2' }, { id: 'app-1', name: 'App 1' }] }), activeAppIds)
+    ).toBe(true);
   });
 });
 
