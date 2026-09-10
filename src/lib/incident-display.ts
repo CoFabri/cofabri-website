@@ -85,3 +85,16 @@ export function matchExternalServiceIncident(unclaimedStatuses: SystemStatus[]):
   const cofabriIncident = matchCofabriIncident(unclaimedStatuses);
   return open.find((incident) => incident.isThirdParty && incident !== cofabriIncident);
 }
+
+// The incident card's "whose fault is this" label — purely a function of
+// isThirdParty, independent of affectedAppIds. A vendor outage that happens
+// to only affect one app (e.g. GoHighLevel down, only Medoura depends on it)
+// is still "External Services", not that app's name: affectedAppIds decides
+// which app's status dot goes red, which is a separate question from whether
+// the incident is CoFabri's own doing or a vendor's. Mirrors the same
+// isThirdParty split matchCofabriIncident/matchExternalServiceIncident use
+// for the top-of-page rows, so the card never disagrees with the incident's
+// true nature just because a specific app also claimed it for its own dot.
+export function incidentApplicationLabel(incident: SystemStatus): string {
+  return incident.isThirdParty ? 'External Services' : 'CoFabri Services';
+}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  incidentApplicationLabel,
   incidentDotClasses,
   incidentPillClasses,
   severityPillClasses,
@@ -108,5 +109,19 @@ describe('matchCofabriIncident / matchExternalServiceIncident', () => {
     const incident = status({ publicStatus: 'Resolved', isThirdParty: true });
     expect(matchCofabriIncident([incident])).toBeUndefined();
     expect(matchExternalServiceIncident([incident])).toBeUndefined();
+  });
+});
+
+describe('incidentApplicationLabel', () => {
+  it('labels a third-party incident "External Services" even when it also affects a specific app', () => {
+    const incident = status({ isThirdParty: true, affectedAppIds: ['medoura'] });
+    expect(incidentApplicationLabel(incident)).toBe('External Services');
+  });
+
+  it('labels a non-third-party incident "CoFabri Services", platform-wide or not', () => {
+    expect(incidentApplicationLabel(status({ isThirdParty: false, isPlatformWide: true }))).toBe('CoFabri Services');
+    expect(incidentApplicationLabel(status({ isThirdParty: false, affectedAppIds: ['medoura'] }))).toBe(
+      'CoFabri Services'
+    );
   });
 });

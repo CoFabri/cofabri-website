@@ -5,6 +5,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { SystemStatus, ServiceUptimeDay, ServiceUptimeHistory } from '@/lib/status-api';
 import type { App } from '@/lib/api-client';
 import {
+  incidentApplicationLabel,
   incidentDotClasses,
   incidentPillClasses,
   matchAppIncident,
@@ -356,6 +357,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
 }
 
 function IncidentCard({ incident }: { incident: SystemStatus }) {
+  const label = incidentApplicationLabel(incident);
   return (
     <div className="mb-4 rounded-xl border border-border p-7">
       <div className="flex flex-wrap items-start justify-between gap-8">
@@ -375,7 +377,7 @@ function IncidentCard({ incident }: { incident: SystemStatus }) {
           )}
         </div>
         <div className="flex-shrink-0 text-right font-mono text-[11px] leading-[1.9] text-ink-faint">
-          {incident.application && <div>{incident.application}</div>}
+          <div>{label}</div>
           <div>{formatDate(incident['Created Date'])}</div>
         </div>
       </div>
