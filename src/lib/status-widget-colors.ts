@@ -29,7 +29,7 @@ export function incidentHexColor(publicStatus: SystemStatus['publicStatus'] | un
 }
 
 export function incidentWidgetMessage(status: SystemStatus | null): string {
-  if (!status) return 'All systems operational';
+  if (!status) return 'All Systems Operational';
 
   switch (status.publicStatus) {
     case 'Investigating':
@@ -41,7 +41,7 @@ export function incidentWidgetMessage(status: SystemStatus | null): string {
     case 'Resolved':
       return status.message ? `Resolved: ${status.message}` : 'Resolved';
     default:
-      return status.message || status.publicStatus || 'All systems operational';
+      return status.message || status.publicStatus || 'All Systems Operational';
   }
 }
 

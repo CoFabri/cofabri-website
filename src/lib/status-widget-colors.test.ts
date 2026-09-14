@@ -55,7 +55,7 @@ describe('incidentHexColor', () => {
 
 describe('incidentWidgetMessage', () => {
   it('reports all clear when there is no active status', () => {
-    expect(incidentWidgetMessage(null)).toBe('All systems operational');
+    expect(incidentWidgetMessage(null)).toBe('All Systems Operational');
   });
 
   it('includes the status message when present', () => {
