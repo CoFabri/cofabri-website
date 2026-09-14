@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Handshake } from 'lucide-react'; // No Heroicons equivalent for a handshake glyph — kept as the one exception.
 import {
-  Squares2X2Icon, ArrowTrendingUpIcon, SparklesIcon, BookOpenIcon, DocumentTextIcon, LifebuoyIcon,
+  Squares2X2Icon, ArrowTrendingUpIcon, SparklesIcon, BookOpenIcon, DocumentTextIcon, LifebuoyIcon, CodeBracketIcon,
 } from '@heroicons/react/24/outline';
 import CofabriLogo from './CofabriLogo';
 
@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Changelog', href: '/changelog', icon: SparklesIcon },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
+  { name: 'Developers', href: '/developers', icon: CodeBracketIcon, isNew: true },
   { name: 'Legal', href: '/legal', icon: DocumentTextIcon },
   { name: 'Support', href: '/support', icon: LifebuoyIcon },
 ];
@@ -53,8 +54,11 @@ const Footer = () => {
               <li key={item.name}>
                 <Link
                   href={item.href}
-                  className="text-[#9BA7B0] hover:text-white transition-colors duration-200"
+                  className={`flex items-center gap-1.5 transition-colors duration-200 ${
+                    item.isNew ? 'text-white' : 'text-[#9BA7B0] hover:text-white'
+                  }`}
                 >
+                  {item.isNew ? <span className="size-1.5 rounded-full bg-[#5AA0F5]" aria-hidden="true" /> : null}
                   {item.name}
                 </Link>
               </li>
