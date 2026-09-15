@@ -148,7 +148,7 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
 
   return (
     <div className="border-t border-border px-7 py-[18px] first:border-t-0">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 sm:grid sm:grid-cols-[200px_1fr_90px_130px] sm:justify-normal sm:gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 lg:grid lg:grid-cols-[200px_1fr_90px_130px] lg:justify-normal lg:gap-8">
         <div className="flex items-center gap-2.5">
           <span
             className={`block h-2 w-2 flex-shrink-0 rounded-full ${
@@ -157,7 +157,7 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
           />
           <span className="text-base font-semibold text-foreground">{service.name}</span>
         </div>
-        <div className="order-3 w-full sm:order-none sm:w-auto">
+        <div className="order-3 w-full lg:order-none lg:w-auto">
           <div className="flex h-[26px] items-stretch gap-[2px]">
             {bars.map((status, i) => {
               const date = uptimeWindow[i];
@@ -175,16 +175,16 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
             })}
           </div>
         </div>
-        <span className="order-1 justify-self-end font-mono text-[13px] text-ink-body sm:order-none">
-          {uptimePct}%
-        </span>
-        <span
-          className={`order-2 justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold sm:order-none ${
-            service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
-          }`}
-        >
-          {service.incident ? service.incident.publicStatus : 'Operational'}
-        </span>
+        <div className="order-1 flex items-center gap-2 lg:contents">
+          <span className="justify-self-end font-mono text-[13px] text-ink-body">{uptimePct}%</span>
+          <span
+            className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
+              service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
+            }`}
+          >
+            {service.incident ? service.incident.publicStatus : 'Operational'}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -315,7 +315,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
         <RevealSection className="mt-6 overflow-hidden rounded-2xl border border-border">
           <div className="flex items-center justify-between bg-muted px-7 py-5">
             <span className="text-[15px] font-semibold text-foreground">Services</span>
-            <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint sm:block">
+            <span className="hidden font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint lg:block">
               {UPTIME_WINDOW_DAYS}-day uptime
             </span>
           </div>
