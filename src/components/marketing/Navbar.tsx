@@ -228,11 +228,14 @@ const Navbar = ({ logo, loginUrl }: { logo: React.ReactNode; loginUrl?: string }
                   </Link>
                 </div>
 
-                <Link href="/apps" onClick={() => setOpen(false)}>
-                  <Button className="h-[54px] w-full rounded-[11px] text-[15px] font-semibold">
-                    Explore apps
-                  </Button>
-                </Link>
+                {loginUrl ? (
+                  <a href={loginUrl} onClick={() => setOpen(false)}>
+                    <Button className="h-[54px] w-full gap-1.5 rounded-[11px] text-[15px] font-semibold">
+                      <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
+                      Login
+                    </Button>
+                  </a>
+                ) : null}
               </div>
               </div>
             </SheetContent>
