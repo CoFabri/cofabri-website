@@ -787,10 +787,6 @@
   animation: gradient-x 15s ease infinite;
 }
 
-main {
-  min-height: 100vh;
-}
-
 /* Hero aurora background (decorative, homepage hero) */
 .hero-aurora {
   position: absolute;

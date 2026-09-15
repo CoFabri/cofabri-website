@@ -136,7 +136,10 @@ export default function RootLayout({
               "copyrightYear": new Date().getFullYear()
             }}
           />
-          <Navbar logo={<CofabriLogo height={56} clearSpace="dense" href="/" />} />
+          <Navbar
+            logo={<CofabriLogo height={56} clearSpace="dense" href="/" />}
+            loginUrl={process.env.COFABRI_API_BASE_URL ? `${process.env.COFABRI_API_BASE_URL}/web/account` : undefined}
+          />
           <SitewideBanner />
           <main className="flex-grow">
             {children}

@@ -7,12 +7,12 @@ import {
 import CofabriLogo from './CofabriLogo';
 
 const navigation = [
+  { name: 'Developers', href: '/developers', icon: CodeBracketIcon, featured: true },
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
   { name: 'Partners', href: '/partners', icon: Handshake },
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Changelog', href: '/changelog', icon: SparklesIcon },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
-  { name: 'Developers', href: '/developers', icon: CodeBracketIcon, isNew: true },
   { name: 'Legal', href: '/legal', icon: DocumentTextIcon },
   { name: 'Support', href: '/support', icon: LifebuoyIcon },
 ];
@@ -50,19 +50,22 @@ const Footer = () => {
           <CofabriLogo variant="mark" tone="dark" height={40} href="/" />
 
           <ul className="flex items-center gap-6 flex-wrap justify-center text-sm">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-1.5 transition-colors duration-200 ${
-                    item.isNew ? 'text-white' : 'text-[#9BA7B0] hover:text-white'
-                  }`}
-                >
-                  {item.isNew ? <span className="size-1.5 rounded-full bg-[#5AA0F5]" aria-hidden="true" /> : null}
-                  {item.name}
-                </Link>
-              </li>
-            ))}
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-1.5 transition-colors duration-200 ${
+                      item.featured ? 'text-white' : 'text-[#9BA7B0] hover:text-white'
+                    }`}
+                  >
+                    {item.featured ? <Icon className="size-3.5" aria-hidden="true" /> : null}
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           <div className="flex-shrink-0 text-xs text-[#6B7880]">

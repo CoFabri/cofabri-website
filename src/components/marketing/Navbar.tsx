@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
   Squares2X2Icon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon, UserGroupIcon,
-  Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, WindowIcon, EnvelopeIcon,
+  Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, ArrowRightEndOnRectangleIcon, EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -103,7 +103,7 @@ function ThemeToggle({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
   );
 }
 
-const Navbar = ({ logo }: { logo: React.ReactNode }) => {
+const Navbar = ({ logo, loginUrl }: { logo: React.ReactNode; loginUrl?: string }) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -143,16 +143,14 @@ const Navbar = ({ logo }: { logo: React.ReactNode }) => {
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
           <StatusIndicator />
           <ThemeToggle />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button asChild size="icon" aria-label="Explore apps">
-                <Link href="/apps">
-                  <WindowIcon className="h-4 w-4" />
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Explore Apps</TooltipContent>
-          </Tooltip>
+          {loginUrl ? (
+            <Button asChild size="sm" className="gap-1.5">
+              <a href={loginUrl}>
+                <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
+                Login
+              </a>
+            </Button>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
