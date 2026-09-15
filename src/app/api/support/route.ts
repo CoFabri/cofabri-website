@@ -157,34 +157,39 @@ export async function POST(request: Request) {
       );
     }
 
-    // Note: screenshots are accepted by this form but cofabri-api's /web/forms/support
-    // endpoint has no field to persist attachment URLs, so they are not uploaded or sent.
     const screenshots = formData.getAll('screenshots') as File[];
-    if (screenshots.length > 0) {
-      console.log('Screenshots received but not persisted (unsupported by cofabri-api):', screenshots.map(file => file.name));
+
+    // Submit to cofabri-api, which persists the support ticket in Supabase.
+    // Sent as multipart (not JSON) so screenshots can ride along as real
+    // files -- cofabri-api's /web/forms/support endpoint now accepts and
+    // persists them (support_case_screenshots). Do not set a Content-Type
+    // header here: fetch derives the multipart boundary itself from the
+    // FormData body, and a manual header would omit it and break parsing.
+    const apiFormData = new FormData();
+    apiFormData.set('first_name', normalizedFirstName);
+    apiFormData.set('last_name', normalizedLastName);
+    apiFormData.set('email', normalizedEmail);
+    apiFormData.set('subject', toApiSubjectLabel(normalizedSubject));
+    apiFormData.set('description', normalizedDescription);
+    if (applicationsArray[0]) apiFormData.set('app_id', applicationsArray[0]);
+    const apiSubjectType = toApiSubjectType(normalizedSubject);
+    if (apiSubjectType) apiFormData.set('subject_type', apiSubjectType);
+    if (normalizedPreferredContactMethod) apiFormData.set('preferred_contact_method', normalizedPreferredContactMethod);
+    if (normalizedCompanyOrganization) apiFormData.set('company_organization', normalizedCompanyOrganization);
+    const apiLanguagePreference = toApiLanguagePreference(normalizedLanguagePreference);
+    if (apiLanguagePreference) apiFormData.set('language_preference', apiLanguagePreference);
+    for (const file of screenshots) {
+      apiFormData.append('screenshots', file, file.name);
     }
 
-    // Submit to cofabri-api, which persists the support ticket in Supabase
     let apiRes: Response;
     try {
       apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/support`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.COFABRI_API_KEY}`,
         },
-        body: JSON.stringify({
-          first_name: normalizedFirstName,
-          last_name: normalizedLastName,
-          email: normalizedEmail,
-          subject: toApiSubjectLabel(normalizedSubject),
-          description: normalizedDescription,
-          app_id: applicationsArray[0],
-          subject_type: toApiSubjectType(normalizedSubject),
-          preferred_contact_method: normalizedPreferredContactMethod || undefined,
-          company_organization: normalizedCompanyOrganization || undefined,
-          language_preference: toApiLanguagePreference(normalizedLanguagePreference),
-        }),
+        body: apiFormData,
       });
     } catch (fetchError) {
       console.error('cofabri-api support submission unreachable:', fetchError);
