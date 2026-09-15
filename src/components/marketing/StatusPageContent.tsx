@@ -175,11 +175,11 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
             })}
           </div>
         </div>
-        <span className="hidden justify-self-end font-mono text-[13px] text-ink-body sm:block">
+        <span className="order-1 justify-self-end font-mono text-[13px] text-ink-body sm:order-none">
           {uptimePct}%
         </span>
         <span
-          className={`justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold ${
+          className={`order-2 justify-self-end rounded-full px-2.5 py-1 text-xs font-semibold sm:order-none ${
             service.incident ? incidentPillClasses(service.incident.publicStatus) : 'bg-success/15 text-success'
           }`}
         >
