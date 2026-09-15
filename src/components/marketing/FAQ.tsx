@@ -52,7 +52,7 @@ const FAQ = () => {
             </h2>
             <p className="mt-4 text-base text-muted-foreground">
               Still stuck?{' '}
-              <Link href="/contact" className="font-medium text-primary hover:text-accent-hover">
+              <Link href="/contact?topic=general" className="font-medium text-primary hover:text-accent-hover">
                 Talk to us
               </Link>
               .

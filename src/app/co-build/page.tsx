@@ -17,12 +17,12 @@ export const metadata: Metadata = {
     'industry partner',
   ],
   alternates: {
-    canonical: '/partners',
+    canonical: '/co-build',
   },
   openGraph: {
     title: 'Co-Build | CoFabri',
     description: 'Bring the industry expertise and the customers. We build the product. You keep a stake in what we ship together.',
-    url: 'https://cofabri.com/partners',
+    url: 'https://cofabri.com/co-build',
     images: [
       {
         url: 'https://files.cofabri.com/logos/cofabri/cofabri-og-image.png',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PartnersPage() {
+export default function CoBuildPage() {
   return (
     <Suspense
       fallback={

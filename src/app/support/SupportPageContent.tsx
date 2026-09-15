@@ -21,7 +21,7 @@ const SUPPORT_CARDS = [
   {
     title: 'Contact us',
     body: 'General inquiries, partnerships, or anything that is not a bug.',
-    href: '/contact',
+    href: '/contact?topic=general',
     action: 'Get in touch',
   },
 ];

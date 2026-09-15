@@ -8,7 +8,7 @@ import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
 import PhoneField from './PhoneField';
 import PreferredContactMethodField from './PreferredContactMethodField';
-import { contactSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS } from '@/lib/validation/schemas';
+import { contactSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS, INQUIRY_TYPES } from '@/lib/validation/schemas';
 import { formatNameInput } from '@/lib/validation/name';
 import { formatEmailInput } from '@/lib/validation/email';
 import { DEFAULT_COUNTRY, formatPhoneAsYouType, isValidPhone, normalizePhone, type CountryCode } from '@/lib/validation/phone';
@@ -23,7 +23,7 @@ interface FormData {
   message: string;
   languagePreference: string;
   relatedApp: string;
-  inquiryType: '' | 'sales' | 'general';
+  inquiryType: '' | (typeof INQUIRY_TYPES)[number]['value'];
 }
 
 interface FormErrors {
@@ -289,6 +289,10 @@ export default function ContactForm() {
     const email = searchParams?.get('email') || '';
     const rawPhone = searchParams?.get('phone') || '';
     const language = searchParams?.get('language') || 'English';
+    const urlTopic = searchParams?.get('topic') || '';
+    const topic = INQUIRY_TYPES.some(type => type.value === urlTopic)
+      ? (urlTopic as (typeof INQUIRY_TYPES)[number]['value'])
+      : '';
 
     // Format phone number if it comes from URL parameters. This only runs
     // at mount (before the user could have picked a different country), so
@@ -302,7 +306,8 @@ export default function ContactForm() {
       lastName,
       email,
       phone,
-      languagePreference: language
+      languagePreference: language,
+      ...(topic ? { inquiryType: topic } : {})
     }));
   }, [searchParams]);
 
@@ -374,7 +379,7 @@ export default function ContactForm() {
   const handleInquiryTypeChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      inquiryType: value as 'sales' | 'general'
+      inquiryType: value as (typeof INQUIRY_TYPES)[number]['value']
     }));
     if (errors.inquiryType) {
       setErrors(prev => ({
@@ -701,10 +706,7 @@ export default function ContactForm() {
             What can we help with? *
           </label>
           <SimpleDropdown
-            options={[
-              { value: 'sales', label: 'Sales / partnership inquiry' },
-              { value: 'general', label: 'General question / support' },
-            ]}
+            options={[...INQUIRY_TYPES]}
             value={formData.inquiryType}
             onChange={handleInquiryTypeChange}
             placeholder="Select an option"

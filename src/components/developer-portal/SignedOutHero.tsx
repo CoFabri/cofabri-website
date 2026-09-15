@@ -98,7 +98,7 @@ export function SignedOutHero({ signinUrl }: { signinUrl: string | null }) {
                 </span>
               )}
               <Link
-                href="/contact"
+                href="/contact?topic=developer"
                 className="inline-flex items-center rounded-lg border border-border-strong bg-card px-5.5 py-3.5 text-base font-semibold text-foreground transition-colors hover:border-ink-faint"
               >
                 Request access

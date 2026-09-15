@@ -32,7 +32,7 @@ export default function PartnersPageContent() {
         }}
       />
       <div className="mb-14">
-        <Breadcrumbs items={[{ name: 'Co-Build', href: '/partners' }]} />
+        <Breadcrumbs items={[{ name: 'Co-Build', href: '/co-build' }]} />
       </div>
 
       <PageHero

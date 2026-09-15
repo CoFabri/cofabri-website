@@ -9,7 +9,7 @@ import CofabriLogo from './CofabriLogo';
 const navigation = [
   { name: 'Developers', href: '/developers', icon: CodeBracketIcon, featured: true },
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
-  { name: 'Partners', href: '/partners', icon: Handshake },
+  { name: 'Co-Build', href: '/co-build', icon: Handshake },
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Changelog', href: '/changelog', icon: SparklesIcon },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },

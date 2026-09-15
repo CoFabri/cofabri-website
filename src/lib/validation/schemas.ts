@@ -18,6 +18,16 @@ export const FIELD_LIMITS = {
   appIds: 50,
 } as const;
 
+// Shared between the contact form's dropdown/URL-prefill and the server-side
+// Zod schema so the two never drift apart.
+export const INQUIRY_TYPES = [
+  { value: 'sales', label: 'Sales / partnership inquiry' },
+  { value: 'general', label: 'General question / support' },
+  { value: 'developer', label: 'Developer / partner access' },
+  { value: 'media', label: 'Media / press inquiry' },
+  { value: 'billing', label: 'Billing / account' },
+] as const;
+
 function nameField(label: string) {
   return z
     .string()
@@ -88,13 +98,13 @@ export const contactSchema = z.object({
   languagePreference: z.string().trim().optional(),
   relatedApp: z.string().trim().optional(),
   // Missing entirely (e.g. a direct API call) defaults to 'general'; present
-  // but not one of the two valid values (including '') is a validation error.
+  // but not one of the valid values (including '') is a validation error.
   inquiryType: z
     .string()
     .optional()
     .transform((value) => value ?? 'general')
     .refine(
-      (value) => value === 'sales' || value === 'general',
+      (value) => INQUIRY_TYPES.some((type) => type.value === value),
       'Please select what this is about, then try again.'
     ),
 });
