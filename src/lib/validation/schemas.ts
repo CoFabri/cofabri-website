@@ -21,11 +21,11 @@ export const FIELD_LIMITS = {
 // Shared between the contact form's dropdown/URL-prefill and the server-side
 // Zod schema so the two never drift apart.
 export const INQUIRY_TYPES = [
-  { value: 'sales', label: 'Sales / partnership inquiry' },
-  { value: 'general', label: 'General question / support' },
-  { value: 'developer', label: 'Developer / partner access' },
-  { value: 'media', label: 'Media / press inquiry' },
-  { value: 'billing', label: 'Billing / account' },
+  { value: 'sales', label: 'Sales / Partnership Inquiry' },
+  { value: 'general', label: 'General Question / Support' },
+  { value: 'developer', label: 'Developer / Partner Access' },
+  { value: 'media', label: 'Media / Press Inquiry' },
+  { value: 'billing', label: 'Billing / Account' },
 ] as const;
 
 function nameField(label: string) {
