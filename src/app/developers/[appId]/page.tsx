@@ -18,6 +18,7 @@ import { getApp } from '@/lib/api-client';
 import { fetchAppSpec } from '@/lib/developer-portal/fetch-app-spec';
 import { flattenEndpoints, groupByTag } from '@/lib/developer-portal/openapi-types';
 import { getAppGuide } from '@/lib/developer-portal/guides';
+import { AppMonogram } from '@/components/developer-portal/AppMonogram';
 import { DocsSidebar } from '@/components/developer-portal/docs/DocsSidebar';
 import { AiPanel } from '@/components/developer-portal/docs/AiPanel';
 import { GuideBlockView } from '@/components/developer-portal/docs/GuideBlockView';
@@ -79,6 +80,7 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
             ← Developers
           </Link>
           <span className="text-border-strong">/</span>
+          <AppMonogram appId={app.id} appName={app.name} faviconUrl={app.faviconUrl} size={22} />
           <span className="truncate text-[14px] font-medium text-foreground">{app.name}</span>
           <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[12px] text-muted-foreground">v{spec.info.version}</span>
         </div>
@@ -100,7 +102,10 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
 
         <main className="min-w-0 flex-1 px-6 py-10 lg:px-10">
           <div id="overview" className="scroll-mt-24">
-            <div className="font-mono text-[12px] uppercase tracking-wide text-muted-foreground">{app.name} · REST API</div>
+            <div className="flex items-center gap-3">
+              <AppMonogram appId={app.id} appName={app.name} faviconUrl={app.faviconUrl} size={40} />
+              <div className="font-mono text-[12px] uppercase tracking-wide text-muted-foreground">{app.name} · REST API</div>
+            </div>
             <h1 className="mt-3 text-[36px] font-semibold leading-tight tracking-tight">{spec.info.title}</h1>
             {spec.info.description ? (
               <p className="mt-4 max-w-[640px] text-[17px] leading-relaxed text-muted-foreground">{spec.info.description}</p>

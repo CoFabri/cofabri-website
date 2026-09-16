@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
@@ -12,6 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import StatusIndicator from './StatusIndicator';
+import type { AccountIdentity } from '@/lib/account/identity';
+
+function initialsFor(account: AccountIdentity): string {
+  return `${account.firstName?.charAt(0) ?? ''}${account.lastName?.charAt(0) ?? ''}`.toUpperCase() || account.email.charAt(0).toUpperCase();
+}
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
@@ -103,7 +109,15 @@ function ThemeToggle({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
   );
 }
 
-const Navbar = ({ logo, loginUrl }: { logo: React.ReactNode; loginUrl?: string }) => {
+const Navbar = ({
+  logo,
+  loginUrl,
+  account,
+}: {
+  logo: React.ReactNode;
+  loginUrl?: string;
+  account?: AccountIdentity | null;
+}) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -143,7 +157,27 @@ const Navbar = ({ logo, loginUrl }: { logo: React.ReactNode; loginUrl?: string }
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
           <StatusIndicator />
           <ThemeToggle />
-          {loginUrl ? (
+          {account ? (
+            <a
+              href={loginUrl}
+              className="flex items-center gap-2.5 rounded-full border border-border py-[5px] pl-[5px] pr-3 text-sm font-medium text-foreground transition-colors hover:border-border-strong"
+            >
+              {account.avatarUrl ? (
+                <Image
+                  src={account.avatarUrl}
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="size-[26px] shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex size-[26px] shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-accent-foreground">
+                  {initialsFor(account)}
+                </span>
+              )}
+              {account.email}
+            </a>
+          ) : loginUrl ? (
             <Button asChild size="sm" className="gap-1.5">
               <a href={loginUrl}>
                 <ArrowRightEndOnRectangleIcon className="h-4 w-4" />
@@ -228,7 +262,28 @@ const Navbar = ({ logo, loginUrl }: { logo: React.ReactNode; loginUrl?: string }
                   </Link>
                 </div>
 
-                {loginUrl ? (
+                {account ? (
+                  <a
+                    href={loginUrl}
+                    onClick={() => setOpen(false)}
+                    className="flex h-[54px] w-full items-center gap-3 rounded-[11px] border border-border px-4 text-[15px] font-semibold text-foreground"
+                  >
+                    {account.avatarUrl ? (
+                      <Image
+                        src={account.avatarUrl}
+                        alt=""
+                        width={32}
+                        height={32}
+                        className="size-8 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-[13px] font-semibold text-accent-foreground">
+                        {initialsFor(account)}
+                      </span>
+                    )}
+                    <span className="truncate">{account.email}</span>
+                  </a>
+                ) : loginUrl ? (
                   <a href={loginUrl} onClick={() => setOpen(false)}>
                     <Button className="h-[54px] w-full gap-1.5 rounded-[11px] text-[15px] font-semibold">
                       <ArrowRightEndOnRectangleIcon className="h-4 w-4" />

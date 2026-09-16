@@ -10,6 +10,8 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import CookieConsent from "@/components/marketing/CookieConsent";
 import StructuredData from "@/components/marketing/StructuredData";
 import { ThemeProvider } from "@/components/theme-provider";
+import { getDeveloperPortalAccessToken } from "@/lib/developer-portal/session";
+import { getAccountIdentity } from "@/lib/account/identity";
 
 export const runtime = 'nodejs';
 
@@ -107,11 +109,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const accessToken = await getDeveloperPortalAccessToken();
+  const account = await getAccountIdentity(accessToken);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -139,6 +144,7 @@ export default function RootLayout({
           <Navbar
             logo={<CofabriLogo height={56} clearSpace="dense" href="/" />}
             loginUrl={process.env.COFABRI_API_BASE_URL ? `${process.env.COFABRI_API_BASE_URL}/web/account` : undefined}
+            account={account}
           />
           <SitewideBanner />
           <main className="flex-grow">

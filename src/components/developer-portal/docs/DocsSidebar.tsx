@@ -11,7 +11,7 @@ export function DocsSidebar({
   groups: { tag: string; endpoints: SpecEndpoint[] }[];
 }) {
   return (
-    <nav className="hidden shrink-0 border-r border-border py-8 pr-5 lg:block lg:w-[220px]">
+    <nav className="hidden shrink-0 self-start border-r border-border py-8 pr-5 lg:sticky lg:top-[68px] lg:block lg:max-h-[calc(100vh-68px)] lg:w-[220px] lg:overflow-y-auto">
       {guide ? (
         <>
           <div className="px-2 pb-2 font-mono text-[11px] font-medium uppercase tracking-wide text-muted-foreground">

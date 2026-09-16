@@ -1,8 +1,7 @@
 // src/components/developer-portal/AppCard.tsx
 
-import Image from 'next/image';
 import type { DeveloperPortalApp } from '@/lib/developer-portal/types';
-import { monogramClassesFor } from './app-monogram-palette';
+import { AppMonogram } from './AppMonogram';
 
 function hostFor(appUrl: string | null): string | null {
   if (!appUrl) return null;
@@ -11,27 +10,6 @@ function hostFor(appUrl: string | null): string | null {
   } catch {
     return null;
   }
-}
-
-function Monogram({ app }: { app: DeveloperPortalApp }) {
-  const logo = app.faviconUrl ?? app.logoUrl;
-  if (logo) {
-    return (
-      <Image
-        src={logo}
-        alt=""
-        width={44}
-        height={44}
-        className="size-11 shrink-0 rounded-[10px] object-contain bg-secondary"
-      />
-    );
-  }
-  const { bg, fg } = monogramClassesFor(app.appId);
-  return (
-    <div className={`flex size-11 shrink-0 items-center justify-center rounded-[10px] text-lg font-semibold tracking-tight ${bg} ${fg}`}>
-      {app.appName.charAt(0).toUpperCase()}
-    </div>
-  );
 }
 
 export function AppCard({ app }: { app: DeveloperPortalApp }) {
@@ -45,7 +23,7 @@ export function AppCard({ app }: { app: DeveloperPortalApp }) {
       }`}
     >
       <div className="flex items-center gap-3.5">
-        <Monogram app={app} />
+        <AppMonogram appId={app.appId} appName={app.appName} logoUrl={app.logoUrl} faviconUrl={app.faviconUrl} />
         <div className="min-w-0">
           <div className="text-[19px] font-semibold tracking-tight text-foreground">{app.appName}</div>
           {host ? <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{host}</div> : null}
@@ -64,11 +42,9 @@ export function AppCard({ app }: { app: DeveloperPortalApp }) {
         {hasDocs ? (
           <a
             href={app.apiDocsUrl!}
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
           >
-            View API Docs <span aria-hidden="true">↗</span>
+            View API Docs
           </a>
         ) : (
           <span className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
