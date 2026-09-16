@@ -1,4 +1,4 @@
-import { getSystemStatus, SystemStatus } from '@/lib/status-api';
+import { getSystemStatusOrThrow, SystemStatus } from '@/lib/status-api';
 import { NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
@@ -31,26 +31,39 @@ export async function GET() {
       return response;
     }
     
-    // Fetch fresh data from Airtable
-    console.log('Fetching fresh status from Airtable');
-    const status = await getSystemStatus();
-    
-    // Update cache
-    statusCache = status;
-    cacheTimestamp = now;
-    
+    // Fetch fresh data from cofabri-api
+    console.log('Fetching fresh status from cofabri-api');
+    let status: SystemStatus[];
+    let refreshFailed = false;
+    try {
+      status = await getSystemStatusOrThrow();
+      // Update cache only on a successful fetch -- a transient upstream
+      // failure must not overwrite a good cache with a false "all clear"
+      // (see getSystemStatusOrThrow's doc comment).
+      statusCache = status;
+      cacheTimestamp = now;
+    } catch (error) {
+      if (!statusCache) throw error; // nothing to fall back on -- let the outer catch handle it
+      console.error('Serving stale status cache after refresh failure:', error);
+      status = statusCache;
+      refreshFailed = true;
+    }
+
     // Create response with CORS headers for external access
     const response = NextResponse.json(status);
-    
+
     // Add CORS headers to allow external applications to access this API
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // Add cache headers for fresh response
-    response.headers.set('Cache-Control', `public, max-age=${Math.floor(CACHE_DURATION / 1000)}`);
-    response.headers.set('X-Cache', 'MISS');
-    
+
+    // Add cache headers for fresh response (or, on a failed refresh, the stale fallback)
+    response.headers.set(
+      'Cache-Control',
+      refreshFailed ? 'public, max-age=0, stale-while-revalidate=300' : `public, max-age=${Math.floor(CACHE_DURATION / 1000)}`
+    );
+    response.headers.set('X-Cache', refreshFailed ? 'STALE' : 'MISS');
+
     return response;
   } catch (error) {
     console.error('Error fetching system status:', error);

@@ -1,4 +1,4 @@
-import { getSystemStatus, SystemStatus } from '@/lib/status-api';
+import { getSystemStatusOrThrow, SystemStatus } from '@/lib/status-api';
 import { escapeHtml, incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -26,10 +26,19 @@ export async function GET(request: NextRequest) {
     if (statusCache && (now - cacheTimestamp) < CACHE_DURATION) {
       console.log('Serving status widget from cache');
     } else {
-      // Fetch fresh data from Airtable
-      console.log('Fetching fresh status for widget from Airtable');
-      statusCache = await getSystemStatus();
-      cacheTimestamp = now;
+      // Fetch fresh data from cofabri-api. Update the cache only on success
+      // -- a transient upstream failure must not overwrite a good cache
+      // with a false "no incidents" for the next 5 minutes (see
+      // getSystemStatusOrThrow's doc comment). No prior cache to fall back
+      // on throws through to the outer catch below.
+      console.log('Fetching fresh status for widget from cofabri-api');
+      try {
+        statusCache = await getSystemStatusOrThrow();
+        cacheTimestamp = now;
+      } catch (error) {
+        if (!statusCache) throw error;
+        console.error('Serving stale status widget cache after refresh failure:', error);
+      }
     }
 
     const statuses = statusCache;

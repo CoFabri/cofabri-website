@@ -62,6 +62,42 @@ describe('getSystemStatus', () => {
   });
 });
 
+describe('getSystemStatusOrThrow', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('resolves with incidents on success, same as getSystemStatus', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ incidents: [{ ticketId: 'T-1', publicStatus: 'Investigating' }] }),
+    });
+
+    const { getSystemStatusOrThrow } = await import('./status-api');
+    const statuses = await getSystemStatusOrThrow();
+
+    expect(statuses).toHaveLength(1);
+    expect(statuses[0].ticketId).toBe('T-1');
+  });
+
+  it('rejects instead of swallowing the error when the request fails', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+
+    const { getSystemStatusOrThrow } = await import('./status-api');
+
+    await expect(getSystemStatusOrThrow()).rejects.toThrow('cofabri-api status-feed returned 500');
+  });
+});
+
 describe('getServiceUptimeHistory', () => {
   const originalFetch = global.fetch;
   const originalBaseUrl = process.env.COFABRI_API_BASE_URL;

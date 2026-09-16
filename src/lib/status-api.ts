@@ -69,48 +69,64 @@ interface StatusFeedResponse {
   }>;
 }
 
+async function fetchStatusFeedIncidents(): Promise<SystemStatus[]> {
+  const baseUrl = process.env.COFABRI_API_BASE_URL;
+  if (!baseUrl) {
+    throw new Error('COFABRI_API_BASE_URL is not configured');
+  }
+
+  const response = await fetch(`${baseUrl}/web/content/status-feed`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) {
+    throw new Error(`cofabri-api status-feed returned ${response.status}`);
+  }
+
+  const data = (await response.json()) as StatusFeedResponse;
+
+  return (data.incidents ?? []).map(incident => {
+    const publicStatus = incident.publicStatus || 'Monitoring';
+
+    return {
+      ticketId: incident.ticketId || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: incident.title || `System Issue - ${publicStatus}`,
+      publicStatus,
+      severity: incident.severity || 'Medium',
+      message:
+        incident.message ||
+        `We are currently ${publicStatus.toLowerCase()} a system issue. Our team is working to resolve this as quickly as possible.`,
+      'Created Date': incident['Created Date'] || new Date().toISOString(),
+      'Updated At': incident['Updated At'] || new Date().toISOString(),
+      'Resolved Date': incident['Resolved Date'] || '',
+      affectedServices: incident.affectedServices || [],
+      application: incident.application || 'CoFabri System',
+      updates: incident.updates || '',
+      affectedAppIds: incident.affectedAppIds || [],
+      isPlatformWide: incident.isPlatformWide || false,
+      isThirdParty: incident.isThirdParty || false,
+    };
+  });
+}
+
 export async function getSystemStatus(): Promise<SystemStatus[]> {
   try {
-    const baseUrl = process.env.COFABRI_API_BASE_URL;
-    if (!baseUrl) {
-      throw new Error('COFABRI_API_BASE_URL is not configured');
-    }
-
-    const response = await fetch(`${baseUrl}/web/content/status-feed`, {
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) {
-      throw new Error(`cofabri-api status-feed returned ${response.status}`);
-    }
-
-    const data = (await response.json()) as StatusFeedResponse;
-
-    return (data.incidents ?? []).map(incident => {
-      const publicStatus = incident.publicStatus || 'Monitoring';
-
-      return {
-        ticketId: incident.ticketId || `TICKET-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        title: incident.title || `System Issue - ${publicStatus}`,
-        publicStatus,
-        severity: incident.severity || 'Medium',
-        message:
-          incident.message ||
-          `We are currently ${publicStatus.toLowerCase()} a system issue. Our team is working to resolve this as quickly as possible.`,
-        'Created Date': incident['Created Date'] || new Date().toISOString(),
-        'Updated At': incident['Updated At'] || new Date().toISOString(),
-        'Resolved Date': incident['Resolved Date'] || '',
-        affectedServices: incident.affectedServices || [],
-        application: incident.application || 'CoFabri System',
-        updates: incident.updates || '',
-        affectedAppIds: incident.affectedAppIds || [],
-        isPlatformWide: incident.isPlatformWide || false,
-        isThirdParty: incident.isThirdParty || false,
-      };
-    });
+    return await fetchStatusFeedIncidents();
   } catch (error) {
     console.error('Error fetching system status:', error);
     return [];
   }
+}
+
+// Same fetch as getSystemStatus, but propagates a failure instead of masking
+// it as "no incidents" -- for the in-memory-cached API routes (/api/status,
+// /api/status/[app], /api/status/[app]/data, /api/status-widget). Those
+// routes only refetch every CACHE_DURATION; if a transient upstream failure
+// were swallowed to [], it would overwrite a good cache with a false "all
+// operational" for the next 5 minutes instead of retrying. Callers should
+// catch this and keep serving their last-known-good cache rather than
+// treating the empty array as ground truth.
+export async function getSystemStatusOrThrow(): Promise<SystemStatus[]> {
+  return fetchStatusFeedIncidents();
 }
 
 // Same endpoint as getSystemStatus, fetched separately rather than combined

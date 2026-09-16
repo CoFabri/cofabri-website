@@ -1,4 +1,4 @@
-import { getSystemStatus, SystemStatus } from '@/lib/status-api';
+import { getSystemStatusOrThrow, SystemStatus } from '@/lib/status-api';
 import { incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -30,8 +30,18 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const now = Date.now();
 
     if (!statusCache || now - cacheTimestamp >= CACHE_DURATION) {
-      statusCache = await getSystemStatus();
-      cacheTimestamp = now;
+      try {
+        // Update the cache only on a successful fetch -- a transient
+        // upstream failure must not overwrite a good cache with a false
+        // "no incidents" for the next 5 minutes (see
+        // getSystemStatusOrThrow's doc comment). If there's no prior cache
+        // to fall back on, this throws through to the outer catch below.
+        statusCache = await getSystemStatusOrThrow();
+        cacheTimestamp = now;
+      } catch (error) {
+        if (!statusCache) throw error;
+        console.error('Serving stale status cache after refresh failure:', error);
+      }
     }
 
     // Filter statuses to only include those affecting this app: platform-wide
