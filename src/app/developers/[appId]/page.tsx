@@ -20,6 +20,7 @@ import { flattenEndpoints, groupByTag } from '@/lib/developer-portal/openapi-typ
 import { getAppGuide } from '@/lib/developer-portal/guides';
 import { AppMonogram } from '@/components/developer-portal/AppMonogram';
 import { DocsSidebar } from '@/components/developer-portal/docs/DocsSidebar';
+import { UseWithAiButton } from '@/components/developer-portal/docs/UseWithAiButton';
 import { AiPanel } from '@/components/developer-portal/docs/AiPanel';
 import { GuideBlockView } from '@/components/developer-portal/docs/GuideBlockView';
 import { EndpointCard, endpointSlug } from '@/components/developer-portal/docs/EndpointCard';
@@ -85,15 +86,7 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
           <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[12px] text-muted-foreground">v{spec.info.version}</span>
         </div>
         <div className="flex flex-none items-center gap-2">
-          <a
-            href={specUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-lg border border-accent-solid/25 bg-accent px-3.5 py-2 text-[13.5px] font-semibold text-accent-foreground hover:border-accent-solid/50"
-          >
-            <span className="font-mono text-[12px]">{'{ }'}</span>
-            Use with AI
-          </a>
+          <UseWithAiButton appName={app.name} specUrl={specUrl} llmsTxtUrl={llmsTxtUrl} />
         </div>
       </header>
 

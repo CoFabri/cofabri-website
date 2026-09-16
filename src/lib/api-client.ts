@@ -38,6 +38,7 @@ export interface App {
   betaStatements?: BetaStatement[];
   betaCapacity?: number | null;
   betaSpotsFilled?: number;
+  documentation?: string;
 }
 
 interface AppRow {
@@ -54,6 +55,7 @@ interface AppRow {
   launch_date: string | null;
   latest_release_date: string | null;
   featured_app: boolean;
+  documentation: string | null;
   // Only present on the single-app endpoint (getApp); the list endpoint
   // (getApps) never includes it.
   beta_statements?: BetaStatement[];
@@ -102,6 +104,7 @@ function mapApp(row: AppRow): App {
     betaStatements: row.beta_statements,
     betaCapacity: row.beta_capacity,
     betaSpotsFilled: row.beta_spots_filled,
+    documentation: row.documentation || undefined,
   };
 }
 
