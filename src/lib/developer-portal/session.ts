@@ -1,28 +1,20 @@
 // src/lib/developer-portal/session.ts
 //
-// Session handling scoped to /developers only -- cofabri-website has no
-// site-wide auth/session of its own today. This cookie is set exclusively
-// by /developers/callback and read only here.
+// /developers reads the same central session cookie (cofabri_session) the
+// rest of the site's sign-in flow sets, shared across cofabri.com via
+// CentralSessionCookie's CENTRAL_ACCOUNT_ROOT_DOMAIN-scoped cookie domain.
+// This site never verifies the cookie itself (it's HMAC-signed by
+// cofabri-api, opaque here) -- it just forwards the raw value as a Cookie
+// header on server-to-server calls to cofabri-api, which is the one that
+// actually authenticates it. A missing or invalid cookie both look like
+// "signed out" here; cofabri-api's own 401 is what tells them apart.
 
 import { cookies } from 'next/headers';
 
 export const DEVELOPER_PORTAL_APP_ID = 'cofabri-website';
-export const DEVELOPER_PORTAL_SESSION_COOKIE = 'dev_portal_at';
-
-// Matches a typical Supabase access-token lifetime. There's no refresh
-// flow here -- once this expires, /developers just falls back to the
-// signed-out state and the person signs in again.
-const SESSION_MAX_AGE_SECONDS = 60 * 60;
-
-export const DEVELOPER_PORTAL_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  path: '/developers',
-  maxAge: SESSION_MAX_AGE_SECONDS,
-};
+const CENTRAL_SESSION_COOKIE = 'cofabri_session';
 
 export async function getDeveloperPortalAccessToken(): Promise<string | null> {
   const store = await cookies();
-  return store.get(DEVELOPER_PORTAL_SESSION_COOKIE)?.value ?? null;
+  return store.get(CENTRAL_SESSION_COOKIE)?.value ?? null;
 }
