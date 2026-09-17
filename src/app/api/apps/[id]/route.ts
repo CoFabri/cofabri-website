@@ -22,7 +22,7 @@ export async function GET(
     const app = await getApp(id);
 
     if (!app) {
-      throw new Error('Invalid app data response');
+      return NextResponse.json({ error: 'App not found' }, { status: 404 });
     }
 
     const response: AppData = {
