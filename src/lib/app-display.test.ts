@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { statusPillClasses, markPalette, appMomentum, actionLabel, actionHref, isLaunchingToday } from './app-display';
+import { statusPillClasses, markPalette, hexToRgba, appMomentum, actionLabel, actionHref, isLaunchingToday } from './app-display';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 
 function app(overrides: Partial<App> = {}): App {
@@ -27,6 +27,20 @@ describe('markPalette', () => {
 
   it('can produce different palettes for different ids', () => {
     expect(markPalette('a')).not.toBe(markPalette('bb'));
+  });
+});
+
+describe('hexToRgba', () => {
+  it('converts a 6-digit hex color to an rgba() string at the given alpha', () => {
+    expect(hexToRgba('#0E5F62', 0.055)).toBe('rgba(14, 95, 98, 0.055)');
+  });
+
+  it('works without a leading #', () => {
+    expect(hexToRgba('0E5F62', 0.055)).toBe('rgba(14, 95, 98, 0.055)');
+  });
+
+  it('is case-insensitive', () => {
+    expect(hexToRgba('#0e5f62', 0.5)).toBe('rgba(14, 95, 98, 0.5)');
   });
 });
 

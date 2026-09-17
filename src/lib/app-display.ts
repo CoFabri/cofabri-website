@@ -65,6 +65,17 @@ export function markPalette(id: string): string {
   return MARK_PALETTES[hash % MARK_PALETTES.length];
 }
 
+// apps.primary_color is stored as a plain "#RRGGBB" hex string (see the
+// admin edit form's color picker in cofabri-core). The 2a hero design needs
+// it as a low-alpha decorative fill, which CSS can only express as rgba().
+export function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 const QUARTER_MS = 90 * 24 * 60 * 60 * 1000;
 
 export function appMomentum(app: App, roadmap: RoadmapFeature[]): string {
