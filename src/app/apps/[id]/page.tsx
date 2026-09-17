@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/status-api';
-import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalette, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, hasActiveRoadmap, hexToRgba, isExternalAction, markPalette, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
@@ -121,50 +121,33 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
         <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_460px] lg:gap-20">
           <div>
-            {app.logoUrl ? (
-              // The lockup logo stands in for the app name visually; an sr-only
-              // h1 below keeps a real text heading for a11y/SEO. Fixed HEIGHT,
-              // auto width (not app.logoWidth) -- apps' logos vary wildly in
-              // aspect ratio, so matching a per-app width made some apps'
-              // logos render much shorter than others. A native <img> (not
-              // next/image, which needs both dimensions or `fill`) is what
-              // lets the browser derive width from each asset's own intrinsic
-              // ratio while every app's logo keeps the same visual weight.
-              <div className="mb-6">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={app.logoUrl}
-                  alt={app.name}
-                  loading="eager"
-                  className={`h-14 w-auto max-w-full sm:h-16 ${app.logoLightUrl ? 'dark:hidden' : ''}`}
-                />
-                {app.logoLightUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={app.logoLightUrl}
-                    alt=""
-                    loading="eager"
-                    className="hidden h-14 w-auto max-w-full dark:block sm:h-16"
-                  />
-                )}
-              </div>
-            ) : app.faviconUrl ? (
-              <div className="relative mb-5 h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
-                <Image src={app.faviconUrl} alt="" fill className="object-contain" />
-              </div>
-            ) : (
-              <div
-                className={`mb-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[14px] text-2xl font-bold tracking-[-0.02em] ${markPalette(app.id)}`}
-              >
-                {app.name.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <div className="mb-5 flex items-center gap-3.5">
+              {app.faviconUrl ? (
+                <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
+                  <Image src={app.faviconUrl} alt="" fill className="object-contain" />
+                </div>
+              ) : (
+                <div
+                  className={
+                    app.primaryColor
+                      ? 'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold text-white'
+                      : `flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold ${markPalette(app.id)}`
+                  }
+                  style={app.primaryColor ? { backgroundColor: app.primaryColor } : undefined}
+                >
+                  {app.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <h1 className="m-0 text-[40px] font-semibold leading-[1.03] tracking-[-0.035em] text-foreground sm:text-[56px]">
+                {app.name}
+              </h1>
+            </div>
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <span className={`rounded-full px-2.5 py-1.5 text-xs font-semibold ${statusPillClasses(app.status)}`}>
                 {app.status}
               </span>
               {app.category && (
-                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint">{app.category}</span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-muted">{app.category}</span>
               )}
               {showStatusDot && (
                 <Link
@@ -177,27 +160,19 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 </Link>
               )}
             </div>
-            <h1
-              className={
-                app.logoUrl
-                  ? 'sr-only'
-                  : 'm-0 text-[40px] font-semibold leading-[1.03] tracking-[-0.035em] text-foreground sm:text-[56px]'
-              }
-            >
-              {app.name}
-            </h1>
             {app.description && (
               <p className="mt-5 max-w-[520px] text-lg leading-[1.55] text-ink-muted sm:text-xl">{app.description}</p>
             )}
             {statusExplainer(app.status) && (
-              <p className="mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-faint">{statusExplainer(app.status)}</p>
+              <p className="mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-muted">{statusExplainer(app.status)}</p>
             )}
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={actionHref(app)}
                 target={isExternalAction(app) ? '_blank' : undefined}
                 rel={isExternalAction(app) ? 'noopener noreferrer' : undefined}
-                className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
+                className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                style={app.primaryColor ? { backgroundColor: app.primaryColor } : undefined}
               >
                 {actionLabel(app)} {isExternalAction(app) && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
               </Link>
@@ -217,7 +192,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                   key={row.k}
                   className="flex items-center justify-between gap-6 border-b border-border px-5 py-[15px] last:border-b-0"
                 >
-                  <span className="text-sm text-ink-faint">{row.k}</span>
+                  <span className="text-sm text-ink-muted">{row.k}</span>
                   <span className="font-mono text-[13px] text-ink-body">{row.v}</span>
                 </div>
               ))}
@@ -242,8 +217,15 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         )}
 
         {shippedItems.length > 0 && (
-          <div className="mt-[88px] grid grid-cols-1 gap-10 lg:grid-cols-[320px_1fr] lg:gap-20">
-            <div>
+          <div className="relative mt-[88px] grid grid-cols-1 gap-10 overflow-hidden lg:grid-cols-[320px_1fr] lg:gap-20">
+            {app.primaryColor && (
+              <div
+                className="pointer-events-none absolute -top-20 right-10 h-[300px] w-[300px] rounded-[70px]"
+                style={{ backgroundColor: hexToRgba(app.primaryColor, 0.055) }}
+                aria-hidden="true"
+              />
+            )}
+            <div className="relative">
               <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
                 Recently shipped
               </h2>
@@ -259,7 +241,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 <div key={`${release.releasedDate}-${release.name}`} className="border-t border-border py-5 first:border-t-0 first:pt-0">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                     <span className="text-[17px] font-medium text-foreground">{release.name}</span>
-                    <span className="font-mono text-xs text-ink-faint">{formatDate(release.releasedDate)}</span>
+                    <span className="font-mono text-xs text-ink-muted">{formatDate(release.releasedDate)}</span>
                   </div>
                   {release.description && (
                     <p className="m-0 mt-2 max-w-[520px] text-sm leading-[1.6] text-ink-muted">{release.description}</p>
@@ -289,7 +271,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                   key={item.id}
                   className="grid grid-cols-[90px_1fr_auto] items-baseline gap-6 border-t border-border py-5 first:border-t-0 first:pt-0 sm:grid-cols-[110px_1fr_130px]"
                 >
-                  <span className="font-mono text-xs text-ink-faint">{formatRoadmapWhen(item)}</span>
+                  <span className="font-mono text-xs text-ink-muted">{formatRoadmapWhen(item)}</span>
                   <span className="text-[17px] font-medium text-foreground">{item.name}</span>
                   <span
                     className={`justify-self-start rounded-full px-2.5 py-1 text-xs font-semibold sm:justify-self-end ${roadmapStatusPillClasses(item.status)}`}
