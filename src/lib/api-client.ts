@@ -1,6 +1,13 @@
 // src/lib/api-client.ts
 const COFABRI_API_BASE_URL = process.env.COFABRI_API_BASE_URL;
 
+class CofabriApiError extends Error {
+  constructor(public status: number, path: string, statusText: string) {
+    super(`cofabri-api error on ${path}: ${status} ${statusText}`);
+    this.name = 'CofabriApiError';
+  }
+}
+
 async function apiFetch<T>(path: string): Promise<T> {
   if (!COFABRI_API_BASE_URL) {
     throw new Error('COFABRI_API_BASE_URL is not configured');
@@ -10,7 +17,7 @@ async function apiFetch<T>(path: string): Promise<T> {
   // render statically/incrementally instead of force-dynamic on every request.
   const res = await fetch(`${COFABRI_API_BASE_URL}${path}`, { next: { revalidate: 300 } });
   if (!res.ok) {
-    throw new Error(`cofabri-api error on ${path}: ${res.status} ${res.statusText}`);
+    throw new CofabriApiError(res.status, path, res.statusText);
   }
   return res.json();
 }
@@ -123,7 +130,9 @@ export async function getApp(appId: string): Promise<App | null> {
     const row = await apiFetch<AppRow>(`/web/content/apps/${encodeURIComponent(appId)}`);
     return mapApp(row);
   } catch (error) {
-    console.error(`Error fetching app ${appId}:`, error);
+    if (!(error instanceof CofabriApiError && error.status === 404)) {
+      console.error(`Error fetching app ${appId}:`, error);
+    }
     return null;
   }
 }
@@ -270,7 +279,9 @@ export async function getKnowledgeBaseArticle(slug: string): Promise<KnowledgeBa
     const row = await apiFetch<KbArticleRow>(`/web/content/knowledge-base/${encodeURIComponent(slug)}`);
     return mapKbArticle(row);
   } catch (error) {
-    console.error('Error fetching knowledge base article:', error);
+    if (!(error instanceof CofabriApiError && error.status === 404)) {
+      console.error('Error fetching knowledge base article:', error);
+    }
     return null;
   }
 }
@@ -517,7 +528,9 @@ export async function getLegalDocument(id: string): Promise<LegalDocument | null
     const row = await apiFetch<LegalDocRow>(`/web/content/legal/${encodeURIComponent(id)}`);
     return mapLegalDocument(row);
   } catch (error) {
-    console.error('Error fetching legal document:', error);
+    if (!(error instanceof CofabriApiError && error.status === 404)) {
+      console.error('Error fetching legal document:', error);
+    }
     return null;
   }
 }
