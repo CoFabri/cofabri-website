@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/status-api';
-import { actionHref, actionLabel, hasActiveRoadmap, hexToRgba, isExternalAction, markPalette, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, hasActiveRoadmap, hexToRgba, isExternalAction, markPalette, pickReadableTextColor, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
@@ -130,10 +130,10 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 <div
                   className={
                     app.primaryColor
-                      ? 'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold text-white'
+                      ? 'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold'
                       : `flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold ${markPalette(app.id)}`
                   }
-                  style={app.primaryColor ? { backgroundColor: app.primaryColor } : undefined}
+                  style={app.primaryColor ? { backgroundColor: app.primaryColor, color: pickReadableTextColor(app.primaryColor) } : undefined}
                 >
                   {app.name.charAt(0).toUpperCase()}
                 </div>
@@ -172,7 +172,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 target={isExternalAction(app) ? '_blank' : undefined}
                 rel={isExternalAction(app) ? 'noopener noreferrer' : undefined}
                 className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                style={app.primaryColor ? { backgroundColor: app.primaryColor } : undefined}
+                style={app.primaryColor ? { backgroundColor: app.primaryColor, color: pickReadableTextColor(app.primaryColor) } : undefined}
               >
                 {actionLabel(app)} {isExternalAction(app) && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
               </Link>
@@ -236,7 +236,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 All {app.name} releases →
               </Link>
             </div>
-            <div>
+            <div className="relative">
               {shippedItems.map((release) => (
                 <div key={`${release.releasedDate}-${release.name}`} className="border-t border-border py-5 first:border-t-0 first:pt-0">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">

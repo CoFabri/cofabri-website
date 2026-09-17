@@ -260,6 +260,23 @@ describe('getApp', () => {
     expect(app?.betaCapacity).toBeNull();
     expect(app?.betaSpotsFilled).toBeUndefined();
   });
+
+  it('maps primary_color onto the App as primaryColor', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        app_id: 'medoura',
+        app_name: 'Medoura',
+        lifecycle_stage: 'Live',
+        primary_color: '#0E5F62',
+      }),
+    });
+
+    const { getApp } = await import('./api-client');
+    const app = await getApp('medoura');
+
+    expect(app?.primaryColor).toBe('#0E5F62');
+  });
 });
 
 describe('getKnowledgeBaseArticle', () => {

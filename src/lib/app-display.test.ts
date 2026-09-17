@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { statusPillClasses, markPalette, hexToRgba, appMomentum, actionLabel, actionHref, isLaunchingToday } from './app-display';
+import { statusPillClasses, markPalette, hexToRgba, pickReadableTextColor, appMomentum, actionLabel, actionHref, isLaunchingToday } from './app-display';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 
 function app(overrides: Partial<App> = {}): App {
@@ -41,6 +41,20 @@ describe('hexToRgba', () => {
 
   it('is case-insensitive', () => {
     expect(hexToRgba('#0e5f62', 0.5)).toBe('rgba(14, 95, 98, 0.5)');
+  });
+});
+
+describe('pickReadableTextColor', () => {
+  it('picks white against a dark brand color', () => {
+    expect(pickReadableTextColor('#0E3B30')).toBe('#FFFFFF');
+  });
+
+  it('picks white against a medium-dark brand color', () => {
+    expect(pickReadableTextColor('#0B5ED7')).toBe('#FFFFFF');
+  });
+
+  it('picks black against a lighter brand color where white text would fail contrast', () => {
+    expect(pickReadableTextColor('#3B82F6')).toBe('#000000');
   });
 });
 

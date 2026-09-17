@@ -76,6 +76,23 @@ export function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// Picks whichever of pure white or pure black gives higher contrast against
+// a given brand hex, per the WCAG relative-luminance formula. apps.primary_color
+// is an arbitrary per-app value the site doesn't control, so text placed on top
+// of it (a CTA button, an initial-letter mark) can't rely on a single fixed
+// foreground token the way the rest of the site's fixed-color UI can.
+export function pickReadableTextColor(hex: string): string {
+  const clean = hex.replace('#', '');
+  const channel = (start: number) => {
+    const c = parseInt(clean.slice(start, start + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  const contrastWithWhite = 1.05 / (luminance + 0.05);
+  const contrastWithBlack = (luminance + 0.05) / 0.05;
+  return contrastWithWhite >= contrastWithBlack ? '#FFFFFF' : '#000000';
+}
+
 const QUARTER_MS = 90 * 24 * 60 * 60 * 1000;
 
 export function appMomentum(app: App, roadmap: RoadmapFeature[]): string {
