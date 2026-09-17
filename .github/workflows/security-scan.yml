@@ -22,8 +22,10 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -113,6 +115,25 @@ jobs:
             file path, line number, fix recommendation. Never include the literal
             value of a secret you find — reference its file:line and describe the
             risk instead.
+
+            The 4 passes above (dependencies / auth & injection / secrets & data
+            exposure / session, transport & third-party) are just a grouping
+            convenience for how you review the repo — they are NOT the finding's
+            `category` value. Every finding's own `category` field must be exactly
+            one of these 8 values, regardless of which pass or results.json
+            container it's reported under: dependencies, secrets, auth, injection,
+            session_transport, ci_cd, data_exposure, third_party. For example, an
+            injection vulnerability found during the "Auth & Injection" pass must
+            still be reported with "category": "injection", not "category": "auth"
+            — pick whichever of these values actually describes the finding, not
+            the container you found it while reviewing.
+
+            Never use "category": "fleet_consistency" on any finding you report.
+            That value is reserved for Core's own deterministic fleet-consistency
+            pass (which cross-checks Posture Check results against open findings
+            after every app in a run has completed) — it is not a category you can
+            observe or judge from this repository's code, and a finding you report
+            under it would be silently dropped.
 
             The file `prior-findings.json` (in the repository root) lists this
             app's currently open findings from previous scans, as a flat list,
