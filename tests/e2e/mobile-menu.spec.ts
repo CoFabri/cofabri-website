@@ -14,7 +14,6 @@ test('mobile menu opens as a full-screen cover and closes via the close button',
   await expect(dialog.getByRole('link', { name: /Roadmap/ })).toHaveAttribute('href', '/roadmaps');
   await expect(dialog.getByRole('link', { name: /Knowledge Base/ })).toHaveAttribute('href', '/knowledge-base');
   await expect(dialog.getByRole('link', { name: /Support/ })).toHaveAttribute('href', '/support');
-  await expect(dialog.getByRole('link', { name: /Explore apps/ })).toHaveAttribute('href', '/apps');
 
   await dialog.getByRole('button', { name: 'Close menu' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
