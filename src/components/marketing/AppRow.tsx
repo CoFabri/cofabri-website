@@ -20,8 +20,8 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
     >
       <div className="flex items-center gap-4 md:contents">
         {app.faviconUrl ? (
-          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[9px] border border-border">
-            <Image src={app.faviconUrl} alt="" fill className="object-cover" unoptimized={process.env.NODE_ENV === 'development'} />
+          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[9px] border border-border bg-secondary">
+            <Image src={app.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
           </div>
         ) : (
           <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[9px] text-[17px] font-semibold tracking-[-0.02em] ${markPalette(app.id)}`}>
