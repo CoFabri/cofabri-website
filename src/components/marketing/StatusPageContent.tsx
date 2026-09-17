@@ -41,6 +41,15 @@ function uptimeWindowDates(): string[] {
 
 const STATUS_SEVERITY: Record<ServiceUptimeDay['status'], number> = { operational: 0, degraded: 1, down: 2 };
 
+// Matches cofabri-core's slugify (app/dashboard/system-status/page.tsx) so a
+// service card there can link straight to `#service-<slug>` here.
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function worseStatus(a: ServiceUptimeDay['status'], b: ServiceUptimeDay['status']): ServiceUptimeDay['status'] {
   return STATUS_SEVERITY[a] >= STATUS_SEVERITY[b] ? a : b;
 }
@@ -147,7 +156,7 @@ function ServiceRow({ service, uptimeWindow, openBar, setOpenBar }: ServiceRowPr
   const uptimePct = uptimeRatio === 100 ? '100' : uptimeRatio.toFixed(1);
 
   return (
-    <div className="border-t border-border px-7 py-[18px] first:border-t-0">
+    <div id={`service-${slugify(service.name)}`} className="scroll-mt-24 border-t border-border px-7 py-[18px] first:border-t-0">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 lg:grid lg:grid-cols-[200px_1fr_90px_130px] lg:justify-normal lg:gap-8">
         <div className="flex items-center gap-2.5">
           <span
@@ -359,7 +368,7 @@ export function StatusPageContent({ initialStatuses, apps, uptimeHistory }: Stat
 function IncidentCard({ incident }: { incident: SystemStatus }) {
   const label = incidentApplicationLabel(incident);
   return (
-    <div className="mb-4 rounded-xl border border-border p-7">
+    <div id={`incident-${incident.ticketId}`} className="mb-4 scroll-mt-24 rounded-xl border border-border p-7">
       <div className="flex flex-wrap items-start justify-between gap-8">
         <div>
           <div className="mb-3 flex flex-wrap items-center gap-3">
