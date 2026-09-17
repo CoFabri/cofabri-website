@@ -118,6 +118,16 @@ export function isExternalAction(app: App): boolean {
   return !actionHref(app).startsWith('/');
 }
 
+// No app currently has featureOnWebsite set in admin, so picking apps[0]
+// silently "features" whatever sorts first from the API (alphabetically,
+// today: Gathr) -- an accident of list order, not a deliberate choice. Until
+// an app is explicitly flagged, fall back to this app id instead.
+const DEFAULT_FEATURED_APP_ID = 'medoura';
+
+export function getFeaturedApp(apps: App[]): App {
+  return apps.find((a) => a.featureOnWebsite) ?? apps.find((a) => a.id === DEFAULT_FEATURED_APP_ID) ?? apps[0];
+}
+
 export function isLaunchingToday(app: App): boolean {
   if (!app.launchDate) return false;
   const today = new Date();

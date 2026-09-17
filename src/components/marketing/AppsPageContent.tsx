@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
-import { actionHref, actionLabel, appMomentum, isExternalAction, markPalette, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, appMomentum, getFeaturedApp, isExternalAction, markPalette, statusPillClasses } from '@/lib/app-display';
 import { filterPillClasses } from '@/lib/filter-pill';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Breadcrumbs from './Breadcrumbs';
@@ -80,7 +80,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initialApps is a mount-time snapshot, not a reactive dependency
   }, [fetchApps]);
 
-  const featured = apps.find((a) => a.featureOnWebsite) ?? apps[0];
+  const featured = getFeaturedApp(apps);
   const rows = useMemo(() => apps.filter((a) => a !== featured), [apps, featured]);
 
   const statuses = useMemo(() => {
@@ -160,12 +160,12 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
               <div className="flex flex-wrap items-start justify-between gap-7">
                 <div className="flex min-w-0 items-center gap-4">
                   {featured.faviconUrl ? (
-                    <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border">
+                    <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
                       <Image
                         src={featured.faviconUrl}
                         alt=""
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         unoptimized={process.env.NODE_ENV === 'development'}
                       />
                     </div>

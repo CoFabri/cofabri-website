@@ -11,7 +11,7 @@ import { ArrowRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/o
 import RevealSection from './RevealSection';
 import AppRow from './AppRow';
 import { ErrorState } from './ErrorState';
-import { statusPillClasses, actionLabel, actionHref, appMomentum, isExternalAction, markPalette } from '@/lib/app-display';
+import { statusPillClasses, actionLabel, actionHref, appMomentum, getFeaturedApp, isExternalAction, markPalette } from '@/lib/app-display';
 import { shippedInLastNDays } from '@/lib/roadmap-display';
 
 interface HomepageAppsProps {
@@ -149,7 +149,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   if (apps.length === 0) return null;
 
-  const featured = apps.find((a) => a.featureOnWebsite) ?? apps[0];
+  const featured = getFeaturedApp(apps);
   const rest = apps.filter((a) => a !== featured);
 
   const openIncidents = systemStatus.filter((s) => s.publicStatus !== 'Resolved');
