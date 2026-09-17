@@ -223,7 +223,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
               src={app.faviconUrl ?? `/logos/${app.id}/${app.id}-icon.svg`}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute -top-20 right-10 h-[300px] w-[300px] rounded-[96px] object-cover opacity-[0.055]"
+              className="pointer-events-none absolute -top-20 right-10 h-[300px] w-[300px] rounded-[96px] object-contain opacity-[0.055] blur-[2px]"
             />
             <div className="relative">
               <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
