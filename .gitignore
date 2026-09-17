@@ -2,6 +2,7 @@ node_modules
 .DS_Store
 .env.local
 /.next
+*.tsbuildinfo
 DYNAMIC_RENDERING_SETUP.md
 env.example
 
