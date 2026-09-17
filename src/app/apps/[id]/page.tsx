@@ -123,17 +123,29 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
           <div>
             {app.logoUrl ? (
               // The lockup logo stands in for the app name visually; an sr-only
-              // h1 below keeps a real text heading for a11y/SEO.
-              <div className="relative mb-6 h-14 sm:h-16" style={{ width: app.logoWidth ?? 160 }}>
-                <Image
+              // h1 below keeps a real text heading for a11y/SEO. Fixed HEIGHT,
+              // auto width (not app.logoWidth) -- apps' logos vary wildly in
+              // aspect ratio, so matching a per-app width made some apps'
+              // logos render much shorter than others. A native <img> (not
+              // next/image, which needs both dimensions or `fill`) is what
+              // lets the browser derive width from each asset's own intrinsic
+              // ratio while every app's logo keeps the same visual weight.
+              <div className="mb-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={app.logoUrl}
                   alt={app.name}
-                  fill
-                  className={`object-contain object-left ${app.logoLightUrl ? 'dark:hidden' : ''}`}
-                  priority
+                  loading="eager"
+                  className={`h-14 w-auto max-w-full sm:h-16 ${app.logoLightUrl ? 'dark:hidden' : ''}`}
                 />
                 {app.logoLightUrl && (
-                  <Image src={app.logoLightUrl} alt="" fill className="hidden object-contain object-left dark:block" priority />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={app.logoLightUrl}
+                    alt=""
+                    loading="eager"
+                    className="hidden h-14 w-auto max-w-full dark:block sm:h-16"
+                  />
                 )}
               </div>
             ) : app.faviconUrl ? (
