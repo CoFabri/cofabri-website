@@ -34,6 +34,9 @@ export interface App {
   url?: string;
   screenshot?: string;
   faviconUrl?: string;
+  logoUrl?: string;
+  logoLightUrl?: string;
+  logoWidth?: number;
   status: string;
   category?: string;
   feature1?: string;
@@ -54,6 +57,9 @@ interface AppRow {
   high_level_description: string | null;
   app_url: string | null;
   favicon_url: string | null;
+  logo_url: string | null;
+  logo_light_url: string | null;
+  logo_width: number | null;
   lifecycle_stage: string | null;
   category: string | null;
   feature_1: string | null;
@@ -76,6 +82,15 @@ interface AppRow {
 // rather than relying on admins to type an exact match -- a wrong-cased value
 // silently fell through to an unstyled badge before this existed.
 export const KNOWN_LIFECYCLE_STATUSES = ['Live', 'Active', 'Beta', 'In Development'];
+
+// apps.category is a lowercase snake_case enum in cofabri-core (e.g. "professional_services");
+// humanize it for display rather than showing the raw db value.
+function humanizeCategory(raw: string): string {
+  return raw
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 function normalizeStatus(raw: string | null): string {
   const value = (raw ?? '').trim();
@@ -100,8 +115,11 @@ function mapApp(row: AppRow): App {
     // AppPreviewCard's internal /preview tool sets it directly on a
     // hand-built mock App, independent of this mapping.
     faviconUrl: row.favicon_url || undefined,
+    logoUrl: row.logo_url || undefined,
+    logoLightUrl: row.logo_light_url || undefined,
+    logoWidth: row.logo_width || undefined,
     status: normalizeStatus(row.lifecycle_stage),
-    category: row.category || undefined,
+    category: row.category ? humanizeCategory(row.category) : undefined,
     feature1: row.feature_1 || undefined,
     feature2: row.feature_2 || undefined,
     feature3: row.feature_3 || undefined,

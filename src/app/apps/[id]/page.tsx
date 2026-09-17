@@ -2,10 +2,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/status-api';
-import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalette, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
@@ -96,7 +97,9 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
       { k: 'Status', v: app.status },
       { k: 'Launched', v: formatDate(app.launchDate) },
       { k: 'Latest release', v: formatDate(app.releaseDate) },
-      { k: 'Website', v: hostname(app.url) },
+      // Don't point visitors at a live URL for something still in development —
+      // showStatusDot uses the same live/active check for the same reason.
+      { k: 'Website', v: showStatusDot ? hostname(app.url) : undefined },
     ] as { k: string; v: string | undefined }[]
   ).filter((row): row is { k: string; v: string } => !!row.v);
 
@@ -118,6 +121,32 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
         <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_460px] lg:gap-20">
           <div>
+            {app.logoUrl ? (
+              // The lockup logo stands in for the app name visually; an sr-only
+              // h1 below keeps a real text heading for a11y/SEO.
+              <div className="relative mb-6 h-14 sm:h-16" style={{ width: app.logoWidth ?? 160 }}>
+                <Image
+                  src={app.logoUrl}
+                  alt={app.name}
+                  fill
+                  className={`object-contain object-left ${app.logoLightUrl ? 'dark:hidden' : ''}`}
+                  priority
+                />
+                {app.logoLightUrl && (
+                  <Image src={app.logoLightUrl} alt="" fill className="hidden object-contain object-left dark:block" priority />
+                )}
+              </div>
+            ) : app.faviconUrl ? (
+              <div className="relative mb-5 h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
+                <Image src={app.faviconUrl} alt="" fill className="object-contain" />
+              </div>
+            ) : (
+              <div
+                className={`mb-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[14px] text-2xl font-bold tracking-[-0.02em] ${markPalette(app.id)}`}
+              >
+                {app.name.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <span className={`rounded-full px-2.5 py-1.5 text-xs font-semibold ${statusPillClasses(app.status)}`}>
                 {app.status}
@@ -136,7 +165,13 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 </Link>
               )}
             </div>
-            <h1 className="m-0 text-[40px] font-semibold leading-[1.03] tracking-[-0.035em] text-foreground sm:text-[56px]">
+            <h1
+              className={
+                app.logoUrl
+                  ? 'sr-only'
+                  : 'm-0 text-[40px] font-semibold leading-[1.03] tracking-[-0.035em] text-foreground sm:text-[56px]'
+              }
+            >
               {app.name}
             </h1>
             {app.description && (
