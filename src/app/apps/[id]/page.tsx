@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
 import { getSystemStatus } from '@/lib/status-api';
-import { actionHref, actionLabel, hasActiveRoadmap, hexToRgba, isExternalAction, markPalette, pickReadableTextColor, statusExplainer, statusPillClasses } from '@/lib/app-display';
+import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalette, pickReadableTextColor, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
@@ -218,13 +218,13 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
         {shippedItems.length > 0 && (
           <div className="relative mt-[88px] grid grid-cols-1 gap-10 overflow-hidden lg:grid-cols-[320px_1fr] lg:gap-20">
-            {app.primaryColor && (
-              <div
-                className="pointer-events-none absolute -top-20 right-10 h-[300px] w-[300px] rounded-[70px]"
-                style={{ backgroundColor: hexToRgba(app.primaryColor, 0.055) }}
-                aria-hidden="true"
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={app.faviconUrl ?? `/logos/${app.id}/${app.id}-icon.svg`}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-20 right-10 h-[300px] w-[300px] object-contain opacity-[0.055]"
+            />
             <div className="relative">
               <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
                 Recently shipped
