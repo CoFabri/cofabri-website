@@ -34,9 +34,7 @@ export interface App {
   url?: string;
   screenshot?: string;
   faviconUrl?: string;
-  logoUrl?: string;
-  logoLightUrl?: string;
-  logoWidth?: number;
+  primaryColor?: string;
   status: string;
   category?: string;
   feature1?: string;
@@ -57,9 +55,7 @@ interface AppRow {
   high_level_description: string | null;
   app_url: string | null;
   favicon_url: string | null;
-  logo_url: string | null;
-  logo_light_url: string | null;
-  logo_width: number | null;
+  primary_color: string | null;
   lifecycle_stage: string | null;
   category: string | null;
   feature_1: string | null;
@@ -115,9 +111,7 @@ function mapApp(row: AppRow): App {
     // AppPreviewCard's internal /preview tool sets it directly on a
     // hand-built mock App, independent of this mapping.
     faviconUrl: row.favicon_url || undefined,
-    logoUrl: row.logo_url || undefined,
-    logoLightUrl: row.logo_light_url || undefined,
-    logoWidth: row.logo_width || undefined,
+    primaryColor: row.primary_color || undefined,
     status: normalizeStatus(row.lifecycle_stage),
     category: row.category ? humanizeCategory(row.category) : undefined,
     feature1: row.feature_1 || undefined,
