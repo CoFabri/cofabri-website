@@ -71,7 +71,7 @@ export default async function DevelopersPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1200px] px-6 pb-16 sm:px-10">
+      <div className="mx-auto max-w-[1200px] px-6 pt-12 pb-16 sm:px-10 sm:pt-14">
         <div className="flex items-center justify-between gap-6 border-b border-border pb-5">
           <div className="font-mono text-xs uppercase tracking-[.06em] text-muted-foreground">
             Apps <span className="text-muted-foreground/70">/</span> {apps.length}
