@@ -127,7 +127,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   if (isLoading) {
     return (
-      <section className="py-24 bg-background">
+      <section className="border-t border-border py-24 bg-background">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <div className="flex justify-center">
             <CoreLoader size={40} />
@@ -139,7 +139,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
   if (error) {
     return (
-      <section className="py-24 bg-background">
+      <section className="border-t border-border py-24 bg-background">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
           <ErrorState title="Couldn't load apps" description={error} onRetry={fetchApps} />
         </div>
@@ -157,7 +157,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
   const shippedLast30Days = shippedInLastNDays(roadmap, 30);
 
   return (
-    <RevealSection ref={sectionRef} className="py-24 md:py-28 bg-background">
+    <RevealSection ref={sectionRef} className="border-t border-border py-24 md:py-28 bg-background">
       <div className="mx-auto max-w-[1200px] px-6 sm:px-10">
         <div className="flex items-end justify-between gap-10 pb-9">
           <div>
