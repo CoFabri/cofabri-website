@@ -56,7 +56,7 @@ export default async function DevelopersPage() {
               straight to its reference.
             </p>
           </div>
-          <div className="w-[300px] shrink-0 rounded-xl border border-border bg-card p-5">
+          <div className="w-full max-w-[300px] shrink-0 rounded-xl border border-border bg-card p-5 lg:w-[300px]">
             <div className="font-mono text-[11px] font-medium uppercase tracking-[.09em] text-muted-foreground">
               CoFabri apps
             </div>
@@ -71,7 +71,7 @@ export default async function DevelopersPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1200px] px-6 pt-12 pb-16 sm:px-10 sm:pt-14">
+      <div className="mx-auto max-w-[1200px] px-6 pt-14 pb-16 sm:px-10">
         <div className="flex items-center justify-between gap-6 border-b border-border pb-5">
           <div className="font-mono text-xs uppercase tracking-[.06em] text-muted-foreground">
             Apps <span className="text-muted-foreground/70">/</span> {apps.length}
@@ -85,7 +85,7 @@ export default async function DevelopersPage() {
         </div>
         <div className="mt-6.5 flex items-center gap-2.5 border-t border-border/70 pt-4 text-sm text-muted-foreground">
           <span className="font-mono text-[11px] uppercase tracking-[.08em]">Note</span>
-          <span>Docs open on the app&apos;s own site. Using an API requires that app&apos;s own credentials.</span>
+          <span>Each reference is generated live from the app&apos;s own OpenAPI spec. Using an API requires that app&apos;s own credentials.</span>
         </div>
       </div>
     </>

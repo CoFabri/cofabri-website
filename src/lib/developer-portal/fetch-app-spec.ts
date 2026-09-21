@@ -17,8 +17,14 @@ export interface AppSpecResult {
   llmsTxtUrl: string;
 }
 
+// `no-spec`: the app has no usable /openapi.json (no URL, 404, or not an OpenAPI
+// document) -- i.e. it genuinely doesn't publish docs. `unreachable`: we couldn't
+// tell (network error or a 5xx), so the page shouldn't claim the app has no docs.
+export type AppSpecFailureReason = 'no-spec' | 'unreachable';
+
 export interface AppSpecFailure {
   ok: false;
+  reason: AppSpecFailureReason;
 }
 
 function originFor(appUrl: string): string | null {
@@ -30,20 +36,22 @@ function originFor(appUrl: string): string | null {
 }
 
 export async function fetchAppSpec(appUrl: string | undefined): Promise<AppSpecResult | AppSpecFailure> {
-  if (!appUrl) return { ok: false };
+  if (!appUrl) return { ok: false, reason: 'no-spec' };
   const origin = originFor(appUrl);
-  if (!origin) return { ok: false };
+  if (!origin) return { ok: false, reason: 'no-spec' };
 
   const specUrl = `${origin}/openapi.json`;
   const llmsTxtUrl = `${origin}/llms.txt`;
 
   try {
     const res = await fetch(specUrl, { next: { revalidate: 300 } });
-    if (!res.ok) return { ok: false };
+    if (!res.ok) return { ok: false, reason: res.status >= 500 ? 'unreachable' : 'no-spec' };
     const spec = (await res.json()) as OpenApiDocument;
-    if (!spec || typeof spec !== 'object' || !spec.paths) return { ok: false };
+    if (!spec || typeof spec !== 'object' || !spec.paths) return { ok: false, reason: 'no-spec' };
     return { ok: true, spec, specUrl, llmsTxtUrl };
-  } catch {
-    return { ok: false };
+  } catch (error) {
+    // res.json() on an HTML 200 (e.g. an app's catch-all page) throws a SyntaxError:
+    // that's an app with no spec, not an outage. Anything else (fetch/network) is unreachable.
+    return { ok: false, reason: error instanceof SyntaxError ? 'no-spec' : 'unreachable' };
   }
 }

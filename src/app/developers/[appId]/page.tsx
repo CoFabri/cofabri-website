@@ -15,7 +15,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getApp } from '@/lib/api-client';
-import { fetchAppSpec } from '@/lib/developer-portal/fetch-app-spec';
+import { fetchAppSpec, type AppSpecFailureReason } from '@/lib/developer-portal/fetch-app-spec';
 import { flattenEndpoints, groupByTag } from '@/lib/developer-portal/openapi-types';
 import { getAppGuide } from '@/lib/developer-portal/guides';
 import { AppMonogram } from '@/components/developer-portal/AppMonogram';
@@ -40,6 +40,65 @@ export async function generateMetadata({ params }: AppDocsPageProps): Promise<Me
   };
 }
 
+// Shown when the app's own /openapi.json can't be rendered. Distinguishes an app that
+// genuinely publishes no docs from a temporary fetch failure so we never claim "no docs"
+// for an app whose spec is just briefly unreachable.
+function NoDocsState({
+  appName,
+  appUrl,
+  reason,
+}: {
+  appName: string;
+  appUrl: string | undefined;
+  reason: AppSpecFailureReason;
+}) {
+  const unreachable = reason === 'unreachable';
+  let host: string | null = null;
+  try {
+    host = appUrl ? new URL(appUrl).hostname : null;
+  } catch {
+    host = null;
+  }
+
+  return (
+    <div className="mx-auto max-w-[640px] px-6 py-24 text-center">
+      <Link href="/developers" className="text-sm font-medium text-accent-solid hover:text-accent-hover">
+        ← All CoFabri APIs
+      </Link>
+      <h1 className="mt-6 text-[28px] font-semibold tracking-tight text-balance">
+        {unreachable ? `We couldn't load the ${appName} API reference` : `${appName} has no public API docs yet`}
+      </h1>
+      <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+        {unreachable
+          ? `The ${appName} API reference is temporarily unavailable. Please try again in a few minutes.`
+          : `We publish each app's API reference straight from its own OpenAPI spec, and ${appName} hasn't published one yet. Check back soon, or get in touch if you need API access.`}
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/developers"
+          className="inline-flex items-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
+        >
+          Browse all APIs
+        </Link>
+        {host && appUrl ? (
+          <a
+            href={appUrl}
+            className="inline-flex items-center rounded-lg border border-border-strong px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            Visit {host}
+          </a>
+        ) : null}
+        <Link
+          href="/contact"
+          className="inline-flex items-center rounded-lg border border-border-strong px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+        >
+          Contact us
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function tagAnchor(tag: string): string {
   return `tag-${tag.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 }
@@ -53,18 +112,7 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
   const guide = getAppGuide(appId);
 
   if (!specResult.ok) {
-    return (
-      <div className="mx-auto max-w-[640px] px-6 py-24 text-center">
-        <Link href="/developers" className="text-sm font-medium text-accent-solid hover:text-accent-hover">
-          ← All CoFabri APIs
-        </Link>
-        <h1 className="mt-6 text-[28px] font-semibold tracking-tight">{app.name} doesn&apos;t publish a machine-readable spec yet</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-          This page renders an app&apos;s API reference straight from its own <code className="font-mono text-[13px]">/openapi.json</code>.{' '}
-          {app.name} hasn&apos;t published one at its own domain yet.
-        </p>
-      </div>
-    );
+    return <NoDocsState appName={app.name} appUrl={app.url} reason={specResult.reason} />;
   }
 
   const { spec, specUrl, llmsTxtUrl } = specResult;
