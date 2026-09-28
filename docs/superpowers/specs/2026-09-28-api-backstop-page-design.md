@@ -42,11 +42,11 @@ else is down, so it depends on nothing outside its own HTML.
 - Probe: `GET ${COFABRI_API_BASE_URL}/` with `Accept: application/json`,
   `cache: 'no-store'`, `AbortSignal.timeout(3000)`. The API's root route returns
   a plain JSON status body for health checks (`cofabri-api/src/index.js`).
-- `down` = network error, timeout, or HTTP 5xx. Any other status (including 4xx)
-  means the API answered, so `up`.
 - Note: the API root returns static JSON without touching the database, so this
   detects host, network and process outages, not a database-only failure. The
   probe path is one constant if that needs to change.
+- `down` = network error, timeout, or HTTP 5xx. Any other status (including 4xx)
+  means the API answered, so `up`.
 - If `COFABRI_API_BASE_URL` is unset, return `up` (misconfiguration is not an
   outage; existing code already throws its own clear error).
 - In-memory result cache per runtime instance: `up` for 15s, `down` for 5s (so
@@ -57,11 +57,12 @@ else is down, so it depends on nothing outside its own HTML.
 ### 2. Serving: `src/middleware.ts`
 
 The existing middleware gains a first step, ahead of its current redirects and
-preview-password logic. Its matcher already excludes `/api`, `_next/static`,
-`_next/image` and `favicon.ico`. Static asset paths (extensions png, jpg, jpeg,
-gif, svg, ico, webp, avif, woff, woff2, ttf, otf, js, css, json, txt, xml, map,
-webmanifest), such as `status-widget.js`, `manifest.json`, `robots.txt` and
-`sitemap.xml`, are excluded inside the backstop handler, because a matcher must
+preview-password logic. Its matcher already excludes `api/` (and exactly `api`,
+so a path such as `/apifoo` is still handled), `_next/static`, `_next/image` and
+`favicon.ico`. Static asset paths (extensions png, jpg, jpeg, gif, svg, ico,
+webp, avif, woff, woff2, ttf, otf, js, css, json, txt, xml, map, webmanifest,
+html), such as `status-widget.js`, `manifest.json`, `robots.txt`, `sitemap.xml`
+and Google Search Console verification files (`google….html`), are excluded inside the backstop handler, because a matcher must
 be a static literal.
 
 - If `getApiHealth()` is `down`: rewrite the request to internal route
@@ -85,13 +86,13 @@ be a static literal.
 - The `/backstop` page (`src/app/backstop/page.tsx`) renders nothing of its own in
   this mode; the layout owns the output. It also exports `robots: noindex`.
 - `src/app/global-error.tsx` (new) renders the same `BackstopPage` inside its own
-  `<html><body>`, as the safety net if the layout or a page crashes. It omits the support link,
-  because `BACKSTOP_SUPPORT_EMAIL` is server-only and this component also runs in
-  the browser.
+  `<html><body>`, as the safety net if the layout or a page crashes. It omits
+  the support link, because `BACKSTOP_SUPPORT_EMAIL` is server-only and this
+  component also runs in the browser.
 
 ### 4. The page: `src/components/backstop/BackstopPage.tsx`
 
-Server component. Ported from `backstop/index.html`:
+Server component that composes a small client component (`BackstopActions`). Ported from `backstop/index.html`:
 
 - All CSS inlined in a `<style>` tag, using the reference build's tokens and
   `prefers-color-scheme` dark theme. System font stack only. No external images,
@@ -143,6 +144,11 @@ Server component. Ported from `backstop/index.html`:
 - A flapping API is smoothed by the 5s and 15s cache windows.
 - Static assets, `/api/*` routes and the status widget files are never
   intercepted, so embeds in other apps keep their own error handling.
+- During an outage the backstop takes precedence over the site's other
+  middleware behavior (redirects, the `/preview/*` gate), by design ("every
+  page").
+- State changes of the health probe (first `down`, and each change after) are
+  logged with `console.warn`.
 - Cache is per runtime instance, so a fresh serverless instance probes once on
   its first request. That is at most one small request per instance per window.
 
