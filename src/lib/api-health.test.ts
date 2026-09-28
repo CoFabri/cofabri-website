@@ -60,6 +60,26 @@ describe('getApiHealth', () => {
     expect(await getApiHealth()).toBe('down');
   });
 
+  it('fails open (up) when fetch rejects with an unexpected non-network error', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    global.fetch = vi.fn().mockRejectedValue(new Error('weird'));
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('up');
+  });
+
+  it('fails open (up) when AbortSignal.timeout itself is unavailable', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const original = AbortSignal.timeout;
+    (AbortSignal as unknown as { timeout?: unknown }).timeout = undefined;
+    try {
+      global.fetch = vi.fn().mockResolvedValue({ status: 200 });
+      const getApiHealth = await load();
+      expect(await getApiHealth()).toBe('up');
+    } finally {
+      (AbortSignal as unknown as { timeout?: unknown }).timeout = original;
+    }
+  });
+
   it('is up when COFABRI_API_BASE_URL is unset, without probing', async () => {
     delete process.env.COFABRI_API_BASE_URL;
     global.fetch = vi.fn();

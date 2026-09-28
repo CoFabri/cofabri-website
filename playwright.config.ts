@@ -58,5 +58,21 @@ export default defineConfig({
       timeout: 60_000,
       env: { ...TURNSTILE_TEST_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:9' },
     },
+    // The next two prove a healthy API leaves the site alone (used only by
+    // tests/e2e/backstop-healthy.spec.ts): a stub cofabri-api answering 200,
+    // and the same build pointed at it.
+    {
+      command: 'node tests/e2e/support/stub-api.mjs',
+      url: 'http://127.0.0.1:3200/',
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
+      command: 'npx next start -p 3101',
+      url: 'http://localhost:3101/?backstop=preview',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+      env: { ...TURNSTILE_TEST_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:3200' },
+    },
   ],
 });

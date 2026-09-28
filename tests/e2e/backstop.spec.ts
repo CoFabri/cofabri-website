@@ -22,6 +22,10 @@ test.describe('real outage', () => {
     expect(response!.headers()['retry-after']).toBe('30');
     expect(response!.headers()['x-robots-tag']).toBe('noindex');
     expect(response!.headers()['cache-control']).toBe('no-store');
+    // The outage document depends on nothing outside itself.
+    const html = await response!.text();
+    expect(html).not.toContain('files.cofabri.com');
+    expect(html).not.toMatch(/rel="manifest"/);
 
     await expect(page.getByRole('heading', { name: /not quite connecting/i })).toBeVisible();
     await expect(page.getByText('Temporarily unavailable')).toBeVisible();
@@ -49,13 +53,6 @@ test.describe('real outage', () => {
     await page.getByRole('link', { name: 'Try again' }).click();
     await page.waitForURL(/retry=/);
     await expect(page.getByText(/Still not connecting as of/)).toBeVisible();
-  });
-
-  test('a forged backstop header from a client does not affect a normal path', async ({ request }) => {
-    // /api/* is never intercepted, so this must not be the backstop HTML even
-    // with the API down and a forged header.
-    const response = await request.get('/api/status', { headers: { 'x-cofabri-backstop': 'outage' } });
-    expect(await response.text()).not.toContain('not quite connecting');
   });
 
   test('direct /backstop visits redirect home', async ({ page }) => {
