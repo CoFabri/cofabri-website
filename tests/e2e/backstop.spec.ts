@@ -7,6 +7,15 @@ test.use({ baseURL: 'http://localhost:3100' });
 
 test.describe('real outage', () => {
   test('any page returns a 503 backstop with the outage headers', async ({ page }) => {
+    const problems: string[] = [];
+    page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`));
+    page.on('console', (message) => {
+      // Chromium logs the 503 document load itself as a console error; that is
+      // the expected response here, so filter only that exact message.
+      if (message.text() === 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)') return;
+      if (message.type() === 'error') problems.push(`console: ${message.text()}`);
+    });
+
     const response = await page.goto('/apps');
 
     expect(response!.status()).toBe(503);
@@ -20,6 +29,8 @@ test.describe('real outage', () => {
     // Bare shell: none of the site chrome that talks to the API.
     await expect(page.locator('nav')).toHaveCount(0);
     await expect(page.getByText('Preview', { exact: true })).toHaveCount(0);
+    await page.waitForLoadState('load');
+    expect(problems).toEqual([]);
   });
 
   test('makes no requests to any other host', async ({ page }) => {

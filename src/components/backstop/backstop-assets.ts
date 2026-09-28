@@ -18,8 +18,7 @@ html,body{margin:0;background:var(--surface);color:var(--ink)}
 .bs .copy{max-width:620px}
 .bs .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border:1px solid var(--hairline);border-radius:999px;font-size:13px;font-weight:500;line-height:1.4;color:var(--ink-body)}
 .bs .dot{width:8px;height:8px;border-radius:50%;background:var(--status);box-shadow:0 0 0 4px var(--status-halo);animation:bs-pulse 2.4s ease-in-out infinite}
-.bs .float{animation:bs-drift 10s ease-in-out infinite}
-.bs .ghost{animation:bs-dash 24s linear infinite}
+.bs .ring{transform-origin:50px 50px;opacity:0;animation:bs-ripple 7.5s ease-out infinite}
 .bs h1{margin:28px 0 0;font-size:clamp(2.125rem,1.2rem + 3.9vw,3.5rem);line-height:1.06;letter-spacing:-.03em;font-weight:600;text-wrap:balance}
 .bs .lead{margin:20px 0 0;max-width:520px;font-size:clamp(1.0625rem,1rem + .3vw,1.1875rem);color:var(--ink-muted);text-wrap:pretty}
 .bs .actions{margin-top:36px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
@@ -30,44 +29,34 @@ html,body{margin:0;background:var(--surface);color:var(--ink)}
 .bs a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:9px}
 .bs .spin{display:none;width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;border-bottom-color:transparent;animation:bs-spin .8s linear infinite}
 .bs .l-load{display:none}
-.bs[data-state=loading] .spin,.bs[data-state=loading] .l-load{display:block}
-.bs[data-state=loading] .l-idle{display:none}
-.bs[data-state=loading] .btn{cursor:progress}
+.bs [data-state=loading] .spin,.bs [data-state=loading] .l-load{display:block}
+.bs [data-state=loading] .l-idle{display:none}
+.bs [data-state=loading] .btn{cursor:progress}
 .bs .again{display:none;margin:14px 0 0;font-size:14px;color:var(--ink-body)}
-.bs[data-state=retry] .again{display:block}
+.bs [data-state=retry] .again{display:block}
 .bs .safe{margin:36px 0 0;max-width:520px;font-size:15px;color:var(--ink-muted)}
 .bs .safe strong{color:var(--ink-body);font-weight:600}
 .bs .note{margin-top:32px;padding-top:20px;border-top:1px solid var(--hairline);max-width:520px}
 .bs .eyebrow{display:flex;gap:12px;font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted)}
 .bs .note p{margin:8px 0 0;font-size:15px;color:var(--ink-body)}
-.bs .motif{justify-self:end;width:100%;max-width:400px;height:auto}
+.bs .motif{justify-self:end;width:100%;max-width:420px;height:auto}
 .bs footer{border-top:1px solid var(--hairline)}
 .bs footer .wrap{padding-top:24px;padding-bottom:24px;font-size:13px;color:var(--ink-muted)}
 .bs .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .bs .tag{position:fixed;top:12px;right:12px;padding:4px 10px;border:1px dashed var(--ink-muted);border-radius:6px;font:500 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);background:var(--surface)}
 @keyframes bs-pulse{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes bs-spin{to{transform:rotate(360deg)}}
-@keyframes bs-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(-3.5px,3px)}}
-@keyframes bs-dash{to{stroke-dashoffset:-48}}
+@keyframes bs-ripple-sm{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+@keyframes bs-ripple{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.9);opacity:0}}
 @media (max-width:760px){
 .bs header .wrap{height:56px}
-.bs main{align-items:flex-start;padding:40px 0 56px}
+.bs main{align-items:flex-start;padding:40px 0 56px;overflow-x:clip}
 .bs main .wrap{grid-template-columns:minmax(0,1fr);gap:0}
-.bs .motif{order:-1;justify-self:start;width:104px;margin-bottom:28px}
+.bs .motif{order:-1;justify-self:start;width:144px;margin:-36px 0 -8px -36px}
+.bs .ring{animation-name:bs-ripple-sm}
 .bs h1{margin-top:24px}
 .bs .btn{flex:1 1 100%}
 }
-@media (prefers-reduced-motion:reduce){.bs .dot,.bs .spin,.bs .float,.bs .ghost{animation:none}.bs .btn{transition:none}}
+@media (prefers-reduced-motion:reduce){.bs .dot,.bs .spin,.bs .ring{animation:none}.bs .ring:first-of-type{opacity:.25;transform:scale(1.35)}.bs .btn{transition:none}}
 `.trim();
 
-// Retry button behavior. Works as a plain ?retry= link without JS; with JS it
-// adds the loading state and the "still not connecting as of <time>" line.
-export const BACKSTOP_RETRY_SCRIPT = `
-(function(){var r=document.getElementById('bs'),b=document.getElementById('bs-retry');if(!r||!b)return;
-var u=new URL(location.href);
-if(u.searchParams.has('retry')||r.getAttribute('data-state')==='retry'){
-if(r.getAttribute('data-state')!=='loading'){r.setAttribute('data-state','retry');}
-var at=document.getElementById('bs-at');if(at){at.textContent=' as of '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});}}
-b.addEventListener('click',function(){u.searchParams.set('retry',String(Date.now()));b.href=u.toString();r.setAttribute('data-state','loading');var l=document.getElementById('bs-live');if(l){l.textContent='Checking our systems\\u2026';}});
-})();
-`.trim();
