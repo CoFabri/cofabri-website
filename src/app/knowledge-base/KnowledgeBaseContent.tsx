@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { CoreLoader } from '@/components/ui/core-loader';
 import { KnowledgeBaseArticle } from '@/lib/api-client';
 import { filterPillClasses } from '@/lib/filter-pill';
+import { AppMarkGroup } from '@/components/marketing/AppMarkGroup';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import RevealSection from '@/components/marketing/RevealSection';
@@ -207,16 +207,7 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
                 className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"
               >
                 <div className="flex items-center gap-2.5">
-                  {article.logoUrl && (
-                    <Image
-                      src={article.logoUrl}
-                      alt=""
-                      width={64}
-                      height={20}
-                      className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
-                      unoptimized={process.env.NODE_ENV === 'development'}
-                    />
-                  )}
+                  <AppMarkGroup apps={article.applications} />
                   <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
                     {article.category}
                   </span>

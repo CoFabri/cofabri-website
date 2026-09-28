@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import { marked } from 'marked';
+import { AppMarkGroup } from '@/components/marketing/AppMarkGroup';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import { Twitter, Linkedin } from 'lucide-react';
 
@@ -154,16 +155,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
         <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_360px] lg:gap-20">
           <div>
             <div className="mb-5 flex flex-wrap items-center gap-2.5">
-              {article.logoUrl && (
-                <Image
-                  src={article.logoUrl}
-                  alt=""
-                  width={64}
-                  height={20}
-                  className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
-                  unoptimized={process.env.NODE_ENV === 'development'}
-                />
-              )}
+              <AppMarkGroup apps={article.applications} />
               <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint">
                 {article.category}
               </span>
@@ -292,16 +284,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                   className="block rounded-xl border border-border p-6 text-foreground transition-all hover:-translate-y-px hover:border-ink-disabled"
                 >
                   <div className="flex items-center gap-2.5">
-                    {related.logoUrl && (
-                      <Image
-                        src={related.logoUrl}
-                        alt=""
-                        width={64}
-                        height={20}
-                        className="h-5 w-auto max-w-[64px] flex-shrink-0 object-contain"
-                        unoptimized={process.env.NODE_ENV === 'development'}
-                      />
-                    )}
+                    <AppMarkGroup apps={related.applications} />
                     <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
                       {related.category}
                     </span>
