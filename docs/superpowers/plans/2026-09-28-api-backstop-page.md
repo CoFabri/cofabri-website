@@ -1556,3 +1556,215 @@ Then run `gh pr checks --watch` and confirm both CI jobs (`checks`, `e2e`) pass.
 **Type consistency:** `BackstopMode`, `BackstopInitialState`, `BackstopNote`, header constants and `BACKSTOP_PATH` are defined once in Task 1 and used unchanged in Tasks 3-5. `BackstopPageProps` matches the layout call in Task 5. `handleBackstop`/`stripBackstopHeaders` signatures match their uses in `src/middleware.ts`. The element ids used by the script (`bs`, `bs-retry`, `bs-at`, `bs-live`) match the component.
 
 **Review Focus:** items 1-5 map to tests in Tasks 2, 4, 1+4, 2 and 3 respectively.
+
+---
+
+## Addendum
+
+### Task 3b: Port the 5a "Signal Ripples" motif and fix the retry hydration bug
+
+Added after Task 3 shipped, for two reasons found later: (1) the design's reference build (`backstop/index.html` in Claude Design project `27182ef4-ca6e-445b-b857-214abf4c8f61`, board card `5a`) replaced the drifting-mark motif with "Signal Ripples"; (2) Task 6's e2e tests exposed that the inline retry script mutates DOM before React hydrates, which throws hydration error #418, resets the "as of <time>" span, and logs a console error on the outage page.
+
+**Files:**
+- Create: `src/components/backstop/BackstopActions.tsx` (client component)
+- Modify: `src/components/backstop/backstop-assets.ts`
+- Modify: `src/components/backstop/BackstopPage.tsx`
+- Modify: `src/components/backstop/BackstopPage.test.tsx`
+- Modify: `tests/e2e/backstop.spec.ts` (console-error guard)
+
+**Interfaces:**
+- Consumes: `BackstopInitialState` from `@/lib/backstop`.
+- Produces: `BackstopActions` default export with props `{ supportEmail?: string; initialState: BackstopInitialState }`. `BackstopPage`'s public props are unchanged. `BACKSTOP_RETRY_SCRIPT` is removed (nothing else imports it).
+
+- [ ] **Step 1: Update the tests first (RED)**
+
+In `src/components/backstop/BackstopPage.test.tsx` add:
+
+```tsx
+  it('renders three signal rings around a still mark, with no drift or dashed-outline elements', () => {
+    const html = render();
+    expect((html.match(/class="ring"/g) ?? []).length).toBe(3);
+    expect(html).toContain('animation-delay:0s');
+    expect(html).toContain('animation-delay:2.5s');
+    expect(html).toContain('animation-delay:5s');
+    expect(html).toContain('viewBox="-50 -50 200 200"');
+    expect(html).not.toContain('class="ghost"');
+    expect(html).not.toContain('class="float"');
+    expect(html).not.toContain('bs-drift');
+    expect(html).not.toContain('bs-dash');
+  });
+
+  it('defines the ripple keyframes and a static first ring under reduced motion', () => {
+    const html = render();
+    expect(html).toContain('@keyframes bs-ripple{');
+    expect(html).toContain('@keyframes bs-ripple-sm{');
+    expect(html).toContain('.bs .ring:first-of-type{opacity:.25;transform:scale(1.35)}');
+  });
+
+  it('ships no inline script (retry enhancement is a client component that runs after hydration)', () => {
+    expect(render()).not.toContain('<script');
+  });
+```
+
+Run: `npx vitest run src/components/backstop/BackstopPage.test.tsx`
+Expected: the three new tests FAIL (old motif and inline script still present); the rest pass.
+
+- [ ] **Step 2: Port 5a into `backstop-assets.ts`**
+
+Apply exactly these CSS changes inside `BACKSTOP_CSS`:
+
+1. Delete the two rules `.bs .float{animation:bs-drift 10s ease-in-out infinite}` and `.bs .ghost{animation:bs-dash 24s linear infinite}`; add in their place:
+   `.bs .ring{transform-origin:50px 50px;opacity:0;animation:bs-ripple 7.5s ease-out infinite}`
+2. In `.bs .motif{...}` change `max-width:400px` to `max-width:420px`.
+3. Delete the keyframes `bs-drift` and `bs-dash`; add:
+   `@keyframes bs-ripple-sm{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.5);opacity:0}}`
+   `@keyframes bs-ripple{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.9);opacity:0}}`
+4. In the `@media (max-width:760px)` block: replace `.bs .motif{order:-1;justify-self:start;width:104px;margin-bottom:28px}` with `.bs .motif{order:-1;justify-self:start;width:144px;margin:-36px 0 -8px -36px}`; add `.bs .ring{animation-name:bs-ripple-sm}`; and add `overflow-x:clip` to the existing `.bs main{align-items:flex-start;padding:40px 0 56px}` rule (so it becomes `.bs main{align-items:flex-start;padding:40px 0 56px;overflow-x:clip}`).
+5. Replace the reduced-motion block with:
+   `@media (prefers-reduced-motion:reduce){.bs .dot,.bs .spin,.bs .ring{animation:none}.bs .ring:first-of-type{opacity:.25;transform:scale(1.35)}.bs .btn{transition:none}}`
+6. Because the state attribute moves onto an inner wrapper (Step 3), change the five state selectors from `.bs[data-state=...]` to `.bs [data-state=...]` (note the space): `.bs [data-state=loading] .spin,.bs [data-state=loading] .l-load{display:block}`, `.bs [data-state=loading] .l-idle{display:none}`, `.bs [data-state=loading] .btn{cursor:progress}`, `.bs [data-state=retry] .again{display:block}`.
+7. Delete the `BACKSTOP_RETRY_SCRIPT` export entirely.
+
+- [ ] **Step 3: Create the client component and rewire `BackstopPage.tsx`**
+
+Create `src/components/backstop/BackstopActions.tsx`:
+
+```tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { MouseEvent } from 'react';
+import type { BackstopInitialState } from '@/lib/backstop';
+
+interface BackstopActionsProps {
+  supportEmail?: string;
+  initialState: BackstopInitialState;
+}
+
+// The retry button, the "still not connecting" line and the support link.
+// State is React state, applied in effects, so nothing mutates server-rendered
+// DOM before hydration (an inline script that did that caused hydration error
+// #418). Without JS the button is still a plain ?retry= link.
+export default function BackstopActions({ supportEmail, initialState }: BackstopActionsProps) {
+  const [state, setState] = useState<BackstopInitialState>(initialState);
+  const [at, setAt] = useState('');
+
+  useEffect(() => {
+    const sync = () => {
+      const retried = new URL(window.location.href).searchParams.has('retry');
+      if (initialState === 'loading') {
+        setState('loading');
+      } else if (retried || initialState === 'retry') {
+        setState('retry');
+        setAt(' as of ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+      } else {
+        setState('idle');
+      }
+    };
+    sync();
+    // Back/forward cache can restore the page frozen in its loading state.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) sync();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, [initialState]);
+
+  const onRetryClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('retry', String(Date.now()));
+    event.currentTarget.href = url.toString();
+    setState('loading');
+  };
+
+  return (
+    <div data-state={state === 'idle' ? undefined : state}>
+      <div className="actions">
+        <a id="bs-retry" className="btn" href="?retry=1" onClick={onRetryClick}>
+          <span className="spin" aria-hidden="true" />
+          <span className="l-idle">Try again</span>
+          <span className="l-load">Checking&hellip;</span>
+        </a>
+        {supportEmail ? (
+          <a className="link" href={`mailto:${supportEmail}`}>
+            Contact support
+          </a>
+        ) : null}
+      </div>
+      <p className="again" role="status">
+        Still not connecting{at}. Give it a minute and try again.
+      </p>
+      <p className="sr" aria-live="polite">
+        {state === 'loading' ? 'Checking our systems…' : ''}
+      </p>
+    </div>
+  );
+}
+```
+
+In `src/components/backstop/BackstopPage.tsx`:
+- Import `BackstopActions from './BackstopActions'`; import only `BACKSTOP_CSS` from `./backstop-assets`.
+- Remove `data-state` from the root `<div className="bs" id="bs">` (keep `id="bs"`).
+- Replace the whole `<div className="actions">...</div>` block AND the `<p className="again" role="status">...</p>` block with `<BackstopActions supportEmail={supportEmail} initialState={initialState} />` (keep the `<p className="safe">` and the note section after it, unchanged).
+- Delete the `<p id="bs-live" className="sr" aria-live="polite" />` and the `<script dangerouslySetInnerHTML=... />` lines.
+- Replace the motif `<svg className="motif" ...>...</svg>` with:
+
+```tsx
+          <svg className="motif" viewBox="-50 -50 200 200" aria-hidden="true">
+            {['0s', '2.5s', '5s'].map((delay) => (
+              <circle
+                key={delay}
+                className="ring"
+                style={{ animationDelay: delay }}
+                cx="50"
+                cy="50"
+                r="50"
+                fill="none"
+                stroke="var(--brand)"
+                strokeWidth="1.25"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            <path d={MARK_PATH} fill="var(--brand)" />
+            <path d={MARK_PATH} fill="var(--surface)" transform="translate(15 15) scale(.7)" />
+            <path d={MARK_PATH} fill="var(--mark-core)" transform="translate(32 32) scale(.36)" />
+          </svg>
+```
+
+- [ ] **Step 4: Run unit tests (GREEN) and static checks**
+
+Run: `npx vitest run src/components/backstop src/app/global-error.test.tsx && npx tsc --noEmit && npx eslint src/components/backstop`
+Expected: all pass. If an existing Task 3 test asserted something that this change legitimately alters (for example the retry-link test's `id="bs-retry"`/`href="?retry=1"` must still pass; `data-state="retry"` must still appear for `initialState: 'retry'`), keep its intent; report any assertion you had to adjust and why.
+
+- [ ] **Step 5: Add the console-error guard to the e2e spec**
+
+In `tests/e2e/backstop.spec.ts`, in the test 'any page returns a 503 backstop with the outage headers', collect errors before navigation and assert none after load:
+
+```ts
+    const problems: string[] = [];
+    page.on('pageerror', (error) => problems.push(`pageerror: ${error.message}`));
+    page.on('console', (message) => {
+      if (message.type() === 'error') problems.push(`console: ${message.text()}`);
+    });
+```
+and after the existing assertions, add:
+```ts
+    await page.waitForLoadState('load');
+    expect(problems).toEqual([]);
+```
+(If the browser logs the expected 503 document load as a console error, e.g. "Failed to load resource: the server responded with a status of 503", filter only that exact message out with a comment saying why; no other messages may be filtered.)
+
+- [ ] **Step 6: Run the e2e spec and the whole suite**
+
+Run: `npx playwright test tests/e2e/backstop.spec.ts --project=chromium`
+Expected: all 13+ tests PASS, including the two that failed before ('retry button ... still-down message' and 'state=retry shows the still-not-connecting line') and the new console-error assertion.
+Then `npm run test` (unit, all pass) and `npm run test:e2e` (all pass). Then Read the four screenshots in `test-results/backstop/` and describe what you see (rings visible as a faint static ring because the screenshots use reduced motion; mark centered; mobile layout with the smaller mark in the corner; no horizontal overflow). Also load `/?backstop=preview` in a non-reduced-motion browser context once via a throwaway Playwright script or `npx playwright screenshot` and confirm `getComputedStyle(document.querySelector('.ring')).animationName` is `bs-ripple` (proves the animation is live); delete the throwaway script.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/components/backstop tests/e2e/backstop.spec.ts
+git commit -m "feat(backstop): 5a Signal Ripples motif; fix retry hydration mismatch" \
+  -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01SwEubPCkuWMN2Nd52AaqJn"
+```
