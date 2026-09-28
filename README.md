@@ -499,3 +499,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For support, please open an issue in the GitHub repository or contact the development team.
+
+## Outage backstop page
+
+When cofabri-api is unreachable, every page is replaced by a self-contained
+backstop page (HTTP 503). To see it without an outage, open
+`/?backstop=preview` (options: `&state=retry`, `&state=loading`, `&note=1`).
+On production it requires `&password=<PREVIEW_PASSWORD>`; local development and
+Vercel preview deployments are open. Design and rationale:
+`docs/superpowers/specs/2026-09-28-api-backstop-page-design.md`.
