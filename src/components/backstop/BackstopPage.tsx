@@ -1,9 +1,9 @@
-import type { BackstopInitialState, BackstopNote } from '@/lib/backstop';
+import { BACKSTOP_SUPPORT_EMAIL, type BackstopInitialState, type BackstopNote } from '@/lib/backstop';
 import BackstopActions from './BackstopActions';
 import { BACKSTOP_CSS } from './backstop-assets';
 
 export interface BackstopPageProps {
-  /** From BACKSTOP_SUPPORT_EMAIL. When absent, the Contact support link is omitted. */
+  /** Address behind the Contact support link. Defaults to BACKSTOP_SUPPORT_EMAIL. */
   supportEmail?: string;
   /** Live-status slot content. When absent, the slot is not rendered. */
   note?: BackstopNote;
@@ -20,7 +20,12 @@ const MARK_PATH = 'M50 1Q55 45 99 50Q55 55 50 99Q45 55 1 50Q45 45 50 1Z';
 // body and :root rules. It renders when cofabri-api (and anything that talks to
 // it) is down, so it must not depend on any of it. Design source: Claude Design
 // project 27182ef4-ca6e-445b-b857-214abf4c8f61, file backstop/index.html.
-export default function BackstopPage({ supportEmail, note, initialState = 'idle', preview = false }: BackstopPageProps) {
+export default function BackstopPage({
+  supportEmail = BACKSTOP_SUPPORT_EMAIL,
+  note,
+  initialState = 'idle',
+  preview = false,
+}: BackstopPageProps) {
   return (
     <div className="bs" id="bs">
       <style dangerouslySetInnerHTML={{ __html: BACKSTOP_CSS }} />

@@ -86,9 +86,8 @@ be a static literal.
 - The `/backstop` page (`src/app/backstop/page.tsx`) renders nothing of its own in
   this mode; the layout owns the output. It also exports `robots: noindex`.
 - `src/app/global-error.tsx` (new) renders the same `BackstopPage` inside its own
-  `<html><body>`, as the safety net if the layout or a page crashes. It omits
-  the support link, because `BACKSTOP_SUPPORT_EMAIL` is server-only and this
-  component also runs in the browser.
+  `<html><body>`, as the safety net if the layout or a page crashes. The support
+  address is a code constant, so it renders here exactly as in the layout.
 
 ### 4. The page: `src/components/backstop/BackstopPage.tsx`
 
@@ -112,8 +111,10 @@ Server component that composes a small client component (`BackstopActions`). Por
 - Live-status slot: rendered only when the component receives a `note` prop
   (`{ time: string; body: string }`). Production passes none. It exists for the
   preview and for a future independent status source.
-- **Support address:** read from `BACKSTOP_SUPPORT_EMAIL`. If unset, the Contact
-  support link is omitted rather than shipping a placeholder address.
+- **Support address:** the constant `BACKSTOP_SUPPORT_EMAIL` in
+  `src/lib/backstop.ts` (`support@cofabri.com`), the default for the Contact
+  support link. It is a code constant rather than an env var so every render
+  path (layout and `global-error`) shows it identically.
 - **Logo:** ships the design's stand-in wordmark (system bold text plus inline SVG
   mark), which is font-independent enough for a fallback. The real lockup is not
   available as SVG in this repo (`CofabriLogo` serves PNGs from
@@ -179,5 +180,4 @@ Server component that composes a small client component (`BackstopActions`). Por
 
 ## Open items
 
-- Set `BACKSTOP_SUPPORT_EMAIL` in Vercel (the real address is the owner's call).
 - Optional: supply the outlined-SVG CoFabri lockup to replace the stand-in wordmark.

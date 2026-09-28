@@ -137,7 +137,6 @@ export default async function RootLayout({
         </head>
         <body>
           <BackstopPage
-            supportEmail={process.env.BACKSTOP_SUPPORT_EMAIL || undefined}
             initialState={parseInitialState(requestHeaders.get(BACKSTOP_STATE_HEADER))}
             preview={backstopMode === 'preview'}
             note={requestHeaders.get(BACKSTOP_NOTE_HEADER) === '1' ? SAMPLE_BACKSTOP_NOTE : undefined}

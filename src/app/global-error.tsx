@@ -3,9 +3,9 @@
 import BackstopPage from '@/components/backstop/BackstopPage';
 
 // Last-resort safety net: if the root layout or a page crashes, show the same
-// self-contained backstop instead of Next's bare error page. It omits the
-// support link on purpose: BACKSTOP_SUPPORT_EMAIL is a server-only variable and
-// this component also runs in the browser.
+// self-contained backstop instead of Next's bare error page. The support
+// address is a code constant, so it renders here exactly as it does in the
+// layout.
 export default function GlobalError() {
   return (
     <html lang="en">

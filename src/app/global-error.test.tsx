@@ -8,6 +8,7 @@ describe('GlobalError', () => {
     expect(html).toContain('<html');
     expect(html).toContain('<title>CoFabri · Temporarily unavailable</title>');
     expect(html).toContain('not quite connecting.');
+    expect(html).toContain('href="mailto:support@cofabri.com"');
     expect(html).not.toMatch(/https?:\/\//);
   });
 });

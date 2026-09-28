@@ -29,15 +29,16 @@ describe('BackstopPage', () => {
     expect(render()).toContain('prefers-reduced-motion:reduce');
   });
 
-  it('omits the Contact support link when no support email is configured', () => {
-    expect(render()).not.toContain('Contact support');
-    expect(render()).not.toContain('mailto:');
+  it('links Contact support to support@cofabri.com by default', () => {
+    const html = render();
+    expect(html).toContain('href="mailto:support@cofabri.com"');
+    expect(html).toContain('Contact support');
   });
 
-  it('renders a mailto Contact support link when configured', () => {
+  it('uses a different support address when one is passed', () => {
     const html = render({ supportEmail: 'help@cofabri.com' });
     expect(html).toContain('href="mailto:help@cofabri.com"');
-    expect(html).toContain('Contact support');
+    expect(html).not.toContain('support@cofabri.com');
   });
 
   it('escapes a hostile support email instead of emitting markup', () => {

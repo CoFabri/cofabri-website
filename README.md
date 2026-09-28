@@ -116,7 +116,6 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    ```env
    # cofabri-api (Supabase-backed content & forms API)
    COFABRI_API_BASE_URL=your_cofabri_api_base_url_here
-   BACKSTOP_SUPPORT_EMAIL=support_email_shown_on_the_outage_page   # optional; the "Contact support" link is omitted when unset
    COFABRI_API_KEY=your_cofabri_api_key_here
 
    # HighLevel Chat Widget

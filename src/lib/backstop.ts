@@ -6,6 +6,10 @@ export const BACKSTOP_STATE_HEADER = 'x-cofabri-backstop-state';
 export const BACKSTOP_NOTE_HEADER = 'x-cofabri-backstop-note';
 export const BACKSTOP_PATH = '/backstop';
 
+// Shown on the outage page as "Contact support". A constant rather than an env
+// var so every render path (layout, global-error) shows it identically.
+export const BACKSTOP_SUPPORT_EMAIL = 'support@cofabri.com';
+
 export type BackstopMode = 'outage' | 'preview';
 export type BackstopInitialState = 'idle' | 'loading' | 'retry';
 
