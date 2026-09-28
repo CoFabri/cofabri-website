@@ -12,6 +12,16 @@ import StructuredData from "@/components/marketing/StructuredData";
 import { ThemeProvider } from "@/components/theme-provider";
 import { getDeveloperPortalAccessToken } from "@/lib/developer-portal/session";
 import { getAccountIdentity } from "@/lib/account/identity";
+import { headers } from "next/headers";
+import BackstopPage from "@/components/backstop/BackstopPage";
+import {
+  BACKSTOP_HEADER,
+  BACKSTOP_NOTE_HEADER,
+  BACKSTOP_STATE_HEADER,
+  SAMPLE_BACKSTOP_NOTE,
+  parseBackstopMode,
+  parseInitialState,
+} from "@/lib/backstop";
 
 export const runtime = 'nodejs';
 
@@ -114,6 +124,29 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Backstop mode (set only by middleware): render a bare shell containing
+  // just the self-contained backstop page. Everything below talks to
+  // cofabri-api or external hosts, which is exactly what may be down.
+  const requestHeaders = await headers();
+  const backstopMode = parseBackstopMode(requestHeaders.get(BACKSTOP_HEADER));
+  if (backstopMode) {
+    return (
+      <html lang="en">
+        <head>
+          <meta name="color-scheme" content="light dark" />
+        </head>
+        <body>
+          <BackstopPage
+            supportEmail={process.env.BACKSTOP_SUPPORT_EMAIL || undefined}
+            initialState={parseInitialState(requestHeaders.get(BACKSTOP_STATE_HEADER))}
+            preview={backstopMode === 'preview'}
+            note={requestHeaders.get(BACKSTOP_NOTE_HEADER) === '1' ? SAMPLE_BACKSTOP_NOTE : undefined}
+          />
+        </body>
+      </html>
+    );
+  }
+
   const accessToken = await getDeveloperPortalAccessToken();
   const account = await getAccountIdentity(accessToken);
 
