@@ -15,7 +15,9 @@ export interface BackstopPageProps {
 const MARK_PATH = 'M50 1Q55 45 99 50Q55 55 50 99Q45 55 1 50Q45 45 50 1Z';
 
 // Self-contained on purpose: inline CSS and SVG, system fonts, no imports from
-// the rest of the site. It renders when cofabri-api (and anything that talks to
+// the rest of the site. It is designed to be the only content of the document
+// (the RootLayout backstop branch and global-error), since its CSS sets html,
+// body and :root rules. It renders when cofabri-api (and anything that talks to
 // it) is down, so it must not depend on any of it. Design source: Claude Design
 // project 27182ef4-ca6e-445b-b857-214abf4c8f61, file backstop/index.html.
 export default function BackstopPage({ supportEmail, note, initialState = 'idle', preview = false }: BackstopPageProps) {
@@ -53,7 +55,7 @@ export default function BackstopPage({ supportEmail, note, initialState = 'idle'
               <section className="note" aria-labelledby="bs-note-h">
                 <div className="eyebrow">
                   <span id="bs-note-h">Latest update</span>
-                  <time>{note.time}</time>
+                  <time dateTime={note.datetime}>{note.time}</time>
                 </div>
                 <p>{note.body}</p>
               </section>

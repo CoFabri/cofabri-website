@@ -11,6 +11,8 @@ export type BackstopInitialState = 'idle' | 'loading' | 'retry';
 
 export interface BackstopNote {
   time: string;
+  /** Machine-readable form of `time` for the <time> element (valid HTML time-with-offset). */
+  datetime?: string;
   body: string;
 }
 
@@ -18,6 +20,7 @@ export interface BackstopNote {
 // before a real independent status source exists.
 export const SAMPLE_BACKSTOP_NOTE: BackstopNote = {
   time: '21:05 UTC',
+  datetime: '21:05Z',
   body: "We've traced this to our hosting provider and are working with them on it. Some apps may load slowly or not at all until it's resolved.",
 };
 

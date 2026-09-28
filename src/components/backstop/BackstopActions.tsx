@@ -16,6 +16,7 @@ interface BackstopActionsProps {
 export default function BackstopActions({ supportEmail, initialState }: BackstopActionsProps) {
   const [state, setState] = useState<BackstopInitialState>(initialState);
   const [at, setAt] = useState('');
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -27,8 +28,10 @@ export default function BackstopActions({ supportEmail, initialState }: Backstop
         setAt(' as of ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
       } else {
         setState('idle');
+        setAt('');
       }
     };
+    setHydrated(true);
     sync();
     // Back/forward cache can restore the page frozen in its loading state.
     const onPageShow = (event: PageTransitionEvent) => {
@@ -46,7 +49,7 @@ export default function BackstopActions({ supportEmail, initialState }: Backstop
   };
 
   return (
-    <div data-state={state === 'idle' ? undefined : state}>
+    <div data-state={state === 'idle' ? undefined : state} data-hydrated={hydrated ? 'true' : undefined}>
       <div className="actions">
         <a id="bs-retry" className="btn" href="?retry=1" onClick={onRetryClick}>
           <span className="spin" aria-hidden="true" />
@@ -59,11 +62,11 @@ export default function BackstopActions({ supportEmail, initialState }: Backstop
           </a>
         ) : null}
       </div>
-      <p className="again" role="status">
+      <p className="again">
         Still not connecting{at}. Give it a minute and try again.
       </p>
       <p className="sr" aria-live="polite">
-        {state === 'loading' ? 'Checking our systems…' : ''}
+        {state === 'loading' ? 'Checking our systems…' : state === 'retry' ? `Still not connecting${at}.` : ''}
       </p>
     </div>
   );

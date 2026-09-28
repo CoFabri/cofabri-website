@@ -2,9 +2,9 @@
 // document. No external requests: this renders when nothing else can load.
 
 export const BACKSTOP_CSS = `
-:root{--surface:#FFFFFF;--hairline:#E9ECEF;--ghost:#D9DFE3;--ink:#232E36;--ink-body:#36454F;--ink-muted:#5A6A75;--accent:#0B6BE6;--accent-hover:#0857BE;--on-accent:#FFFFFF;--brand:#3B82F6;--mark-core:#36454F;--status:#D98212;--status-halo:rgba(217,130,18,.14);
+:root{--surface:#FFFFFF;--hairline:#E9ECEF;--ink:#232E36;--ink-body:#36454F;--ink-muted:#5A6A75;--accent:#0B6BE6;--accent-hover:#0857BE;--on-accent:#FFFFFF;--brand:#3B82F6;--mark-core:#36454F;--status:#D98212;--status-halo:rgba(217,130,18,.14);
 --font:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;--gutter:clamp(20px,4vw,40px)}
-@media (prefers-color-scheme:dark){:root{--surface:#171D22;--hairline:#2B353D;--ghost:#3A464F;--ink:#F1F4F6;--ink-body:#C9D2D8;--ink-muted:#9AA8B2;--accent:#5AA0F5;--accent-hover:#83B8F8;--on-accent:#0B1B2B;--mark-core:#E4EAEE;--status:#E9A33D;--status-halo:rgba(233,163,61,.16)}}
+@media (prefers-color-scheme:dark){:root{--surface:#171D22;--hairline:#2B353D;--ink:#F1F4F6;--ink-body:#C9D2D8;--ink-muted:#9AA8B2;--accent:#5AA0F5;--accent-hover:#83B8F8;--on-accent:#0B1B2B;--mark-core:#E4EAEE;--status:#E9A33D;--status-halo:rgba(233,163,61,.16)}}
 html,body{margin:0;background:var(--surface);color:var(--ink)}
 .bs,.bs *{box-sizing:border-box}
 .bs{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;background:var(--surface);color:var(--ink);font:400 16px/1.6 var(--font);-webkit-font-smoothing:antialiased;overflow-wrap:break-word}

@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Temporarily unavailable',
+  title: { absolute: 'CoFabri · Temporarily unavailable' },
   robots: { index: false, follow: false },
   // Clear the root layout's metadata so the outage document links to nothing
   // outside itself (the icons, manifest and share images are on files.cofabri.com).

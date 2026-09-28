@@ -83,10 +83,20 @@ describe('BackstopPage', () => {
     expect(render({ preview: true })).toContain('>Preview<');
   });
 
-  it('carries the requested initial state on the root element', () => {
+  it('carries the requested initial state on the actions wrapper', () => {
     expect(render()).not.toContain('data-state="');
     expect(render({ initialState: 'retry' })).toContain('data-state="retry"');
     expect(render({ initialState: 'loading' })).toContain('data-state="loading"');
+  });
+
+  it('announces through one live region and does not use role=status', () => {
+    expect(render()).not.toContain('role="status"');
+    expect(render()).toContain('aria-live="polite"');
+  });
+
+  it('renders the note time as a machine-readable time element', () => {
+    const html = render({ note: SAMPLE_BACKSTOP_NOTE });
+    expect(html).toContain('dateTime="21:05Z"');
   });
 
   it('keeps the retry link working without JavaScript', () => {
