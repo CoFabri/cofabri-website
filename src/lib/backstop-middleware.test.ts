@@ -49,6 +49,7 @@ describe('handleBackstop', () => {
     '/sitemap.xml',
     '/favicon.ico',
     '/images/logo.PNG',
+    '/google1234567890abcdef.html',
   ])('never intercepts %s, even when the API is down', async (path) => {
     mockedHealth.mockResolvedValue('down');
     expect(await handleBackstop(req(path))).toBeNull();
@@ -97,6 +98,12 @@ describe('handleBackstop', () => {
 
   it('redirects direct visits to /backstop to the homepage', async () => {
     const res = await handleBackstop(req('/backstop'));
+    expect(res!.status).toBe(307);
+    expect(res!.headers.get('location')).toBe('https://cofabri.com/');
+  });
+
+  it('redirects /Backstop (any casing) to the homepage', async () => {
+    const res = await handleBackstop(req('/Backstop'));
     expect(res!.status).toBe(307);
     expect(res!.headers.get('location')).toBe('https://cofabri.com/');
   });

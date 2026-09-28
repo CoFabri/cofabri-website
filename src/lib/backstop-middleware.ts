@@ -14,9 +14,12 @@ import {
 
 // Files served as-is that other sites and crawlers fetch directly; a 503 HTML
 // page here would break embeds (status widgets) and SEO files.
-const STATIC_ASSET = /\.(?:png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|otf|js|css|json|txt|xml|map|webmanifest)$/i;
+const STATIC_ASSET = /\.(?:png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|otf|js|css|json|txt|xml|map|webmanifest|html)$/i;
 
-// Mirrors the matcher exclusions in middleware.ts so the handler is safe on its own.
+// A stricter safety net than the matcher in middleware.ts (which excludes only
+// api/, api exactly, _next/static, _next/image and favicon.ico): this also
+// covers every other /_next/* path, such as /_next/data/... and
+// /_next/webpack-hmr, so the handler is safe on its own.
 const INTERNAL_PATH = /^\/(?:api|_next)(?:\/|$)/;
 
 const BACKSTOP_HEADERS = [BACKSTOP_HEADER, BACKSTOP_STATE_HEADER, BACKSTOP_NOTE_HEADER];
@@ -65,10 +68,13 @@ export async function handleBackstop(request: NextRequest): Promise<NextResponse
       return rewriteToBackstop(request, 'preview', 200, previewOptions(searchParams));
     }
 
-    if (pathname === BACKSTOP_PATH) {
+    if (pathname.toLowerCase() === BACKSTOP_PATH) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
+    // During an outage the backstop takes precedence over the site's other
+    // middleware behavior (/privacy and KB redirects, legal normalization, the
+    // /preview/* gate) by design: it replaces every page.
     if ((await getApiHealth()) === 'down') {
       return rewriteToBackstop(request, 'outage', 503);
     }
