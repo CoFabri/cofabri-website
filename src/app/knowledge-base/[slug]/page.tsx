@@ -1,4 +1,5 @@
-import { getKnowledgeBaseArticle, getKnowledgeBaseArticlesBySlugs } from '@/lib/api-client';
+import { getKnowledgeBaseArticle, getKnowledgeBaseArticles, getKnowledgeBaseArticlesBySlugs } from '@/lib/api-client';
+import { pickFallbackRelated } from '@/lib/kb-related';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -96,46 +97,81 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
     return getKnowledgeBaseArticlesBySlugs(validSlugs);
   })();
   relatedArticles = relatedArticles.filter((a) => a.slug !== article.slug);
+  // No curated related topics: fall back to same-app / same-category articles so
+  // the section fills itself. Curated topics, when set, always take priority.
+  if (relatedArticles.length === 0) {
+    relatedArticles = pickFallbackRelated(article, await getKnowledgeBaseArticles());
+  }
+
+  // Link the author to their About page card when they're listed there.
+  const authorHref = article.authorProfile?.teamMemberId ? `/about#${article.authorProfile.teamMemberId}` : null;
 
   const singleApp = article.applications.length === 1 ? article.applications[0] : null;
   const applicationNames = article.applications.map((a) => a.name);
+
+  const publishedDate = formatDate(article.publishedAt);
+  const updatedDate = formatDate(article.lastUpdated);
 
   const meta = (
     [
       { k: 'Category', v: article.category },
       {
         k: 'Application',
-        v: singleApp ? singleApp.name : applicationNames.length > 0 ? applicationNames.join(', ') : undefined,
-        node: singleApp ? (
-          singleApp.appUrl ? (
+        v: applicationNames.length > 0 ? applicationNames.join(', ') : undefined,
+        node:
+          article.applications.length === 0 ? undefined : singleApp?.appUrl ? (
             <a
               href={singleApp.appUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
+              className="flex items-center gap-2 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
             >
-              {singleApp.faviconUrl && (
-                <div className="relative h-5 w-5 flex-shrink-0 overflow-hidden rounded-md border border-border bg-white p-0.5">
-                  <Image src={singleApp.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
-                </div>
-              )}
+              <AppMarkGroup apps={[singleApp]} />
               {singleApp.name}
             </a>
           ) : (
-            <span className="flex items-center gap-1.5 font-mono text-[13px] text-ink-body">
-              {singleApp.faviconUrl && (
-                <div className="relative h-5 w-5 flex-shrink-0 overflow-hidden rounded-md border border-border bg-white p-0.5">
-                  <Image src={singleApp.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
-                </div>
-              )}
-              {singleApp.name}
+            <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-ink-body">
+              <AppMarkGroup apps={article.applications} />
+              <span className="min-w-0 text-right">{applicationNames.join(', ')}</span>
             </span>
-          )
+          ),
+      },
+      {
+        k: 'Author',
+        v: article.authorProfile?.name ?? (article.author || undefined),
+        node: article.authorProfile ? (
+          <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-ink-body">
+            {article.authorProfile.headshotUrl ? (
+              <Image
+                src={article.authorProfile.headshotUrl}
+                alt=""
+                width={24}
+                height={24}
+                className="h-6 w-6 flex-shrink-0 rounded-full object-cover"
+                unoptimized={process.env.NODE_ENV === 'development'}
+              />
+            ) : (
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-surface-raised text-[11px] font-semibold text-ink-faint">
+                {article.authorProfile.name.charAt(0)}
+              </span>
+            )}
+            {authorHref ? (
+              <Link href={authorHref} className="transition-colors hover:text-foreground hover:underline">
+                {article.authorProfile.name}
+              </Link>
+            ) : (
+              article.authorProfile.name
+            )}
+          </span>
         ) : undefined,
       },
-      { k: 'Author', v: article.authorProfile ? undefined : article.author || undefined },
-      { k: 'Published', v: formatDate(article.publishedAt) },
-      { k: 'Last updated', v: formatDate(article.lastUpdated) },
+      // One "Last updated" row when both dates fall on the same day; separate rows only when they differ.
+      ...(publishedDate === updatedDate
+        ? [{ k: 'Last updated', v: updatedDate }]
+        : [
+            { k: 'Published', v: publishedDate },
+            { k: 'Last updated', v: updatedDate },
+          ]),
       { k: 'Read time', v: article.readTime > 0 ? `${article.readTime} min` : undefined },
     ] as { k: string; v: string | undefined; node?: React.ReactNode }[]
   ).filter((row): row is { k: string; v: string; node?: React.ReactNode } => !!row.v);
@@ -199,7 +235,15 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{article.authorProfile.name}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {authorHref ? (
+                      <Link href={authorHref} className="hover:underline">
+                        {article.authorProfile.name}
+                      </Link>
+                    ) : (
+                      article.authorProfile.name
+                    )}
+                  </p>
                   {article.authorProfile.role && (
                     <p className="text-xs text-ink-faint">{article.authorProfile.role}</p>
                   )}

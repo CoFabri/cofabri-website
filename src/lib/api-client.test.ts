@@ -446,3 +446,47 @@ describe('getKnowledgeBaseArticle applications mapping', () => {
     expect(article?.applications).toEqual([]);
   });
 });
+
+describe('getKnowledgeBaseArticle author teamMemberId mapping', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  const articleWithAuthor = (author: Record<string, unknown>) => ({
+    ok: true,
+    json: async () => ({
+      id: '1',
+      article_title: 'Getting Started',
+      category: 'how_to_guide',
+      site_url_slug: 'getting-started',
+      author,
+    }),
+  });
+
+  it('maps team_member_id to authorProfile.teamMemberId', async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      articleWithAuthor({ id: 'a1', name: 'Jane Doe', team_member_id: 'person-1', headshot_url: null }),
+    );
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+    expect(article?.authorProfile?.teamMemberId).toBe('person-1');
+  });
+
+  it('maps a null team_member_id to undefined', async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      articleWithAuthor({ id: 'a1', name: 'Jane Doe', team_member_id: null }),
+    );
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('getting-started');
+    expect(article?.authorProfile?.teamMemberId).toBeUndefined();
+  });
+});

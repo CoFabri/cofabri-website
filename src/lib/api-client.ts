@@ -176,6 +176,8 @@ export interface AuthorProfile {
   twitterUrl?: string;
   linkedinUrl?: string;
   headshotUrl?: string;
+  /** Public team-member id, set only when the author is listed on the About page. */
+  teamMemberId?: string;
 }
 
 export interface LinkedApp {
@@ -212,6 +214,7 @@ interface KbAuthorRow {
   twitter_url: string | null;
   linkedin_url: string | null;
   headshot_url: string | null;
+  team_member_id?: string | null;
 }
 
 interface KbApplicationRow {
@@ -242,6 +245,7 @@ function mapAuthor(row: KbAuthorRow): AuthorProfile | undefined {
     twitterUrl: row.twitter_url || undefined,
     linkedinUrl: row.linkedin_url || undefined,
     headshotUrl: row.headshot_url || undefined,
+    teamMemberId: row.team_member_id || undefined,
   };
 }
 

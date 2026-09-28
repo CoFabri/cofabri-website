@@ -47,7 +47,10 @@ function nonFounderRole(roleTitle: string) {
 function FounderCard({ person }: { person: TeamMember }) {
   const role = person.roleTitle ? nonFounderRole(person.roleTitle) : '';
   return (
-    <div className="flex items-start gap-6 rounded-xl border border-border bg-card p-6 transition-colors duration-200 hover:border-border-strong sm:p-8">
+    <div
+      id={person.id}
+      className="flex scroll-mt-24 items-start gap-6 rounded-xl border border-border bg-card p-6 transition-colors duration-200 hover:border-border-strong target:border-primary sm:p-8"
+    >
       <Avatar person={person} large />
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2.5">
@@ -65,7 +68,10 @@ function FounderCard({ person }: { person: TeamMember }) {
 
 function TeamCard({ person }: { person: TeamMember }) {
   return (
-    <div className="w-full flex-none basis-full rounded-xl border border-border p-6 transition-colors duration-200 hover:border-border-strong sm:basis-[calc(33.333%-0.834rem)]">
+    <div
+      id={person.id}
+      className="w-full flex-none basis-full scroll-mt-24 rounded-xl border border-border p-6 transition-colors duration-200 hover:border-border-strong target:border-primary sm:basis-[calc(33.333%-0.834rem)]"
+    >
       <Avatar person={person} />
       <div className="mt-4.5 text-[17px] font-semibold tracking-[-0.01em] text-foreground">{person.name}</div>
       {person.roleTitle && <div className="mt-1 text-sm text-muted-foreground">{person.roleTitle}</div>}
