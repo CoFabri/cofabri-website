@@ -27,7 +27,11 @@ function logStateChange(health: ApiHealth): void {
     return;
   }
   lastLogged = health;
-  console.warn('cofabri-api health:', health);
+  try {
+    console.warn('cofabri-api health:', health);
+  } catch {
+    // Logging must never affect the health result.
+  }
 }
 
 function isTypeErrorLike(error: unknown): boolean {

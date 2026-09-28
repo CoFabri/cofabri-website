@@ -194,6 +194,18 @@ describe('getApiHealth', () => {
       expect(warn).toHaveBeenCalledWith('cofabri-api health:', 'down');
     });
 
+    it('never lets a failing console.warn change the result', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {
+        throw new Error('log failed');
+      });
+      global.fetch = vi.fn().mockResolvedValue({ status: 503 });
+      const getApiHealth = await load();
+      expect(await getApiHealth()).toBe('down');
+      vi.advanceTimersByTime(4_000);
+      expect(await getApiHealth()).toBe('down');
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
     it('logs up when down recovers', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       global.fetch = vi.fn().mockResolvedValueOnce({ status: 503 }).mockResolvedValueOnce({ status: 200 });
