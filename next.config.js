@@ -13,6 +13,8 @@ const nextConfig = {
         pathname: '/**',
       }
     ],
+    // 75 is the default; 90 is used for small avatar photos where softness shows.
+    qualities: [75, 90],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',

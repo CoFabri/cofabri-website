@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import RevealSection from './RevealSection';
 import PageHero from './PageHero';
 import Breadcrumbs from './Breadcrumbs';
@@ -20,12 +21,19 @@ function initials(name: string) {
 function Avatar({ person, large = false }: { person: TeamMember; large?: boolean }) {
   const size = large ? 'h-22 w-22' : 'h-14 w-14';
   if (person.photoUrl) {
+    // next/image resizes server-side; the source photos are 2000px+ and a CSS
+    // background downscaled 40x by the browser looks jagged and loads ~1MB each.
     return (
-      <div
-        className={`${size} flex-none rounded-full border border-border bg-cover bg-center`}
-        style={{ backgroundImage: `url(${encodeURI(person.photoUrl)})` }}
-        aria-hidden
-      />
+      <div className={`${size} relative flex-none overflow-hidden rounded-full border border-border`} aria-hidden>
+        <Image
+          src={person.photoUrl}
+          alt=""
+          fill
+          sizes={large ? '88px' : '56px'}
+          quality={90}
+          className="object-cover object-top"
+        />
+      </div>
     );
   }
   return (
