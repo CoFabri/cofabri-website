@@ -39,11 +39,24 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'npm run build && npm run start',
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    env: TURNSTILE_TEST_ENV,
-  },
+  webServer: [
+    {
+      command: 'npm run build && npm run start',
+      url: baseURL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      env: TURNSTILE_TEST_ENV,
+    },
+    {
+      // Same build, but cofabri-api points at a closed port so every request
+      // sees a genuine outage. Used only by tests/e2e/backstop.spec.ts. The
+      // readiness URL is the preview form, which returns 200 (a real outage
+      // returns 503, which Playwright would not treat as ready).
+      command: 'npx next start -p 3100',
+      url: 'http://localhost:3100/?backstop=preview',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+      env: { ...TURNSTILE_TEST_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:9' },
+    },
+  ],
 });
