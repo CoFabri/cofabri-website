@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { handleBackstop, stripBackstopHeaders } from '@/lib/backstop-middleware';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  // First: if cofabri-api is down (or a backstop preview was requested), serve
+  // the self-contained backstop page instead of any real page.
+  const backstopResponse = await handleBackstop(request);
+  if (backstopResponse) return backstopResponse;
+
   const { pathname, searchParams } = request.nextUrl;
 
   // Handle redirects for 404 errors found in Google Search Console
@@ -48,7 +54,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Create response
-  const response = NextResponse.next();
+  // Strip any client-supplied backstop headers so only this middleware can
+  // put the root layout into backstop mode.
+  const response = NextResponse.next({ request: { headers: stripBackstopHeaders(request.headers) } });
 
   // Only apply to preview routes (excluding login page)
   if (request.nextUrl.pathname.startsWith('/preview/') && !request.nextUrl.pathname.startsWith('/preview/login')) {
