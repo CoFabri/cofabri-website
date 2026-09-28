@@ -942,3 +942,20 @@
     animation: cf-fade 1.6s ease-in-out infinite;
   }
 }
+/* 404 page mark: the star sits in its outline, turned the wrong way. */
+@keyframes cf-nf-sway {
+  0%, 100% { transform: rotate(14deg); }
+  50% { transform: rotate(24deg); }
+}
+@keyframes cf-nf-dash {
+  to { stroke-dashoffset: -48; }
+}
+@keyframes cf-nf-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.cf-nf-sway { animation: cf-nf-sway 12s ease-in-out infinite; }
+.cf-nf-dash { animation: cf-nf-dash 24s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cf-nf-sway, .cf-nf-dash { animation: none; }
+}
