@@ -34,6 +34,7 @@ test.describe('real outage', () => {
     await expect(page.locator('nav')).toHaveCount(0);
     await expect(page.getByText('Preview', { exact: true })).toHaveCount(0);
     await page.waitForLoadState('load');
+    await page.locator('[data-hydrated="true"]').waitFor();
     expect(problems).toEqual([]);
   });
 
@@ -44,7 +45,7 @@ test.describe('real outage', () => {
       if (!url.startsWith('http://localhost:3100') && !url.startsWith('data:')) foreign.push(url);
     });
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
     expect(foreign).toEqual([]);
   });
 
@@ -52,13 +53,20 @@ test.describe('real outage', () => {
     await page.goto('/apps');
     await page.getByRole('link', { name: 'Try again' }).click();
     await page.waitForURL(/retry=/);
-    await expect(page.getByText(/Still not connecting as of/)).toBeVisible();
+    await expect(page.locator('p.again')).toBeVisible();
+    await expect(page.locator('p.again')).toContainText(/Still not connecting as of/);
   });
 
   test('direct /backstop visits redirect home', async ({ page }) => {
     // Home is itself the backstop during this outage, so assert on the URL.
     await page.goto('/backstop');
     expect(new URL(page.url()).pathname).toBe('/');
+  });
+
+  test('the Search Console verification file is not replaced by the outage page', async ({ request }) => {
+    const response = await request.get('/google1234567890abcdef.html');
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain('google-site-verification');
   });
 
   for (const scheme of ['light', 'dark'] as const) {
@@ -91,7 +99,8 @@ test.describe('preview', () => {
 
   test('state=retry shows the still-not-connecting line', async ({ page }) => {
     await page.goto('/?backstop=preview&state=retry');
-    await expect(page.getByText(/Still not connecting as of/)).toBeVisible();
+    await expect(page.locator('p.again')).toBeVisible();
+    await expect(page.locator('p.again')).toContainText(/Still not connecting as of/);
   });
 
   test('state=loading freezes the button in its loading state', async ({ page }) => {

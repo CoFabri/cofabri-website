@@ -2,7 +2,8 @@
 // backstop e2e (tests/e2e/backstop-healthy.spec.ts).
 import http from 'node:http';
 
-const port = Number(process.env.STUB_API_PORT ?? 3200);
+// Must match the stub API URL hard-coded in playwright.config.ts.
+const port = 3200;
 
 http
   .createServer((req, res) => {

@@ -48,6 +48,8 @@ export default defineConfig({
       env: TURNSTILE_TEST_ENV,
     },
     {
+      // Relies on the .next build produced by the first server's command
+      // (Playwright starts servers in array order).
       // Same build, but cofabri-api points at a closed port so every request
       // sees a genuine outage. Used only by tests/e2e/backstop.spec.ts. The
       // readiness URL is the preview form, which returns 200 (a real outage

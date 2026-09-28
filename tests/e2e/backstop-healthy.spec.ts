@@ -23,4 +23,16 @@ test.describe('healthy API', () => {
     expect(response.status()).not.toBe(503);
     expect(await response.text()).not.toContain('not quite connecting');
   });
+
+  test('/backstop redirects home with a 307 when the API is healthy', async ({ request }) => {
+    const response = await request.get('/backstop', { maxRedirects: 0 });
+    expect(response.status()).toBe(307);
+    expect(new URL(response.headers()['location'], response.url()).pathname).toBe('/');
+  });
+
+  test('a forged backstop header on a path the old matcher skipped does not render the backstop', async ({ request }) => {
+    const response = await request.get('/apifoo', { headers: { 'x-cofabri-backstop': 'outage' } });
+    expect(await response.text()).not.toContain('not quite connecting');
+    expect(response.status()).toBe(404);
+  });
 });
