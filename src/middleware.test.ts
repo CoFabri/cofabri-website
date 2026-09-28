@@ -47,10 +47,15 @@ describe('middleware', () => {
         'x-cofabri-backstop': 'outage',
         'x-cofabri-backstop-state': 'retry',
         'x-cofabri-backstop-note': '1',
+        'user-agent': 'test',
       }),
     );
     expect(res.headers.get('x-middleware-request-x-cofabri-backstop')).toBeNull();
-    const overridden = (res.headers.get('x-middleware-override-headers') ?? '').split(',');
+    // The override list must exist (proves headers were explicitly forwarded, i.e. stripped copy)
+    // and carry the benign header, otherwise a plain NextResponse.next() would pass vacuously.
+    expect(res.headers.get('x-middleware-override-headers')).not.toBeNull();
+    const overridden = res.headers.get('x-middleware-override-headers')!.split(',');
+    expect(overridden).toContain('user-agent');
     expect(overridden).not.toContain('x-cofabri-backstop');
     expect(overridden).not.toContain('x-cofabri-backstop-state');
     expect(overridden).not.toContain('x-cofabri-backstop-note');
