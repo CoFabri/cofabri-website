@@ -490,3 +490,39 @@ describe('getKnowledgeBaseArticle author teamMemberId mapping', () => {
     expect(article?.authorProfile?.teamMemberId).toBeUndefined();
   });
 });
+
+describe('getKnowledgeBaseArticle published date mapping', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  const mockRow = (row: Record<string, unknown>) => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: '1', article_title: 'A', category: 'faq', site_url_slug: 'a', ...row }),
+    });
+  };
+
+  it('uses created_at as publishedAt and last_updated as lastUpdated', async () => {
+    mockRow({ created_at: '2026-09-17T00:00:00Z', last_updated: '2026-09-28T00:00:00Z' });
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    const article = await getKnowledgeBaseArticle('a');
+    expect(article?.publishedAt).toBe('2026-09-17T00:00:00Z');
+    expect(article?.lastUpdated).toBe('2026-09-28T00:00:00Z');
+  });
+
+  it('falls back to last_updated for publishedAt when created_at is missing', async () => {
+    mockRow({ last_updated: '2026-09-28T00:00:00Z' });
+    const { getKnowledgeBaseArticle } = await import('./api-client');
+    expect((await getKnowledgeBaseArticle('a'))?.publishedAt).toBe('2026-09-28T00:00:00Z');
+  });
+});

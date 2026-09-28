@@ -197,6 +197,7 @@ interface KbArticleRow {
   author_name: string | null;
   read_time: number | null;
   last_updated: string | null;
+  created_at?: string | null;
   is_popular: boolean | null;
   is_featured: boolean | null;
   tags: string[] | null;
@@ -269,7 +270,8 @@ function mapKbArticle(row: KbArticleRow): KnowledgeBaseArticle {
     author: row.author_name || '',
     authorProfile: row.author ? mapAuthor(row.author) : undefined,
     readTime: row.read_time || 0,
-    publishedAt: row.last_updated || '',
+    // No dedicated published date exists in Core; created_at is the closest real one.
+    publishedAt: row.created_at || row.last_updated || '',
     lastUpdated: row.last_updated || undefined,
     isPopular: row.is_popular || undefined,
     isFeatured: row.is_featured || undefined,

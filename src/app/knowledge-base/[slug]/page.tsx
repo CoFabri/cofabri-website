@@ -136,42 +136,11 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
             </span>
           ),
       },
-      {
-        k: 'Author',
-        v: article.authorProfile?.name ?? (article.author || undefined),
-        node: article.authorProfile ? (
-          <span className="flex min-w-0 items-center gap-2 font-mono text-[13px] text-ink-body">
-            {article.authorProfile.headshotUrl ? (
-              <Image
-                src={article.authorProfile.headshotUrl}
-                alt=""
-                width={24}
-                height={24}
-                className="h-6 w-6 flex-shrink-0 rounded-full object-cover"
-                unoptimized={process.env.NODE_ENV === 'development'}
-              />
-            ) : (
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-surface-raised text-[11px] font-semibold text-ink-faint">
-                {article.authorProfile.name.charAt(0)}
-              </span>
-            )}
-            {authorHref ? (
-              <Link href={authorHref} className="transition-colors hover:text-foreground hover:underline">
-                {article.authorProfile.name}
-              </Link>
-            ) : (
-              article.authorProfile.name
-            )}
-          </span>
-        ) : undefined,
-      },
-      // One "Last updated" row when both dates fall on the same day; separate rows only when they differ.
-      ...(publishedDate === updatedDate
-        ? [{ k: 'Last updated', v: updatedDate }]
-        : [
-            { k: 'Published', v: publishedDate },
-            { k: 'Last updated', v: updatedDate },
-          ]),
+      // The byline under the excerpt covers authors with a profile; this is the plain-text fallback.
+      { k: 'Author', v: article.authorProfile ? undefined : article.author || undefined },
+      // "Last updated" only appears once it differs from the published day.
+      { k: 'Published', v: publishedDate },
+      { k: 'Last updated', v: updatedDate !== publishedDate ? updatedDate : undefined },
       { k: 'Read time', v: article.readTime > 0 ? `${article.readTime} min` : undefined },
     ] as { k: string; v: string | undefined; node?: React.ReactNode }[]
   ).filter((row): row is { k: string; v: string; node?: React.ReactNode } => !!row.v);
