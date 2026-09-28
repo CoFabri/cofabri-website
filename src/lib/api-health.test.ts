@@ -148,9 +148,61 @@ describe('getApiHealth', () => {
   it('fails open when the health logic itself throws', async () => {
     global.fetch = vi.fn().mockResolvedValue({ status: 200 });
     const getApiHealth = await load();
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(Date, 'now').mockImplementation(() => {
       throw new Error('boom');
     });
     expect(await getApiHealth()).toBe('up');
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it('is down when fetch rejects with a cross-realm TypeError (plain object named TypeError)', async () => {
+    global.fetch = vi.fn().mockRejectedValue({ name: 'TypeError' });
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('down');
+  });
+
+  describe('state-change logging', () => {
+    it('logs nothing for a first up result', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      global.fetch = vi.fn().mockResolvedValue({ status: 200 });
+      const getApiHealth = await load();
+      await getApiHealth();
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('logs once when up turns down', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      global.fetch = vi.fn().mockResolvedValueOnce({ status: 200 }).mockResolvedValueOnce({ status: 503 });
+      const getApiHealth = await load();
+      await getApiHealth();
+      vi.advanceTimersByTime(16_000);
+      await getApiHealth();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith('cofabri-api health:', 'down');
+    });
+
+    it('logs a repeated down only once', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      global.fetch = vi.fn().mockResolvedValue({ status: 503 });
+      const getApiHealth = await load();
+      await getApiHealth();
+      vi.advanceTimersByTime(6_000);
+      await getApiHealth();
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith('cofabri-api health:', 'down');
+    });
+
+    it('logs up when down recovers', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      global.fetch = vi.fn().mockResolvedValueOnce({ status: 503 }).mockResolvedValueOnce({ status: 200 });
+      const getApiHealth = await load();
+      await getApiHealth();
+      vi.advanceTimersByTime(6_000);
+      await getApiHealth();
+      expect(warn).toHaveBeenCalledTimes(2);
+      expect(warn).toHaveBeenLastCalledWith('cofabri-api health:', 'up');
+    });
   });
 });

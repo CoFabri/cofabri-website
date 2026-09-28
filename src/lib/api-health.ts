@@ -17,6 +17,24 @@ const DOWN_TTL_MS = 5_000;
 
 let cached: { health: ApiHealth; expiresAt: number } | null = null;
 let inFlight: Promise<ApiHealth> | null = null;
+// Last state written to the log, so an outage shows up in logs once per change
+// instead of once per probe. A first result of 'up' is the normal case: silent.
+let lastLogged: ApiHealth | null = null;
+
+function logStateChange(health: ApiHealth): void {
+  if (health === lastLogged || (lastLogged === null && health === 'up')) {
+    lastLogged = health;
+    return;
+  }
+  lastLogged = health;
+  console.warn('cofabri-api health:', health);
+}
+
+function isTypeErrorLike(error: unknown): boolean {
+  if (error instanceof TypeError) return true;
+  // Cross-realm safety: a TypeError from another realm fails instanceof.
+  return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'TypeError';
+}
 
 function isAbortLike(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) return false;
@@ -38,7 +56,7 @@ async function probe(baseUrl: string): Promise<ApiHealth> {
     return response.status >= 500 ? 'down' : 'up';
   } catch (error) {
     // Only a fetch network failure (TypeError) or a timeout/abort is an outage.
-    if (error instanceof TypeError || isAbortLike(error)) return 'down';
+    if (isTypeErrorLike(error) || isAbortLike(error)) return 'down';
     throw error;
   }
 }
@@ -55,6 +73,7 @@ export async function getApiHealth(): Promise<ApiHealth> {
     if (!inFlight) {
       inFlight = probe(baseUrl)
         .then((health) => {
+          logStateChange(health);
           cached = { health, expiresAt: Date.now() + (health === 'up' ? UP_TTL_MS : DOWN_TTL_MS) };
           return health;
         })

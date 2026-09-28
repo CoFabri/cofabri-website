@@ -8,6 +8,7 @@ import {
   parseBackstopMode,
   parseInitialState,
   previewOptions,
+  timingSafeEqual,
 } from './backstop';
 
 describe('constants', () => {
@@ -73,5 +74,26 @@ describe('isPreviewAllowed', () => {
   it('on production, is open when no password is configured (matches /preview/*)', () => {
     expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: undefined })).toBe(true);
     expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: '' })).toBe(true);
+  });
+});
+
+describe('timingSafeEqual', () => {
+  it('is true for equal strings', () => {
+    expect(timingSafeEqual('secret', 'secret')).toBe(true);
+  });
+  it('is false for differing strings of the same length', () => {
+    expect(timingSafeEqual('secreT', 'secret')).toBe(false);
+  });
+  it('is false when lengths differ, including prefixes', () => {
+    expect(timingSafeEqual('secre', 'secret')).toBe(false);
+    expect(timingSafeEqual('secrets', 'secret')).toBe(false);
+  });
+  it('is false for empty vs non-empty', () => {
+    expect(timingSafeEqual('', 'secret')).toBe(false);
+    expect(timingSafeEqual('secret', '')).toBe(false);
+  });
+  it('is false for null', () => {
+    expect(timingSafeEqual(null, 'secret')).toBe(false);
+    expect(timingSafeEqual(null, '')).toBe(false);
   });
 });

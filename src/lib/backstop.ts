@@ -49,5 +49,18 @@ export function isPreviewAllowed(
 ): boolean {
   if (env.vercelEnv !== 'production') return true;
   if (!env.previewPassword) return true;
-  return params.get('password') === env.previewPassword;
+  return timingSafeEqual(params.get('password'), env.previewPassword);
+}
+
+// Constant-time string compare (no early exit on the first mismatch or on a
+// length difference). Runtime-agnostic on purpose: middleware may run on the
+// edge runtime, where node:crypto is unavailable.
+export function timingSafeEqual(a: string | null, b: string): boolean {
+  if (a === null) return false;
+  let diff = a.length ^ b.length;
+  const length = Math.max(a.length, b.length);
+  for (let i = 0; i < length; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
 }
