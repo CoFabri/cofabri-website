@@ -44,6 +44,9 @@ else is down, so it depends on nothing outside its own HTML.
   a plain JSON status body for health checks (`cofabri-api/src/index.js`).
 - `down` = network error, timeout, or HTTP 5xx. Any other status (including 4xx)
   means the API answered, so `up`.
+- Note: the API root returns static JSON without touching the database, so this
+  detects host, network and process outages, not a database-only failure. The
+  probe path is one constant if that needs to change.
 - If `COFABRI_API_BASE_URL` is unset, return `up` (misconfiguration is not an
   outage; existing code already throws its own clear error).
 - In-memory result cache per runtime instance: `up` for 15s, `down` for 5s (so
@@ -55,10 +58,11 @@ else is down, so it depends on nothing outside its own HTML.
 
 The existing middleware gains a first step, ahead of its current redirects and
 preview-password logic. Its matcher already excludes `/api`, `_next/static`,
-`_next/image` and `favicon.ico`; the additions below extend it to also exclude
-static asset files (paths ending in an image, font, `.js`, `.css`, `.json`,
-`.txt` or `.xml` extension), such as `status-widget.js`, `manifest.json`,
-`robots.txt` and `sitemap.xml`.
+`_next/image` and `favicon.ico`. Static asset paths (extensions png, jpg, jpeg,
+gif, svg, ico, webp, avif, woff, woff2, ttf, otf, js, css, json, txt, xml, map,
+webmanifest), such as `status-widget.js`, `manifest.json`, `robots.txt` and
+`sitemap.xml`, are excluded inside the backstop handler, because a matcher must
+be a static literal.
 
 - If `getApiHealth()` is `down`: rewrite the request to internal route
   `/backstop` with status **503**, and set:
@@ -81,7 +85,9 @@ static asset files (paths ending in an image, font, `.js`, `.css`, `.json`,
 - The `/backstop` page (`src/app/backstop/page.tsx`) renders nothing of its own in
   this mode; the layout owns the output. It also exports `robots: noindex`.
 - `src/app/global-error.tsx` (new) renders the same `BackstopPage` inside its own
-  `<html><body>`, as the safety net if the layout or a page crashes.
+  `<html><body>`, as the safety net if the layout or a page crashes. It omits the support link,
+  because `BACKSTOP_SUPPORT_EMAIL` is server-only and this component also runs in
+  the browser.
 
 ### 4. The page: `src/components/backstop/BackstopPage.tsx`
 
@@ -93,9 +99,15 @@ Server component. Ported from `backstop/index.html`:
 - Content: status pill ("Temporarily unavailable"), headline "We're not quite
   connecting.", lead paragraph, Try again button, Contact support link,
   "Your data is safe." line, footer "© {year} CoFabri by Maven X LLC".
-- Retry: a plain `?retry=` link with the reference build's ~10-line inline script
-  for the loading ("Checking...") and still-down ("Still not connecting as of
-  9:14 PM") states. Works with no JS as a plain reload link.
+- Retry: a plain `?retry=` link enhanced by a small `BackstopActions` client
+  component (React state applied in effects, so nothing mutates server-rendered
+  DOM before hydration; an earlier inline-script version caused hydration error
+  #418). It provides the loading ('Checking...') and still-down ('Still not
+  connecting as of 9:14 PM') states and resets on back/forward-cache restore.
+  Without JS it is still a working reload link.
+- Motif: the design's '5a Signal Ripples' (three thin brand-blue rings expanding
+  from a still mark every 2.5s; a faint static ring under reduced motion), taken
+  from the design project's `backstop/index.html`.
 - Live-status slot: rendered only when the component receives a `note` prop
   (`{ time: string; body: string }`). Production passes none. It exists for the
   preview and for a future independent status source.

@@ -116,6 +116,7 @@ A modern web platform showcasing a suite of powerful SaaS applications, built wi
    ```env
    # cofabri-api (Supabase-backed content & forms API)
    COFABRI_API_BASE_URL=your_cofabri_api_base_url_here
+   BACKSTOP_SUPPORT_EMAIL=support_email_shown_on_the_outage_page   # optional; the "Contact support" link is omitted when unset
    COFABRI_API_KEY=your_cofabri_api_key_here
 
    # HighLevel Chat Widget
@@ -499,3 +500,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For support, please open an issue in the GitHub repository or contact the development team.
+
+## Outage backstop page
+
+When cofabri-api is unreachable, every page is replaced by a self-contained
+backstop page (HTTP 503). To see it without an outage, open
+`/?backstop=preview` (options: `&state=retry`, `&state=loading`, `&note=1`).
+On production it requires `&password=<PREVIEW_PASSWORD>`; local development and
+Vercel preview deployments are open. Design and rationale:
+`docs/superpowers/specs/2026-09-28-api-backstop-page-design.md`.
