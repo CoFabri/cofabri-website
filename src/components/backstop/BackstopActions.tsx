@@ -20,6 +20,8 @@ export default function BackstopActions({ supportEmail, initialState }: Backstop
 
   useEffect(() => {
     const sync = () => {
+      // Test hook: e2e waits for this to know hydration finished.
+      setHydrated(true);
       const retried = new URL(window.location.href).searchParams.has('retry');
       if (initialState === 'loading') {
         setState('loading');
@@ -31,7 +33,6 @@ export default function BackstopActions({ supportEmail, initialState }: Backstop
         setAt('');
       }
     };
-    setHydrated(true);
     sync();
     // Back/forward cache can restore the page frozen in its loading state.
     const onPageShow = (event: PageTransitionEvent) => {
