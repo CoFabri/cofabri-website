@@ -234,7 +234,6 @@ export default function SupportForm() {
   const searchParams = useSearchParams();
   const params = useMemo(() => parseSupportParams(searchParams), [searchParams]);
   const isPatient = params.audience === 'patient';
-  const identityPrefilled = Boolean(params.firstName && params.lastName && params.email);
   const [editingIdentity, setEditingIdentity] = useState(false);
   const [changingApp, setChangingApp] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
@@ -251,6 +250,7 @@ export default function SupportForm() {
     description: '',
     screenshots: []
   });
+  const identityPrefilled = Boolean(formData.firstName && formData.lastName && formData.email);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -351,6 +351,10 @@ export default function SupportForm() {
     // The fields live under More Options; open it so the error is visible.
     if (newErrors.phone || newErrors.preferredContactMethod) {
       setShowMoreOptions(true);
+    }
+    // The identity card hides these inputs; reveal them so errors are visible.
+    if (newErrors.firstName || newErrors.lastName || newErrors.email) {
+      setEditingIdentity(true);
     }
 
     if (!turnstileToken) {
@@ -541,6 +545,8 @@ export default function SupportForm() {
 
       if (response.ok) {
         setSubmitStatus('success');
+        setEditingIdentity(false);
+        setChangingApp(false);
         // Reset form after successful submission
         setFormData({
           firstName: '',
@@ -575,6 +581,8 @@ export default function SupportForm() {
   };
 
   const clearForm = () => {
+    setEditingIdentity(false);
+    setChangingApp(false);
     setFormData({
       firstName: '',
       lastName: '',
