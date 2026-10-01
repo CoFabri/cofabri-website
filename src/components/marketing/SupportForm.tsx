@@ -250,7 +250,8 @@ export default function SupportForm() {
     description: '',
     screenshots: []
   });
-  const identityPrefilled = Boolean(formData.firstName && formData.lastName && formData.email);
+  const [identityFromUrl, setIdentityFromUrl] = useState(false);
+  const identityPrefilled = Boolean(identityFromUrl && formData.firstName && formData.lastName && formData.email);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -322,6 +323,7 @@ export default function SupportForm() {
     // have picked a different country, so it uses the default country.
     const phone = params.phone ? formatPhoneAsYouType(params.phone, '', DEFAULT_COUNTRY) : '';
 
+    setIdentityFromUrl(Boolean(params.firstName && params.lastName && params.email));
     setFormData(prev => ({
       ...prev,
       firstName: params.firstName,
@@ -546,6 +548,7 @@ export default function SupportForm() {
       if (response.ok) {
         setSubmitStatus('success');
         setEditingIdentity(false);
+        setIdentityFromUrl(false);
         setChangingApp(false);
         // Reset form after successful submission
         setFormData({
@@ -582,6 +585,7 @@ export default function SupportForm() {
 
   const clearForm = () => {
     setEditingIdentity(false);
+    setIdentityFromUrl(false);
     setChangingApp(false);
     setFormData({
       firstName: '',
