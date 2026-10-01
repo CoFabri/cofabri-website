@@ -62,13 +62,14 @@ Existing, unchanged: `app`, `subject` (`support` | `feature`), `firstName`,
 `lastName`, `email`, `phone`, `language`.
 
 New:
-- `from`: entry point, one of `website`, `help-menu`, `error-page`, `settings`,
+- `from`: entry point, one of `website` (default when absent), `help-menu`, `error-page`, `settings`,
   `patient-account`, `help-center`, `landing`. Unknown values are stored as
   `other`. Free text is never stored.
 - `tenant`: tenant display name (Medoura already sends this). Now read and
   stored.
 - `audience`: `staff` (default) or `patient`.
-- `referrer` is ignored. Medoura currently sends `referrer=Medoura`; its helper drops it when it adds `from`.
+- `referrer` is ignored. Medoura currently sends `referrer=Medoura`; its helper
+  drops it when it adds `from`.
 
 All values are length-capped and sanitized server-side. They are prefill and
 analytics only; nothing is trusted for authorization.
