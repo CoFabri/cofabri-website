@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { parseSupportParams } from '@/lib/support/params';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronDown, Mail, Phone, CircleCheck, LifeBuoy, Lightbulb } from 'lucide-react';
@@ -231,12 +232,18 @@ function SimpleDropdown({ options, value, onChange, placeholder, disabled = fals
 
 export default function SupportForm() {
   const searchParams = useSearchParams();
+  const params = useMemo(() => parseSupportParams(searchParams), [searchParams]);
+  const isPatient = params.audience === 'patient';
+  const identityPrefilled = Boolean(params.firstName && params.lastName && params.email);
+  const [editingIdentity, setEditingIdentity] = useState(false);
+  const [changingApp, setChangingApp] = useState(false);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
     languagePreference: 'English',
     companyOrganization: '',
-    preferredContactMethod: 'any',
+    preferredContactMethod: 'email',
     email: '',
     phone: '',
     applications: [],
@@ -281,8 +288,7 @@ export default function SupportForm() {
   useEffect(() => {
     if (!isLoadingApps && apps.length > 0) {
       // Check if we have URL parameters for apps
-      const urlApp = searchParams?.get('app') || '';
-      const appNames = urlApp ? urlApp.split(',').map(name => name.trim()).filter(name => name) : [];
+      const appNames = params.appNames;
       
       if (appNames.length > 0) {
         // Find apps by name (case-insensitive)
@@ -307,42 +313,44 @@ export default function SupportForm() {
         }
       }
     }
-  }, [isLoadingApps, apps, searchParams, urlAppsInitialized]);
+  }, [isLoadingApps, apps, params, urlAppsInitialized]);
 
-  // Pre-fill form with URL parameters
+  // Pre-fill form with URL parameters (already sanitized; patients get no
+  // prefilled identity).
   useEffect(() => {
-    const firstName = searchParams?.get('firstName') || '';
-    const lastName = searchParams?.get('lastName') || '';
-    const email = searchParams?.get('email') || '';
-    const rawPhone = searchParams?.get('phone') || '';
-    const language = searchParams?.get('language') || 'English';
-    const subject = searchParams?.get('subject') || 'support';
-
-    // Format phone number if it comes from URL parameters. This only runs
-    // at mount (before the user could have picked a different country), so
-    // it always formats against the default country rather than reacting
-    // to later country changes.
-    const phone = rawPhone ? formatPhoneAsYouType(rawPhone, '', DEFAULT_COUNTRY) : '';
+    // Format phone as the user would type it. Runs before the user could
+    // have picked a different country, so it uses the default country.
+    const phone = params.phone ? formatPhoneAsYouType(params.phone, '', DEFAULT_COUNTRY) : '';
 
     setFormData(prev => ({
       ...prev,
-      firstName,
-      lastName,
-      email,
+      firstName: params.firstName,
+      lastName: params.lastName,
+      email: params.email,
       phone,
-      languagePreference: language,
-      subject
+      languagePreference: params.language,
+      subject: params.subject,
+      // A staff member's tenant is their organization; for patients the
+      // tenant is a clinic, which is not the patient's company.
+      companyOrganization: !isPatient && params.tenant ? params.tenant : prev.companyOrganization,
     }));
-  }, [searchParams]);
+  }, [params, isPatient]);
 
   const validateForm = (): boolean => {
     const parsed = supportSchema.safeParse(formData);
     const newErrors: FormErrors = parsed.success ? {} : (zodIssuesToFieldErrors(parsed.error) as FormErrors);
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!isValidPhone(formData.phone, phoneCountry)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    // Phone is optional, but a Phone contact preference needs one.
+    if (formData.phone.trim()) {
+      if (!isValidPhone(formData.phone, phoneCountry)) {
+        newErrors.phone = 'Please enter a valid phone number';
+      }
+    } else if (formData.preferredContactMethod === 'phone') {
+      newErrors.phone = 'Add a phone number, or choose a different contact method';
+    }
+    // The fields live under More Options; open it so the error is visible.
+    if (newErrors.phone || newErrors.preferredContactMethod) {
+      setShowMoreOptions(true);
     }
 
     if (!turnstileToken) {
@@ -517,6 +525,9 @@ export default function SupportForm() {
       formDataToSend.append('subject', parsed.data.subject);
       formDataToSend.append('description', parsed.data.description);
       formDataToSend.append('turnstileToken', turnstileToken);
+      formDataToSend.append('entryPoint', params.from);
+      formDataToSend.append('tenantName', params.tenant);
+      formDataToSend.append('audience', params.audience);
 
       // Append screenshots
       formData.screenshots.forEach((file) => {
@@ -536,7 +547,7 @@ export default function SupportForm() {
           lastName: '',
           languagePreference: 'English',
           companyOrganization: '',
-          preferredContactMethod: 'any',
+          preferredContactMethod: 'email',
           email: '',
           phone: '',
           applications: [],
@@ -569,7 +580,7 @@ export default function SupportForm() {
       lastName: '',
       languagePreference: 'English',
       companyOrganization: '',
-      preferredContactMethod: 'any',
+      preferredContactMethod: 'email',
       email: '',
       phone: '',
       applications: [],
@@ -618,7 +629,7 @@ export default function SupportForm() {
           </div>
           <h2 className="text-2xl font-semibold text-foreground mb-4">Support Ticket Submitted!</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Thank you for contacting us. We&apos;ve received your support request and will get back to you as soon as possible.
+            Thank you for contacting us. We&apos;ve received your support request and will reply within one business day. You&apos;ll get a confirmation email with your ticket number shortly.
           </p>
           <button
             type="button"
@@ -650,6 +661,14 @@ export default function SupportForm() {
       ) : (
         <>
           <h2 className="text-2xl font-semibold mb-8">Submit a Support Ticket</h2>
+          {isPatient && (
+            <div role="note" className="mb-6 rounded-lg border border-border bg-muted p-4 text-sm">
+              <p className="font-medium text-foreground">Questions about your care, orders or prescriptions?</p>
+              <p className="mt-1 text-muted-foreground">
+                Please contact {params.tenant || 'your clinic'} directly. This form is only for problems with the app itself.
+              </p>
+            </div>
+          )}
           
 
           
@@ -658,179 +677,202 @@ export default function SupportForm() {
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
-                First Name *
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-                maxLength={FIRST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
-                errors.firstName ? 'border-danger' : 'border-border-strong'
-              }`}
-                placeholder="Enter your first name"
-                aria-describedby={errors.firstName ? 'firstName-error' : undefined}
-              />
-              {errors.firstName && (
-                <p id="firstName-error" className="mt-1 text-sm text-danger">
-                  {errors.firstName}
-                </p>
-              )}
+          {identityPrefilled && !editingIdentity ? (
+            <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-4">
+              <p className="text-sm text-foreground">
+                Submitting as <span className="font-medium">{formData.firstName} {formData.lastName}</span> ({formData.email})
+              </p>
+              <button type="button" onClick={() => setEditingIdentity(true)} className="text-sm text-primary hover:underline">
+                Change
+              </button>
+            </div>
+          ) : (
+            <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
+                  First Name *
+                </label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={FIRST_NAME_MAX_LENGTH}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                  errors.firstName ? 'border-danger' : 'border-border-strong'
+                }`}
+                  placeholder="Enter your first name"
+                  aria-describedby={errors.firstName ? 'firstName-error' : undefined}
+                />
+                {errors.firstName && (
+                  <p id="firstName-error" className="mt-1 text-sm text-danger">
+                    {errors.firstName}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-2">
+                  Last Name *
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={LAST_NAME_MAX_LENGTH}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+                  errors.lastName ? 'border-danger' : 'border-border-strong'
+                }`}
+                  placeholder="Enter your last name"
+                  aria-describedby={errors.lastName ? 'lastName-error' : undefined}
+                />
+                {errors.lastName && (
+                  <p id="lastName-error" className="mt-1 text-sm text-danger">
+                    {errors.lastName}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-foreground mb-2">
-                Last Name *
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-                maxLength={LAST_NAME_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
-                errors.lastName ? 'border-danger' : 'border-border-strong'
-              }`}
-                placeholder="Enter your last name"
-                aria-describedby={errors.lastName ? 'lastName-error' : undefined}
-              />
-              {errors.lastName && (
-                <p id="lastName-error" className="mt-1 text-sm text-danger">
-                  {errors.lastName}
-                </p>
-              )}
-            </div>
-          </div>
-
           <div>
-            <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
-              Language Preference
-            </label>
-            <SimpleDropdown
-              options={[
-                { value: 'English', label: 'English' },
-                { value: 'Spanish', label: 'Spanish' }
-              ]}
-              value={formData.languagePreference}
-              onChange={handleLanguageChange}
-              placeholder="Select a language"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="companyOrganization" className="block text-sm font-medium text-foreground mb-2">
-              Company/Organization
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              Email *
             </label>
             <input
-              type="text"
-              id="companyOrganization"
-              name="companyOrganization"
-              value={formData.companyOrganization}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleInputChange}
-              maxLength={COMPANY_ORGANIZATION_MAX_LENGTH}
-              className="w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors hover:border-ink-faint"
-              placeholder="Enter your company or organization"
+              required
+              maxLength={EMAIL_MAX_LENGTH}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
+              errors.email ? 'border-danger' : 'border-border-strong'
+            }`}
+              placeholder="Enter your email address"
+              aria-describedby={errors.email ? 'email-error' : undefined}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
-              Preferred Contact Method *
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                { value: 'email', label: 'Email', icon: Mail },
-                { value: 'phone', label: 'Phone', icon: Phone },
-                { value: 'any', label: 'Any', icon: CircleCheck }
-              ].map((option) => (
-                <label
-                  key={option.value}
-                  className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                    formData.preferredContactMethod === option.value
-                      ? 'border-primary bg-accent'
-                      : 'border-border bg-card hover:border-ink-faint hover:bg-muted'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="preferredContactMethod"
-                    value={option.value}
-                    checked={formData.preferredContactMethod === option.value}
-                    onChange={(e) => handleContactMethodChange(e.target.value)}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      formData.preferredContactMethod === option.value
-                        ? 'border-primary bg-primary'
-                        : 'border-border bg-card'
-                    }`}>
-                      {formData.preferredContactMethod === option.value && (
-                        <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <option.icon className="w-5 h-5 text-ink-faint" />
-                      <span className="text-sm font-medium text-foreground">{option.label}</span>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-            {errors.preferredContactMethod && (
-              <p className="mt-2 text-sm text-danger">
-                {errors.preferredContactMethod}
+            {errors.email && (
+              <p id="email-error" className="mt-1 text-sm text-danger">
+                {errors.email}
               </p>
             )}
-            <button
-              type="button"
-              onClick={() => handleContactMethodChange('')}
-              className="mt-3 text-sm text-muted-foreground hover:text-foreground inline-flex items-center transition-colors"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Clear Selection
-            </button>
           </div>
+            </>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <button
+            type="button"
+            onClick={() => setShowMoreOptions((open) => !open)}
+            aria-expanded={showMoreOptions}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            {showMoreOptions ? 'Fewer Options' : 'More Options'}
+          </button>
+
+          {showMoreOptions && (
+            <div className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                Email *
+              <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
+                Language Preference
+              </label>
+              <SimpleDropdown
+                options={[
+                  { value: 'English', label: 'English' },
+                  { value: 'Spanish', label: 'Spanish' }
+                ]}
+                value={formData.languagePreference}
+                onChange={handleLanguageChange}
+                placeholder="Select a language"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="companyOrganization" className="block text-sm font-medium text-foreground mb-2">
+                Company/Organization
               </label>
               <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                id="companyOrganization"
+                name="companyOrganization"
+                value={formData.companyOrganization}
                 onChange={handleInputChange}
-                required
-                maxLength={EMAIL_MAX_LENGTH}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors ${
-                errors.email ? 'border-danger' : 'border-border-strong'
-              }`}
-                placeholder="Enter your email address"
-                aria-describedby={errors.email ? 'email-error' : undefined}
+                maxLength={COMPANY_ORGANIZATION_MAX_LENGTH}
+                className="w-full px-4 py-3 border border-border-strong rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary transition-colors hover:border-ink-faint"
+                placeholder="Enter your company or organization"
               />
-              {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-danger">
-                  {errors.email}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-3">
+                Preferred Contact Method
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { value: 'email', label: 'Email', icon: Mail },
+                  { value: 'phone', label: 'Phone', icon: Phone },
+                  { value: 'any', label: 'Any', icon: CircleCheck }
+                ].map((option) => (
+                  <label
+                    key={option.value}
+                    className={`relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      formData.preferredContactMethod === option.value
+                        ? 'border-primary bg-accent'
+                        : 'border-border bg-card hover:border-ink-faint hover:bg-muted'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="preferredContactMethod"
+                      value={option.value}
+                      checked={formData.preferredContactMethod === option.value}
+                      onChange={(e) => handleContactMethodChange(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        formData.preferredContactMethod === option.value
+                          ? 'border-primary bg-primary'
+                          : 'border-border bg-card'
+                      }`}>
+                        {formData.preferredContactMethod === option.value && (
+                          <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <option.icon className="w-5 h-5 text-ink-faint" />
+                        <span className="text-sm font-medium text-foreground">{option.label}</span>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {errors.preferredContactMethod && (
+                <p className="mt-2 text-sm text-danger">
+                  {errors.preferredContactMethod}
                 </p>
               )}
+              <button
+                type="button"
+                onClick={() => handleContactMethodChange('')}
+                className="mt-3 text-sm text-muted-foreground hover:text-foreground inline-flex items-center transition-colors"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Clear Selection
+              </button>
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                Phone Number *
+                Phone Number (Optional)
               </label>
               <PhoneField
                 id="phone"
@@ -839,10 +881,10 @@ export default function SupportForm() {
                 onValueChange={handlePhoneChange}
                 onCountryChange={handlePhoneCountryChange}
                 error={errors.phone}
-                required
               />
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Ticket Information Section */}
@@ -853,6 +895,17 @@ export default function SupportForm() {
             <label className="block text-sm font-medium text-foreground mb-2">
               Application(s)
             </label>
+            {params.appNames.length > 0 && selectedApps.length > 0 && !changingApp ? (
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-4">
+                <p className="text-sm text-foreground">
+                  {appOptions.filter((o) => selectedApps.includes(o.value)).map((o) => o.label).join(', ')}
+                </p>
+                <button type="button" onClick={() => setChangingApp(true)} className="text-sm text-primary hover:underline">
+                  Change
+                </button>
+              </div>
+            ) : (
+              <>
             <MultiSelectDropdown
               options={appOptions}
               selectedValues={selectedApps}
@@ -866,6 +919,8 @@ export default function SupportForm() {
                   Selected: {selectedApps.length} application{selectedApps.length !== 1 ? 's' : ''}
                 </p>
               </div>
+            )}
+              </>
             )}
           </div>
 
@@ -966,71 +1021,76 @@ export default function SupportForm() {
                 {formData.description.length}/{DESCRIPTION_MAX_LENGTH}
               </p>
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Please don&apos;t include health information. We can help without it.
+            </p>
           </div>
 
-          <div>
-            <label htmlFor="screenshots" className="block text-sm font-medium text-foreground mb-2">
-              Screenshots
-            </label>
-            <p className="text-sm text-muted-foreground mb-3">
-              Supported formats: JPG, PNG, GIF, WebP, BMP (max 10MB per file, 50MB total)
-            </p>
-            <div className="border border-dashed border-border-strong rounded-lg p-6 text-center">
-              <input
-                type="file"
-                id="screenshots"
-                name="screenshots"
-                multiple
-                accept=".jpg,.jpeg,.png,.gif,.webp,.bmp"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <label htmlFor="screenshots" className="cursor-pointer">
-                <div className="flex flex-col items-center">
-                  <svg className="w-8 h-8 text-ink-faint mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <span className="text-sm text-muted-foreground">Drop files here or browse</span>
-                </div>
+          {!isPatient && (
+            <div>
+              <label htmlFor="screenshots" className="block text-sm font-medium text-foreground mb-2">
+                Screenshots
               </label>
-            </div>
-            {formData.screenshots.length > 0 && (
-              <div className="mt-3 space-y-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  {formData.screenshots.length} file(s) selected
-                </p>
-                {formData.screenshots.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
-                    <div className="flex items-center space-x-3">
-                      <svg className="w-5 h-5 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <div>
-                        <span className="text-sm font-medium text-foreground">{file.name}</span>
-                        <span className="text-xs text-muted-foreground block">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFormData(prev => ({
-                          ...prev,
-                          screenshots: prev.screenshots.filter((_, i) => i !== index)
-                        }));
-                      }}
-                      className="text-danger hover:text-danger/80 p-1 rounded"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+              <p className="text-sm text-muted-foreground mb-3">
+                Supported formats: JPG, PNG, GIF, WebP, BMP (max 10MB per file, 50MB total)
+              </p>
+              <div className="border border-dashed border-border-strong rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  id="screenshots"
+                  name="screenshots"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.bmp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <label htmlFor="screenshots" className="cursor-pointer">
+                  <div className="flex flex-col items-center">
+                    <svg className="w-8 h-8 text-ink-faint mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span className="text-sm text-muted-foreground">Drop files here or browse</span>
                   </div>
-                ))}
+                </label>
               </div>
-            )}
-          </div>
+              {formData.screenshots.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {formData.screenshots.length} file(s) selected
+                  </p>
+                  {formData.screenshots.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
+                      <div className="flex items-center space-x-3">
+                        <svg className="w-5 h-5 text-ink-faint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <div>
+                          <span className="text-sm font-medium text-foreground">{file.name}</span>
+                          <span className="text-xs text-muted-foreground block">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            screenshots: prev.screenshots.filter((_, i) => i !== index)
+                          }));
+                        }}
+                        className="text-danger hover:text-danger/80 p-1 rounded"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Turnstile Security Verification */}
