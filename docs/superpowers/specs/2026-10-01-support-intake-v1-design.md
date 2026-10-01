@@ -62,14 +62,13 @@ Existing, unchanged: `app`, `subject` (`support` | `feature`), `firstName`,
 `lastName`, `email`, `phone`, `language`.
 
 New:
-- `from`: entry point, one of `help-menu`, `error-page`, `settings`,
+- `from`: entry point, one of `website`, `help-menu`, `error-page`, `settings`,
   `patient-account`, `help-center`, `landing`. Unknown values are stored as
   `other`. Free text is never stored.
 - `tenant`: tenant display name (Medoura already sends this). Now read and
   stored.
 - `audience`: `staff` (default) or `patient`.
-- `referrer` is accepted as a legacy alias for `from` so existing Medoura
-  links keep working until updated.
+- `referrer` is ignored. Medoura currently sends `referrer=Medoura`; its helper drops it when it adds `from`.
 
 All values are length-capped and sanitized server-side. They are prefill and
 analytics only; nothing is trusted for authorization.
@@ -117,11 +116,10 @@ that follows section 2. No shared package yet.
 
 | App | Add / change |
 |---|---|
-| Medoura staff | Persistent Help item in the staff header/user menu; "Report a problem" on the error boundary; existing Settings Help card moved to the new params (`from=settings`). |
-| Medoura patient | Replace the portal mailto card with the tenant-tagged form link (`audience=patient`, `from=patient-account`). |
-| Praxis | "Contact Support" and "Request a Feature" on the Help Center page (`from=help-center`); user menu item; error boundary link. |
+| Medoura | Existing entry points get `from`: staff Help page `help-center`, Settings Help card `settings`, QuickActionsHub `help-menu`, patient footer/dialog `patient-account` (`audience=patient`), `global-error` `error-page`. Fix the staff error toast, which links to the cofabri.com home page instead of `/support`. |
+| Praxis | New "Still Need Help?" card at the bottom of the Help Center page (`from=help-center`). The sidebar already has a Help item. |
 | RxBridge | Same as Praxis. |
-| Gathr | Signed-in help menu item; existing landing links get `from=landing`. |
+| Gathr | Existing links get `from`: sidebar `help-menu`, footer and landing header `landing`, advertise shell `landing`. |
 
 A visible support email address appears on `/support` and in the Help
 Centers. Mail sent there does not create a case in v1 (known gap, covered
