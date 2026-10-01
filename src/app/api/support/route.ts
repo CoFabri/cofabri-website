@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supportSchema } from '@/lib/validation/schemas';
+import { sanitizeAudience, sanitizeEntryPoint, sanitizeTenant } from '@/lib/support/params';
 import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
@@ -48,6 +49,11 @@ export async function POST(request: Request) {
     const subject = formData.get('subject');
     const description = formData.get('description');
     const turnstileToken = formData.get('turnstileToken');
+    // Re-sanitized server-side: the client is never trusted. Unknown entry
+    // points collapse to 'other'; free text is never stored.
+    const entryPoint = sanitizeEntryPoint(formData.get('entryPoint'));
+    const audience = sanitizeAudience(formData.get('audience'));
+    const tenantName = sanitizeTenant(formData.get('tenantName'));
 
     // Parse applications array (cofabri-api's support endpoint only accepts a single
     // app_id, so we forward the first selected application, if any)
@@ -83,11 +89,7 @@ export async function POST(request: Request) {
       languagePreference: normalizedLanguagePreference,
     } = parsed.data;
 
-    // Note: phone is intentionally not required here — cofabri-api's
-    // /web/forms/support endpoint has no column to persist it (a separate,
-    // cross-repo schema gap), so it would be misleading to block submission
-    // on a value that's silently discarded. The form still collects it (it
-    // may be useful in logs), and if present it must be a real, valid number.
+    // Phone is optional. When given it must be valid, and it is forwarded and stored (support_cases.phone).
     const rawPhone = typeof phone === 'string' ? phone.trim() : '';
     let normalizedPhone: string | undefined;
     if (rawPhone) {
@@ -157,7 +159,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const screenshots = formData.getAll('screenshots') as File[];
+    // Patient tickets never carry screenshots (an image can contain PHI).
+    const screenshots = audience === 'patient' ? [] : (formData.getAll('screenshots') as File[]);
 
     // Submit to cofabri-api, which persists the support ticket in Supabase.
     // Sent as multipart (not JSON) so screenshots can ride along as real
@@ -171,6 +174,10 @@ export async function POST(request: Request) {
     apiFormData.set('email', normalizedEmail);
     apiFormData.set('subject', toApiSubjectLabel(normalizedSubject));
     apiFormData.set('description', normalizedDescription);
+    apiFormData.set('entry_point', entryPoint);
+    apiFormData.set('audience', audience);
+    if (tenantName) apiFormData.set('tenant_name', tenantName);
+    if (normalizedPhone) apiFormData.set('phone', normalizedPhone);
     if (applicationsArray[0]) apiFormData.set('app_id', applicationsArray[0]);
     const apiSubjectType = toApiSubjectType(normalizedSubject);
     if (apiSubjectType) apiFormData.set('subject_type', apiSubjectType);

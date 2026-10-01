@@ -4,6 +4,7 @@ import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import SupportForm from '@/components/marketing/SupportForm';
 import RevealSection from '@/components/marketing/RevealSection';
+import SupportIntro from './SupportIntro';
 
 const SUPPORT_CARDS = [
   {
@@ -58,9 +59,7 @@ export default function SupportPageContent() {
           <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
             Open a ticket
           </h2>
-          <p className="mt-4 text-base leading-[1.6] text-ink-muted">
-            Include the app, what you expected, and what happened instead. Screenshots help.
-          </p>
+          <SupportIntro />
           <div className="mt-7 rounded-[10px] border border-border bg-muted px-5 py-[18px]">
             <div className="flex items-center gap-2.5 text-sm font-semibold">
               <span className="block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-success" />
@@ -68,6 +67,13 @@ export default function SupportPageContent() {
             </div>
             <div className="mt-2 text-[15px] text-ink-muted">Under 24 hours, Monday to Friday.</div>
           </div>
+          <p className="mt-5 text-[15px] leading-[1.55] text-ink-muted">
+            Prefer email? Write to{' '}
+            <a href="mailto:support@cofabri.com" className="font-semibold text-primary hover:underline">
+              support@cofabri.com
+            </a>
+            . Please do not include patient health information.
+          </p>
         </div>
         <SupportForm />
       </RevealSection>
