@@ -1001,7 +1001,7 @@ export default function SupportForm() {
 
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
-              Description *
+              {isPatient ? 'Describe the App Problem *' : 'Description *'}
             </label>
             <textarea
               id="description"
@@ -1014,7 +1014,7 @@ export default function SupportForm() {
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-ring/20 focus:border-primary hover:border-ink-faint transition-colors resize-none ${
                 errors.description ? 'border-danger' : 'border-border-strong'
               }`}
-              placeholder="Please describe your issue or request..."
+              placeholder={isPatient ? 'Tell us what went wrong in the app...' : 'Please describe your issue or request...'}
               aria-describedby={errors.description ? 'description-error' : undefined}
             />
             <div className="flex justify-between items-center mt-1">

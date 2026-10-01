@@ -97,7 +97,9 @@ test('patient mode submit posts audience patient, clinic name, typed identity an
   await page.getByLabel('First Name *').fill('Pat');
   await page.getByLabel('Last Name *').fill('Ient');
   await page.getByLabel('Email *').fill('pat@example.org');
-  await page.getByLabel('Description *').fill('Patient mode submit check.');
+  await expect(page.getByText('Screenshots help.')).toHaveCount(0);
+  await expect(page.locator('a[href="mailto:support@cofabri.com"]')).toBeVisible();
+  await page.getByLabel('Describe the App Problem *').fill('Patient mode submit check.');
   await waitForTurnstile(page);
   await page.getByRole('button', { name: 'Submit', exact: true }).click();
 
