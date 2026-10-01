@@ -44,7 +44,7 @@ export async function GET() {
       cacheTimestamp = now;
     } catch (error) {
       if (!statusCache) throw error; // nothing to fall back on -- let the outer catch handle it
-      console.error('Serving stale status cache after refresh failure:', error);
+      console.warn('Serving stale status cache after refresh failure:', error);
       status = statusCache;
       refreshFailed = true;
     }

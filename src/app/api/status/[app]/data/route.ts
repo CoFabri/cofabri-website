@@ -40,7 +40,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         cacheTimestamp = now;
       } catch (error) {
         if (!statusCache) throw error;
-        console.error('Serving stale status cache after refresh failure:', error);
+        console.warn('Serving stale status cache after refresh failure:', error);
       }
     }
 
