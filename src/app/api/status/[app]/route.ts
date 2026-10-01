@@ -41,7 +41,7 @@ export async function GET(
         cacheTimestamp = now;
       } catch (error) {
         if (!statusCache) throw error;
-        console.error(`Serving stale status cache for app ${appSlug} after refresh failure:`, error);
+        console.warn(`Serving stale status cache for app ${appSlug} after refresh failure:`, error);
       }
     }
     
