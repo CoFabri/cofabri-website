@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Turnstile from './Turnstile';
 import { readChatStream, type ChatEvent } from '@/lib/chat/stream';
@@ -28,6 +28,19 @@ const STREAM_FAILED = 'Something went wrong. You can use the form below.';
 const TOO_LONG = 'This conversation got too long. Start a new one.';
 const TICKET_ONLY = "I've prepared a message for the support team below.";
 
+// The normal Turnstile widget is 300px wide, which clips inside the card on phones (390px and narrower).
+function useTurnstileSize(): 'normal' | 'compact' {
+  const [size, setSize] = useState<'normal' | 'compact'>('normal');
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 420px)');
+    const update = () => setSize(query.matches ? 'compact' : 'normal');
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+  return size;
+}
+
 function turnstileSiteKey(): string | undefined {
   if (process.env.NODE_ENV === 'development') return '1x00000000000000000000AA';
   return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -38,6 +51,7 @@ export default function SupportChat() {
   const appParam = (searchParams?.get('app') ?? '').split(',')[0]?.trim() || undefined;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const turnstileSize = useTurnstileSize();
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<ChatStatus>('ok');
@@ -238,7 +252,7 @@ export default function SupportChat() {
                 onError={onChatLost}
                 onExpire={onChatLost}
                 theme="light"
-                size="normal"
+                size={turnstileSize}
                 className="flex justify-start"
               />
             </div>
@@ -292,6 +306,7 @@ export default function SupportChat() {
 }
 
 function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string; appId: string | null; siteKey?: string }) {
+  const turnstileSize = useTurnstileSize();
   const [summary, setSummary] = useState(initialSummary);
   const [prevInitial, setPrevInitial] = useState(initialSummary);
   // A new draft replaces the summary only if the visitor has not edited it.
@@ -386,7 +401,7 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
             onError={onTicketLost}
             onExpire={onTicketLost}
             theme="light"
-            size="normal"
+            size={turnstileSize}
             className="flex justify-start"
           />
         </div>
