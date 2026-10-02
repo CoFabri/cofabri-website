@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Turnstile from './Turnstile';
 import { readChatStream, type ChatEvent } from '@/lib/chat/stream';
 import { buildHistory } from '@/lib/chat/history';
+import { ChatMarkdown } from '@/lib/chat/markdown';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -209,7 +210,7 @@ export default function SupportChat() {
                 m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
               }`}
             >
-              {m.content || (busy && i === messages.length - 1 ? '…' : '')}
+              {!m.content ? (busy && i === messages.length - 1 ? '…' : '') : m.role === 'assistant' ? <ChatMarkdown text={m.content} /> : m.content}
             </div>
             {m.citations && m.citations.length > 0 && (
               <ul className="mt-2 flex flex-wrap gap-2 text-xs">
