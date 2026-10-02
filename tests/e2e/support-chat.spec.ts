@@ -14,11 +14,12 @@ function ndjson(...events: unknown[]) {
   return events.map((e) => JSON.stringify(e)).join('\n') + '\n';
 }
 
+// Scoped to the chat's own widget: /support?chat=1 also renders the form's Turnstile widget, and
+// either can solve first. The chat's widget is the first token input inside the chat section.
 async function waitForTurnstile(page: Page) {
-  await page.waitForFunction(
-    () => Array.from(document.querySelectorAll<HTMLInputElement>('input[name="cf-turnstile-response"]')).some((i) => i.value),
-    { timeout: 30_000 },
-  );
+  await expect(page.getByLabel('Support chat').locator('input[name="cf-turnstile-response"]').first()).not.toHaveValue('', {
+    timeout: 30_000,
+  });
 }
 
 test('chat is hidden by default and the form is untouched', async ({ page }) => {
@@ -108,8 +109,12 @@ test('when chat is unavailable the panel says so and the form still works', asyn
   await waitForTurnstile(page);
   await chat.getByLabel('Your message').fill('hello');
   await chat.getByRole('button', { name: 'Send', exact: true }).click();
-  await expect(chat.getByText("Chat isn't available right now. Use the form below.").first()).toBeVisible();
-  await expect(page.getByLabel('First Name *')).toBeVisible();
+  await expect(chat.getByText("Chat isn't available right now. Use the form below.")).toHaveCount(2);
+  await expect(chat.getByRole('log').getByText("Chat isn't available right now. Use the form below.")).toBeVisible();
+  const firstName = page.getByLabel('First Name *');
+  await expect(firstName).toBeVisible();
+  await firstName.fill('Dina');
+  await expect(firstName).toHaveValue('Dina');
 });
 
 test('an expired chat cookie asks for the security check again and keeps the typed message', async ({ page }) => {
@@ -136,6 +141,10 @@ test('a stream that fails midway keeps the partial answer and points at the form
   await chat.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(chat.getByText(/Click Forgot/)).toBeVisible();
   await expect(chat.getByText('You can use the form below.')).toBeVisible();
+  // The chat is not disabled: the input is still there and Send works for a new message.
+  await expect(chat.getByLabel('Your message')).toBeVisible();
+  await chat.getByLabel('Your message').fill('another question');
+  await expect(chat.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
 });
 
 test('a failed ticket send shows the error, then a retry succeeds', async ({ page }) => {
@@ -207,11 +216,11 @@ test('a first-send verification failure restores the message and a retry after r
   await expect(chat.getByLabel('Your message')).toHaveValue('please help');
 
   // The widget remounted; once it verifies again the same message can be sent.
+  // The old widget was unmounted in the same render that showed the notice, so any chat token
+  // input now belongs to the remounted widget.
   await waitForTurnstile(page);
-  await expect(async () => {
-    await chat.getByRole('button', { name: 'Send', exact: true }).click();
-    await expect(chat.getByText('Here is the answer.')).toBeVisible({ timeout: 2_000 });
-  }).toPass({ timeout: 30_000 });
+  await chat.getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(chat.getByText('Here is the answer.')).toBeVisible();
   expect(chatCalls).toBe(2);
 });
 
@@ -233,26 +242,7 @@ test('typing after the security check passed does not reset the solved widget', 
   });
   await chat.getByLabel('Your message').pressSequentially('twenty characters!!!', { delay: 20 });
   await expect(chat.getByLabel('Your message')).toHaveValue('twenty characters!!!');
-  await page.waitForTimeout(500);
   await expect(chat.locator('input[name="cf-turnstile-response"]')).not.toHaveValue('');
   expect(await page.evaluate(() => (window as unknown as { __resets: number }).__resets)).toBe(0);
-  await expect(chat.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
-});
-
-test('a mid-stream failure keeps the partial text and does not disable the chat', async ({ page }) => {
-  await mockApps(page);
-  await page.route('**/api/chat', (route) =>
-    route.fulfill({ status: 200, contentType: 'application/x-ndjson', body: ndjson({ type: 'text', delta: 'Partial answer' }, { type: 'error' }) }),
-  );
-  await page.goto('/support?chat=1');
-  const chat = page.getByLabel('Support chat');
-  await waitForTurnstile(page);
-  await chat.getByLabel('Your message').fill('question');
-  await chat.getByRole('button', { name: 'Send', exact: true }).click();
-
-  await expect(chat.getByText(/Partial answer/)).toBeVisible();
-  await expect(chat.getByText('You can use the form below.')).toBeVisible();
-  await expect(chat.getByLabel('Your message')).toBeVisible();
-  await chat.getByLabel('Your message').fill('another question');
   await expect(chat.getByRole('button', { name: 'Send', exact: true })).toBeEnabled();
 });
