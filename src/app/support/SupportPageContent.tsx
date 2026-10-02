@@ -72,7 +72,7 @@ export default function SupportPageContent() {
             <a href="mailto:support@cofabri.com" className="font-semibold text-primary hover:underline">
               support@cofabri.com
             </a>
-            . Please do not include patient health information.
+            .
           </p>
         </div>
         <SupportForm />

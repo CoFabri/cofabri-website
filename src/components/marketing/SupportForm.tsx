@@ -9,6 +9,7 @@ import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
 import PhoneField from './PhoneField';
 import { supportSchema, zodIssuesToFieldErrors, FIELD_LIMITS } from '@/lib/validation/schemas';
+import { shouldShowHealthNotice } from '@/lib/support/health-notice';
 import { formatNameInput } from '@/lib/validation/name';
 import { formatEmailInput } from '@/lib/validation/email';
 import { DEFAULT_COUNTRY, formatPhoneAsYouType, isValidPhone, normalizePhone, type CountryCode } from '@/lib/validation/phone';
@@ -50,6 +51,7 @@ interface App {
   name: string;
   status: string;
   faviconUrl?: string;
+  category?: string;
 }
 
 // Simple dropdown component for text-only options (no images)
@@ -623,6 +625,14 @@ export default function SupportForm() {
   // thing to file a ticket against, regardless of lifecycle status — this
   // used to filter to a status ('Active') apps are never actually in,
   // which silently emptied the list.
+  // URL-named apps are applied by an effect one render after apps load; treat
+  // that gap as "still loading" so the notice cannot flash for a non-health app.
+  const urlAppsPending =
+    params.appNames.length > 0 &&
+    !urlAppsInitialized &&
+    params.appNames.some((n) => apps.some((a) => a.name.toLowerCase() === n.toLowerCase()));
+  const showHealthNotice = shouldShowHealthNotice(selectedApps, apps, !isLoadingApps && !urlAppsPending);
+
   const appOptions = apps
     .map(app => ({
       value: app.id,
@@ -673,7 +683,7 @@ export default function SupportForm() {
       ) : (
         <>
           <h2 className="text-2xl font-semibold mb-8">Submit a Support Ticket</h2>
-          {isPatient && (
+          {isPatient && showHealthNotice && (
             <div role="note" className="mb-6 rounded-lg border border-border bg-muted p-4 text-sm">
               <p className="font-medium text-foreground">Questions about your care, orders or prescriptions?</p>
               <p className="mt-1 text-muted-foreground">
@@ -1033,9 +1043,11 @@ export default function SupportForm() {
                 {formData.description.length}/{DESCRIPTION_MAX_LENGTH}
               </p>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Please don&apos;t include health information. We can help without it.
-            </p>
+            {showHealthNotice && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Please don&apos;t include health information. We can help without it.
+              </p>
+            )}
           </div>
 
           {!isPatient && (
