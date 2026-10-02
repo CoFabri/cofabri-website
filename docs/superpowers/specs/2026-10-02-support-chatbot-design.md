@@ -39,11 +39,13 @@ summary when one is needed.
 |---|---|---|
 | Chat window | cofabri-website, `/support` | UI only: messages, citations, ticket card, fallback message. No AI logic. |
 | Chat route | cofabri-website, `POST /api/chat` | Verifies Turnstile once per chat, issues a signed 30-minute chat cookie (HMAC, httpOnly), checks it on later messages, forwards to cofabri-api with the website's API key and the client IP. |
-| Chat endpoint | cofabri-api, `POST /web/chat` | Only caller is the website. Rate and spend limits, health screen, model call, streaming reply, usage counters. |
+| Chat endpoint | cofabri-api, `POST /web/chat` | Only caller is the website, authenticated with the same API key scope as /web/forms (web-forms). Rate and spend limits, health screen, model call, streaming reply, usage counters. |
 | Article loader | cofabri-api, `getAnswerContext(appId?)` | Returns the allowed articles as text with slugs. The only place that decides what the bot may know. |
 | Health screen | cofabri-api, `screenMessage(text, lang)` | Pure rule-based filter, English and Spanish. |
-| KB switch | Core, `components/dashboard/kb-article-editor.tsx` | Per-article "Chatbot may use this" toggle. |
+| KB switch | Core, `app/dashboard/knowledge-base/articles/[id]/edit/page.tsx` (the article settings rail; kb-article-editor.tsx is only the rich-text editor) | Per-article "Chatbot may use this" toggle. |
 | Limits store | Supabase, `chat_usage` table | Per-visitor and global counters (serverless instances cannot share memory). |
+
+Environment variable names are listed in the implementation plan.
 
 ## Data Changes
 
