@@ -31,6 +31,15 @@ describe('createNdjsonParser', () => {
   });
 });
 
+describe('createNdjsonParser shape checks', () => {
+  it('ignores events with malformed shapes', () => {
+    const seen: ChatEvent[] = [];
+    const p = createNdjsonParser((e) => seen.push(e));
+    p.push('{"type":"text"}\n{"type":"citations","items":"x"}\n{"type":"citations","items":[{"slug":1,"title":"t"}]}\n{"type":"ticket"}\n{"type":"done"}\n');
+    expect(seen).toEqual([{ type: 'done' }]);
+  });
+});
+
 describe('readChatStream', () => {
   it('reads a streamed response body', async () => {
     const encoder = new TextEncoder();
@@ -44,5 +53,23 @@ describe('readChatStream', () => {
     const seen: ChatEvent[] = [];
     await readChatStream(new Response(body), (e) => seen.push(e));
     expect(seen).toEqual([{ type: 'text', delta: 'A' }, { type: 'done' }]);
+  });
+  it('cancels the reader when onEvent throws', async () => {
+    let cancelled = false;
+    const encoder = new TextEncoder();
+    const body = new ReadableStream({
+      start(c) {
+        c.enqueue(encoder.encode('{"type":"done"}\n'));
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    await expect(
+      readChatStream(new Response(body), () => {
+        throw new Error('boom');
+      }),
+    ).rejects.toThrow('boom');
+    expect(cancelled).toBe(true);
   });
 });

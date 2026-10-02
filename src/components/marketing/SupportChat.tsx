@@ -40,7 +40,9 @@ export default function SupportChat() {
   const [chatToken, setChatToken] = useState('');
   const [draft, setDraft] = useState<TicketDraft | null>(null);
   const [offerTicket, setOfferTicket] = useState(false);
+  const [chatAttempt, setChatAttempt] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
 
   const siteKey = turnstileSiteKey();
 
@@ -52,7 +54,7 @@ export default function SupportChat() {
 
   async function send() {
     const text = input.trim();
-    if (!text || busy || status !== 'ok') return;
+    if (!text || busy || inFlight.current || status !== 'ok') return;
     if (!verified && !chatToken) {
       setNotice('Please complete the security check, then send your message.');
       return;
@@ -62,6 +64,7 @@ export default function SupportChat() {
     setMessages([...history, { role: 'assistant', content: '' }]);
     setInput('');
     setNotice('');
+    inFlight.current = true;
     setBusy(true);
     setDraft(null);
     setOfferTicket(false);
@@ -69,6 +72,13 @@ export default function SupportChat() {
 
     const finish = (patch: (m: ChatMessage) => ChatMessage) =>
       setMessages((prev) => prev.map((m, i) => (i === prev.length - 1 ? patch(m) : m)));
+
+    // A spent Turnstile token cannot be reused: remount the widget for a fresh one.
+    const refreshWidget = () => {
+      setChatToken('');
+      setChatAttempt((n) => n + 1);
+    };
+    let streaming = false;
 
     try {
       const response = await fetch('/api/chat', {
@@ -84,13 +94,14 @@ export default function SupportChat() {
       if (response.status === 401) {
         // The chat cookie expired (or was never set): ask again, keep the message.
         setVerified(false);
-        setChatToken('');
+        refreshWidget();
         setMessages(history.slice(0, -1));
         setInput(text);
         setNotice('Please complete the security check again, then send your message.');
         return;
       }
       if (!response.ok) {
+        if (!verified) refreshWidget();
         setStatus('unavailable');
         finish((m) => ({ ...m, content: UNAVAILABLE }));
         return;
@@ -98,6 +109,7 @@ export default function SupportChat() {
 
       setVerified(true);
       setChatToken('');
+      streaming = true;
       let sawText = false;
 
       await readChatStream(response, (event: ChatEvent) => {
@@ -124,9 +136,16 @@ export default function SupportChat() {
       });
       if (!sawText) finish((m) => (m.content ? m : { ...m, content: STREAM_FAILED }));
     } catch {
-      setStatus('unavailable');
-      finish((m) => ({ ...m, content: UNAVAILABLE }));
+      if (streaming) {
+        // Mid-stream read failure: keep the partial answer, like an 'error' event.
+        finish((m) => ({ ...m, content: m.content ? `${m.content}\n\n${STREAM_FAILED}` : STREAM_FAILED }));
+      } else {
+        if (!verified) refreshWidget();
+        setStatus('unavailable');
+        finish((m) => ({ ...m, content: UNAVAILABLE }));
+      }
     } finally {
+      inFlight.current = false;
       setBusy(false);
       scrollDown();
     }
@@ -144,7 +163,7 @@ export default function SupportChat() {
         </a>
       </p>
 
-      <div ref={scrollRef} className="mt-6 max-h-[420px] space-y-4 overflow-y-auto" aria-live="polite">
+      <div ref={scrollRef} role="log" aria-live="polite" aria-relevant="additions" className="mt-6 max-h-[420px] space-y-4 overflow-y-auto">
         {messages.map((m, i) => (
           <div key={i} className={m.role === 'user' ? 'text-right' : ''}>
             <div
@@ -169,11 +188,11 @@ export default function SupportChat() {
         ))}
       </div>
 
-      {status === 'ok' ? (
+      {status === 'ok' && siteKey ? (
         <div className="mt-6 space-y-3">
           {!verified && siteKey && (
             <Turnstile
-              key="support-chat-turnstile"
+              key={`chat-turnstile-${chatAttempt}`}
               siteKey={siteKey}
               onVerify={(token) => setChatToken(token)}
               onError={() => setChatToken('')}
@@ -183,7 +202,7 @@ export default function SupportChat() {
               className="flex justify-start"
             />
           )}
-          {notice && <p className="text-sm text-danger">{notice}</p>}
+          {notice && <p role="alert" className="text-sm text-danger">{notice}</p>}
           <div className="flex gap-3">
             <textarea
               aria-label="Your message"
@@ -216,7 +235,7 @@ export default function SupportChat() {
 
       {showTicketCard && (
         <TicketCard
-          key={draft?.summary ?? 'offer'}
+          key="ticket-card"
           initialSummary={draft?.summary ?? ''}
           appId={draft?.appId ?? null}
           siteKey={siteKey}
@@ -228,6 +247,13 @@ export default function SupportChat() {
 
 function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string; appId: string | null; siteKey?: string }) {
   const [summary, setSummary] = useState(initialSummary);
+  const [prevInitial, setPrevInitial] = useState(initialSummary);
+  // A new draft replaces the summary only if the visitor has not edited it.
+  if (initialSummary !== prevInitial) {
+    setPrevInitial(initialSummary);
+    if (summary === prevInitial) setSummary(initialSummary);
+  }
+  const [attempt, setAttempt] = useState(0);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -236,6 +262,14 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
   const [error, setError] = useState('');
 
   const ready = summary.trim() && firstName.trim() && lastName.trim() && email.trim() && token;
+
+  function failed(message: string) {
+    setError(message);
+    setState('error');
+    // The Turnstile token is single use: clear it and remount the widget.
+    setToken('');
+    setAttempt((n) => n + 1);
+  }
 
   async function submit() {
     if (!ready || state === 'sending') return;
@@ -263,11 +297,9 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
         return;
       }
       const data = (await response.json().catch(() => ({}))) as { error?: string };
-      setError(data.error || 'We could not send your message. Please try again or use the form below.');
-      setState('error');
+      failed(data.error || 'We could not send your message. Please try again or use the form below.');
     } catch {
-      setError('We could not send your message. Please try again or use the form below.');
-      setState('error');
+      failed('We could not send your message. Please try again or use the form below.');
     }
   }
 
@@ -280,7 +312,7 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
   }
 
   return (
-    <div className="mt-6 space-y-3 rounded-xl border border-border bg-muted p-4" aria-label="Message to support">
+    <div className="mt-6 space-y-3 rounded-xl border border-border bg-muted p-4" role="group" aria-label="Message to support">
       <h3 className="text-base font-semibold">Send This to Support</h3>
       <textarea
         aria-label="Summary"
@@ -298,7 +330,7 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
       <input aria-label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-lg border border-border-strong px-4 py-3 text-sm" />
       {siteKey && (
         <Turnstile
-          key="support-chat-ticket-turnstile"
+          key={`ticket-turnstile-${attempt}`}
           siteKey={siteKey}
           onVerify={setToken}
           onError={() => setToken('')}
@@ -308,7 +340,7 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
           className="flex justify-start"
         />
       )}
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button
         type="button"
         onClick={() => void submit()}
