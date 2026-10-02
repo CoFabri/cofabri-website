@@ -8,6 +8,7 @@ export const ENTRY_POINTS = [
   'patient-account',
   'help-center',
   'landing',
+  'chat',
   'other',
 ] as const;
 export type EntryPoint = (typeof ENTRY_POINTS)[number];

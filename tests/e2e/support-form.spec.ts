@@ -5,7 +5,10 @@ async function mockApps(page: Page) {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify([{ id: 'medoura', name: 'Medoura', status: 'Active' }]),
+      body: JSON.stringify([
+        { id: 'medoura', name: 'Medoura', status: 'Active', category: 'healthcare' },
+        { id: 'gathr', name: 'Gathr', status: 'Active', category: 'social' },
+      ]),
     }),
   );
 }
@@ -135,4 +138,38 @@ test('choosing Phone as the contact method without a number shows an error', asy
 
   await expect(page.getByText('Add a phone number, or choose a different contact method')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Fewer Options' })).toHaveAttribute('aria-expanded', 'true');
+});
+
+const PHI_LINE = "Please don't include health information. We can help without it.";
+const PATIENT_BANNER = 'Questions about your care, orders or prescriptions?';
+
+test('non-healthcare app in patient mode shows no health wording', async ({ page }) => {
+  await mockApps(page);
+  await page.goto('/support?app=Gathr&audience=patient&tenant=X');
+  await expect(page.getByLabel('Describe the App Problem *')).toBeVisible();
+  await expect(page.getByText('Gathr').first()).toBeVisible();
+  await expect(page.getByText(PHI_LINE)).toHaveCount(0);
+  await expect(page.getByText(PATIENT_BANNER)).toHaveCount(0);
+});
+
+test('healthcare app in patient mode shows the banner and the health line', async ({ page }) => {
+  await mockApps(page);
+  await page.goto('/support?app=Medoura&audience=patient&tenant=Test%20Clinic');
+  await expect(page.getByText(PATIENT_BANNER)).toBeVisible();
+  await expect(page.getByText('Test Clinic')).toBeVisible();
+  await expect(page.getByText(PHI_LINE)).toBeVisible();
+});
+
+test('no app selected shows the health line once apps have loaded', async ({ page }) => {
+  await mockApps(page);
+  await page.goto('/support');
+  await expect(page.getByText(PHI_LINE)).toBeVisible();
+});
+
+test('side panel email line has no health wording', async ({ page }) => {
+  await mockApps(page);
+  await page.goto('/support');
+  const line = page.locator('p', { has: page.locator('a[href="mailto:support@cofabri.com"]') }).first();
+  await expect(line).toContainText('Prefer email?');
+  await expect(line).not.toContainText(/health/i);
 });

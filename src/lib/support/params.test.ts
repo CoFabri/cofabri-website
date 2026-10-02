@@ -9,6 +9,9 @@ import {
 const q = (s: string) => new URLSearchParams(s);
 
 describe('sanitizeEntryPoint', () => {
+  it('accepts chat', () => {
+    expect(sanitizeEntryPoint('chat')).toBe('chat');
+  });
   it('defaults to website when absent', () => {
     expect(sanitizeEntryPoint(null)).toBe('website');
     expect(sanitizeEntryPoint('')).toBe('website');

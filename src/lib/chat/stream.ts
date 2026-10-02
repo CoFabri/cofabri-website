@@ -1,0 +1,77 @@
+export type ChatEvent =
+  | { type: 'text'; delta: string }
+  | { type: 'citations'; items: { slug: string; title: string }[] }
+  | { type: 'ticket'; summary: string; appId: string | null }
+  | { type: 'limit'; reason: string }
+  | { type: 'unavailable'; reason?: string }
+  | { type: 'error' }
+  | { type: 'done'; flagged?: boolean; offerTicket?: boolean };
+
+const KNOWN = new Set(['text', 'citations', 'ticket', 'limit', 'unavailable', 'error', 'done']);
+
+function isValid(e: unknown): e is ChatEvent {
+  if (!e || typeof e !== 'object') return false;
+  const v = e as Record<string, unknown>;
+  if (typeof v.type !== 'string' || !KNOWN.has(v.type)) return false;
+  if (v.type === 'text') return typeof v.delta === 'string';
+  if (v.type === 'citations') {
+    return (
+      Array.isArray(v.items) &&
+      v.items.every((i) => !!i && typeof (i as Record<string, unknown>).slug === 'string' && typeof (i as Record<string, unknown>).title === 'string')
+    );
+  }
+  if (v.type === 'ticket') return typeof v.summary === 'string';
+  return true;
+}
+
+export function createNdjsonParser(onEvent: (event: ChatEvent) => void) {
+  let buffer = '';
+
+  function emit(line: string) {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    let parsed: ChatEvent;
+    try {
+      parsed = JSON.parse(trimmed) as ChatEvent;
+    } catch {
+      // A malformed line is skipped; the stream carries on.
+      return;
+    }
+    if (isValid(parsed)) onEvent(parsed);
+  }
+
+  return {
+    push(chunk: string) {
+      buffer += chunk;
+      let newline = buffer.indexOf('\n');
+      while (newline !== -1) {
+        emit(buffer.slice(0, newline));
+        buffer = buffer.slice(newline + 1);
+        newline = buffer.indexOf('\n');
+      }
+    },
+    flush() {
+      emit(buffer);
+      buffer = '';
+    },
+  };
+}
+
+export async function readChatStream(response: Response, onEvent: (event: ChatEvent) => void): Promise<void> {
+  if (!response.body) return;
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const parser = createNdjsonParser(onEvent);
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parser.push(decoder.decode(value, { stream: true }));
+    }
+    parser.push(decoder.decode());
+    parser.flush();
+  } finally {
+    // No-op after a normal finish; releases the connection if onEvent or read threw.
+    await reader.cancel().catch(() => {});
+  }
+}
