@@ -44,6 +44,8 @@ export default function SupportChat() {
   const [verified, setVerified] = useState(false);
   const [chatToken, setChatToken] = useState('');
   const [draft, setDraft] = useState<TicketDraft | null>(null);
+  // Bumped on every ticket event: a new draft remounts a fresh card (even after one was sent).
+  const [ticketSeq, setTicketSeq] = useState(0);
   const [offerTicket, setOfferTicket] = useState(false);
   const [chatAttempt, setChatAttempt] = useState(0);
   const [tooLong, setTooLong] = useState(false);
@@ -140,6 +142,7 @@ export default function SupportChat() {
         } else if (event.type === 'ticket') {
           sawTicket = true;
           setDraft({ summary: event.summary, appId: event.appId });
+          setTicketSeq((n) => n + 1);
         } else if (event.type === 'done') {
           if (event.offerTicket) {
             sawTicket = true;
@@ -277,7 +280,7 @@ export default function SupportChat() {
 
       {showTicketCard && (
         <TicketCard
-          key="ticket-card"
+          key={`ticket-card-${ticketSeq}`}
           initialSummary={draft?.summary ?? ''}
           appId={draft?.appId ?? null}
           siteKey={siteKey}

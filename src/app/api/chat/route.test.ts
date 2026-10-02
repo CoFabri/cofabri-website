@@ -65,6 +65,7 @@ describe('POST /api/chat', () => {
     const res = await POST(req({ messages, appId: 'medoura', turnstileToken: 'good' }));
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/application\/x-ndjson/);
+    expect(res.headers.get('cache-control')).toBe('no-store, no-transform');
     expect(res.headers.get('set-cookie')).toContain(`${CHAT_COOKIE}=`);
     expect(await res.text()).toContain('"Hello"');
 

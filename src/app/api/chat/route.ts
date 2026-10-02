@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/x-ndjson; charset=utf-8',
-    'Cache-Control': 'no-store',
+    'Cache-Control': 'no-store, no-transform',
   };
   if (setCookie) headers['Set-Cookie'] = setCookie;
   return new Response(upstream.body, { status: 200, headers });

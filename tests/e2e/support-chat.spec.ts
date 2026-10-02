@@ -395,3 +395,38 @@ test('phone width: no horizontal overflow with an answer and the ticket card vis
   const [scrollWidth, innerWidth] = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
 });
+
+test('after a ticket was sent, a new drafted ticket shows a fresh editable card', async ({ page }) => {
+  await mockApps(page);
+  let calls = 0;
+  await page.route('**/api/chat', async (route) => {
+    calls += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/x-ndjson',
+      body:
+        calls === 1
+          ? ndjson({ type: 'text', delta: 'Prepared.' }, { type: 'ticket', summary: 'Cannot upload', appId: null }, { type: 'done' })
+          : ndjson({ type: 'text', delta: 'Another one.' }, { type: 'ticket', summary: 'Billing question', appId: null }, { type: 'done' }),
+    });
+  });
+  await page.route('**/api/support', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
+  await page.goto('/support?chat=1');
+  const chat = page.getByLabel('Support chat');
+  await waitForTurnstile(page);
+  await chat.getByLabel('Your message').fill('upload fails');
+  await chat.getByRole('button', SEND).click();
+  const card = chat.getByLabel('Message to support');
+  await card.getByLabel('First name').fill('Dina');
+  await card.getByLabel('Last name').fill('Chat');
+  await card.getByLabel('Email').fill('dina@example.com');
+  await expect(card.getByRole('button', SEND)).toBeEnabled({ timeout: 30_000 });
+  await card.getByRole('button', SEND).click();
+  await expect(chat.getByText('Message sent.')).toBeVisible();
+
+  await chat.getByLabel('Your message').fill('and a billing question');
+  await chat.getByRole('button', SEND).first().click();
+  await expect(chat.getByText('Another one.')).toBeVisible();
+  await expect(chat.getByText('Message sent.')).toHaveCount(0);
+  await expect(chat.getByLabel('Message to support').getByLabel('Summary')).toHaveValue('Billing question');
+});
