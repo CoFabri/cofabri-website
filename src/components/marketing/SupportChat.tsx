@@ -46,6 +46,10 @@ export default function SupportChat() {
 
   const siteKey = turnstileSiteKey();
 
+  // Stable identities: Turnstile's effect depends on these and resets the widget when they change.
+  const onChatVerify = useCallback((t: string) => setChatToken(t), []);
+  const onChatLost = useCallback(() => setChatToken(''), []);
+
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -194,9 +198,9 @@ export default function SupportChat() {
             <Turnstile
               key={`chat-turnstile-${chatAttempt}`}
               siteKey={siteKey}
-              onVerify={(token) => setChatToken(token)}
-              onError={() => setChatToken('')}
-              onExpire={() => setChatToken('')}
+              onVerify={onChatVerify}
+              onError={onChatLost}
+              onExpire={onChatLost}
               theme="light"
               size="normal"
               className="flex justify-start"
@@ -260,6 +264,9 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
   const [token, setToken] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [error, setError] = useState('');
+  // Stable identities: Turnstile's effect depends on these and resets the widget when they change.
+  const onTicketVerify = useCallback((t: string) => setToken(t), []);
+  const onTicketLost = useCallback(() => setToken(''), []);
 
   const ready = summary.trim() && firstName.trim() && lastName.trim() && email.trim() && token;
 
@@ -332,9 +339,9 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
         <Turnstile
           key={`ticket-turnstile-${attempt}`}
           siteKey={siteKey}
-          onVerify={setToken}
-          onError={() => setToken('')}
-          onExpire={() => setToken('')}
+          onVerify={onTicketVerify}
+          onError={onTicketLost}
+          onExpire={onTicketLost}
           theme="light"
           size="normal"
           className="flex justify-start"
