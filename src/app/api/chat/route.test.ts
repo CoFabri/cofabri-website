@@ -106,4 +106,28 @@ describe('POST /api/chat', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
     expect((await POST(req({ messages }, { cookie }))).status).toBe(503);
   });
+  it.each(['null', '[]', '"x"', '42'])('rejects non-object JSON body %s with 400, with or without a cookie', async (raw) => {
+    const fetchMock = stubUpstream();
+    const cookie = `${CHAT_COOKIE}=${signChatToken(SECRET)}`;
+    for (const headers of [{} as Record<string, string>, { cookie }]) {
+      const res = await POST(req(raw, headers));
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: 'bad_request' });
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('passes the request abort signal to the upstream fetch', async () => {
+    const fetchMock = stubUpstream();
+    const cookie = `${CHAT_COOKIE}=${signChatToken(SECRET)}`;
+    await POST(req({ messages }, { cookie }));
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('prefers x-real-ip over x-forwarded-for', async () => {
+    const fetchMock = stubUpstream();
+    const cookie = `${CHAT_COOKIE}=${signChatToken(SECRET)}`;
+    await POST(req({ messages }, { cookie, 'x-real-ip': '198.51.100.7' }));
+    expect(fetchMock.mock.calls[0][1].headers['x-chat-visitor']).toBe('198.51.100.7');
+  });
 });

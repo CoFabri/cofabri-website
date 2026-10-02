@@ -29,4 +29,11 @@ describe('verifyTurnstile', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
     expect(await verifyTurnstile('tok', '1.1.1.1')).toBe(false);
   });
+  it('returns false on a timeout and passes an abort signal', async () => {
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret');
+    const fetchMock = vi.fn().mockRejectedValue(new DOMException('timed out', 'TimeoutError'));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await verifyTurnstile('tok', '1.1.1.1')).toBe(false);
+    expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
 });

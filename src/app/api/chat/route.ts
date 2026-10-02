@@ -5,8 +5,11 @@ import { verifyTurnstile } from '@/lib/turnstile';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+// Takes the first x-forwarded-for entry: correct on Vercel, which overwrites the header with the real client address; off Vercel it can be client-supplied.
 function clientIp(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+  return (
+    request.headers.get('x-real-ip')?.trim() || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  );
 }
 
 export async function POST(request: Request) {
@@ -21,6 +24,9 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 });
+  }
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return NextResponse.json({ error: 'bad_request' }, { status: 400 });
   }
 
@@ -51,6 +57,7 @@ export async function POST(request: Request) {
         'x-chat-visitor': ip,
       },
       body: JSON.stringify(forward),
+      signal: request.signal,
     });
   } catch {
     return NextResponse.json({ error: 'unavailable' }, { status: 503 });
