@@ -4,11 +4,14 @@ import { useCallback, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Turnstile from './Turnstile';
 import { readChatStream, type ChatEvent } from '@/lib/chat/stream';
+import { buildHistory } from '@/lib/chat/history';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   citations?: { slug: string; title: string }[];
+  // A flagged exchange: shown in the log but not sent as history on later messages.
+  excluded?: boolean;
 }
 
 interface TicketDraft {
@@ -21,6 +24,8 @@ type ChatStatus = 'ok' | 'unavailable' | 'limit';
 const UNAVAILABLE = "Chat isn't available right now. Use the form below.";
 const LIMIT = "You've reached the chat limit for now. Use the form below.";
 const STREAM_FAILED = 'Something went wrong. You can use the form below.';
+const TOO_LONG = 'This conversation got too long. Start a new one.';
+const TICKET_ONLY = "I've prepared a message for the support team below.";
 
 function turnstileSiteKey(): string | undefined {
   if (process.env.NODE_ENV === 'development') return '1x00000000000000000000AA';
@@ -41,6 +46,7 @@ export default function SupportChat() {
   const [draft, setDraft] = useState<TicketDraft | null>(null);
   const [offerTicket, setOfferTicket] = useState(false);
   const [chatAttempt, setChatAttempt] = useState(0);
+  const [tooLong, setTooLong] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inFlight = useRef(false);
 
@@ -70,8 +76,6 @@ export default function SupportChat() {
     setNotice('');
     inFlight.current = true;
     setBusy(true);
-    setDraft(null);
-    setOfferTicket(false);
     scrollDown();
 
     const finish = (patch: (m: ChatMessage) => ChatMessage) =>
@@ -89,7 +93,7 @@ export default function SupportChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: history.map(({ role, content }) => ({ role, content })),
+          messages: buildHistory(history),
           appId: appParam,
           turnstileToken: verified ? undefined : chatToken,
         }),
@@ -104,6 +108,15 @@ export default function SupportChat() {
         setNotice('Please complete the security check again, then send your message.');
         return;
       }
+      if (response.status === 400) {
+        // Conversation too long or invalid: not an outage. Offer a fresh start, keep the typed text.
+        if (!verified) refreshWidget();
+        setMessages(history.slice(0, -1));
+        setInput(text);
+        setNotice(TOO_LONG);
+        setTooLong(true);
+        return;
+      }
       if (!response.ok) {
         if (!verified) refreshWidget();
         setStatus('unavailable');
@@ -115,6 +128,7 @@ export default function SupportChat() {
       setChatToken('');
       streaming = true;
       let sawText = false;
+      let sawTicket = false;
 
       await readChatStream(response, (event: ChatEvent) => {
         if (event.type === 'text') {
@@ -124,9 +138,17 @@ export default function SupportChat() {
         } else if (event.type === 'citations') {
           finish((m) => ({ ...m, citations: event.items }));
         } else if (event.type === 'ticket') {
+          sawTicket = true;
           setDraft({ summary: event.summary, appId: event.appId });
         } else if (event.type === 'done') {
-          if (event.offerTicket) setOfferTicket(true);
+          if (event.offerTicket) {
+            sawTicket = true;
+            setOfferTicket(true);
+          }
+          if (event.flagged) {
+            // Keep this exchange visible but out of the history sent from now on.
+            setMessages((prev) => prev.map((m, i) => (i >= prev.length - 2 ? { ...m, excluded: true } : m)));
+          }
         } else if (event.type === 'limit') {
           setStatus('limit');
           finish((m) => ({ ...m, content: LIMIT }));
@@ -138,7 +160,7 @@ export default function SupportChat() {
           finish((m) => ({ ...m, content: m.content ? `${m.content}\n\n${STREAM_FAILED}` : STREAM_FAILED }));
         }
       });
-      if (!sawText) finish((m) => (m.content ? m : { ...m, content: STREAM_FAILED }));
+      if (!sawText) finish((m) => (m.content ? m : { ...m, content: sawTicket ? TICKET_ONLY : STREAM_FAILED }));
     } catch {
       if (streaming) {
         // Mid-stream read failure: keep the partial answer, like an 'error' event.
@@ -153,6 +175,15 @@ export default function SupportChat() {
       setBusy(false);
       scrollDown();
     }
+  }
+
+  function startOver() {
+    setMessages([]);
+    setInput('');
+    setDraft(null);
+    setOfferTicket(false);
+    setNotice('');
+    setTooLong(false);
   }
 
   const showTicketCard = draft !== null || offerTicket;
@@ -171,7 +202,7 @@ export default function SupportChat() {
         {messages.map((m, i) => (
           <div key={i} className={m.role === 'user' ? 'text-right' : ''}>
             <div
-              className={`inline-block max-w-[90%] whitespace-pre-wrap rounded-xl px-4 py-3 text-sm ${
+              className={`inline-block max-w-[90%] min-w-0 whitespace-pre-wrap break-words rounded-xl px-4 py-3 text-sm ${
                 m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
               }`}
             >
@@ -181,7 +212,7 @@ export default function SupportChat() {
               <ul className="mt-2 flex flex-wrap gap-2 text-xs">
                 {m.citations.map((c) => (
                   <li key={c.slug}>
-                    <a href={`/knowledge-base/${encodeURIComponent(c.slug)}`} className="text-primary hover:underline">
+                    <a href={`/knowledge-base/${encodeURIComponent(c.slug)}`} className="inline-block py-1 text-primary hover:underline">
                       {c.title}
                     </a>
                   </li>
@@ -195,18 +226,25 @@ export default function SupportChat() {
       {status === 'ok' && siteKey ? (
         <div className="mt-6 space-y-3">
           {!verified && siteKey && (
-            <Turnstile
-              key={`chat-turnstile-${chatAttempt}`}
-              siteKey={siteKey}
-              onVerify={onChatVerify}
-              onError={onChatLost}
-              onExpire={onChatLost}
-              theme="light"
-              size="normal"
-              className="flex justify-start"
-            />
+            <div className="max-w-full overflow-x-auto">
+              <Turnstile
+                key={`chat-turnstile-${chatAttempt}`}
+                siteKey={siteKey}
+                onVerify={onChatVerify}
+                onError={onChatLost}
+                onExpire={onChatLost}
+                theme="light"
+                size="normal"
+                className="flex justify-start"
+              />
+            </div>
           )}
           {notice && <p role="alert" className="text-sm text-danger">{notice}</p>}
+          {tooLong && (
+            <button type="button" onClick={startOver} className="rounded-lg border border-border-strong px-4 py-2 text-sm font-medium">
+              Start Over
+            </button>
+          )}
           <div className="flex gap-3">
             <textarea
               aria-label="Your message"
@@ -221,12 +259,12 @@ export default function SupportChat() {
               maxLength={2000}
               rows={2}
               placeholder="Type your question…"
-              className="min-h-[44px] flex-1 rounded-lg border border-border-strong px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-ring/20"
+              className="min-h-[44px] min-w-0 flex-1 rounded-lg border border-border-strong px-4 py-3 text-base sm:text-sm focus:border-primary focus:ring-2 focus:ring-ring/20"
             />
             <button
               type="button"
               onClick={() => void send()}
-              disabled={busy || !input.trim()}
+              disabled={busy || tooLong || !input.trim()}
               className="self-end rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               Send
@@ -328,24 +366,26 @@ function TicketCard({ initialSummary, appId, siteKey }: { initialSummary: string
         maxLength={1900}
         rows={3}
         placeholder="Describe the problem…"
-        className="w-full rounded-lg border border-border-strong px-4 py-3 text-sm"
+        className="w-full rounded-lg border border-border-strong px-4 py-3 text-base sm:text-sm"
       />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <input aria-label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className="rounded-lg border border-border-strong px-4 py-3 text-sm" />
-        <input aria-label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className="rounded-lg border border-border-strong px-4 py-3 text-sm" />
+        <input aria-label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className="min-w-0 rounded-lg border border-border-strong px-4 py-3 text-base sm:text-sm" />
+        <input aria-label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className="min-w-0 rounded-lg border border-border-strong px-4 py-3 text-base sm:text-sm" />
       </div>
-      <input aria-label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-lg border border-border-strong px-4 py-3 text-sm" />
+      <input aria-label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-lg border border-border-strong px-4 py-3 text-base sm:text-sm" />
       {siteKey && (
-        <Turnstile
-          key={`ticket-turnstile-${attempt}`}
-          siteKey={siteKey}
-          onVerify={onTicketVerify}
-          onError={onTicketLost}
-          onExpire={onTicketLost}
-          theme="light"
-          size="normal"
-          className="flex justify-start"
-        />
+        <div className="max-w-full overflow-x-auto">
+          <Turnstile
+            key={`ticket-turnstile-${attempt}`}
+            siteKey={siteKey}
+            onVerify={onTicketVerify}
+            onError={onTicketLost}
+            onExpire={onTicketLost}
+            theme="light"
+            size="normal"
+            className="flex justify-start"
+          />
+        </div>
       )}
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button
