@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import PageHero from '@/components/marketing/PageHero';
 import SupportForm from '@/components/marketing/SupportForm';
+import SupportChatGate from '@/components/marketing/SupportChatGate';
 import RevealSection from '@/components/marketing/RevealSection';
 import SupportIntro from './SupportIntro';
 
@@ -75,7 +76,12 @@ export default function SupportPageContent() {
             .
           </p>
         </div>
-        <SupportForm />
+        <div>
+          <SupportChatGate />
+          <div id="support-form">
+            <SupportForm />
+          </div>
+        </div>
       </RevealSection>
     </div>
   );
