@@ -1,9 +1,10 @@
 name: CI
 
 on:
-  pull_request:
   push:
     branches: [main]
+  # Run on demand; PRs and branches use local verification to save Actions minutes.
+  workflow_dispatch:
 
 env:
   # Cloudflare's publicly documented "always passes" Turnstile test keypair
