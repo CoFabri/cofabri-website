@@ -180,6 +180,24 @@ export const medouraGuide: AppGuide = {
       ],
     },
     {
+      id: 'branding',
+      title: 'Branding Values May Be Null',
+      blocks: [
+        {
+          kind: 'paragraph',
+          text: '`GET /api/v1/branding` only returns what the practice has configured. Any field the practice has not set is `null`, never a Medoura or platform default, and the `colors` object is always present with each color either a CSS color string or `null`.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'A few fields are derived from the practice\'s own data: `url` and `nppUrl` come from the practice\'s domain, `shortName`, `legalName` and `legalFooterCopy` fall back to the practice\'s own `name`, and the LegitScript URLs come from its seal id. `heroBottleShadowUrl` is reserved and always `null`.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Check every value for `null` before using it, and supply your own fallback (your agency\'s or the brand\'s own assets) rather than assuming a logo, color or name is present.',
+        },
+      ],
+    },
+    {
       id: 'content',
       title: 'Content',
       blocks: [
