@@ -38,6 +38,26 @@ describe('getAppGuide', () => {
     expect(jsExample.code).toContain('7d24d3d18fdb2d6edc8e528a1887aed5aef421d03dbb93ac97b426775a269549');
   });
 
+  it('the messaging section documents message.outbound, the endpoints, and the eventId dedupe rule', () => {
+    const guide = getAppGuide('praxis')!;
+    const messaging = guide.sections.find((s) => s.id === 'messaging')!;
+    expect(messaging).toBeDefined();
+    const text = JSON.stringify(messaging);
+    expect(text).toContain('message.outbound');
+    for (const path of [
+      '/api/v1/messages/{messageId}/status',
+      '/api/v1/patients/{externalPatientId}/messages',
+      '/api/v1/patients/{externalPatientId}/messaging',
+    ]) {
+      expect(text).toContain(path);
+    }
+    // Retries reuse the messageId but get a new eventId: telling integrators to dedupe on
+    // messageId would silently drop every provider resend.
+    expect(text).toMatch(/Deduplicate on `eventId`/);
+    expect(text).not.toMatch(/dedupe on `?messageId/i);
+    expect(text).toContain('messaging_disabled');
+  });
+
   it('the FHIR mapping section documents the external-patient-id identifier system', () => {
     const guide = getAppGuide('praxis')!;
     const fhirMapping = guide.sections.find((s) => s.id === 'fhir-mapping')!;

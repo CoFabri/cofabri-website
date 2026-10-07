@@ -101,7 +101,7 @@ export const praxisGuide: AppGuide = {
       blocks: [
         {
           kind: 'paragraph',
-          text: 'Subscribed per connection at connect time (editable later). Every event fires only for patients your connection handed off. The machine-readable payload shape for each event is in the "webhooks" section of the OpenAPI document above; this table is the conceptual summary.',
+          text: 'Subscribed per connection at connect time (editable later). Every event fires only for patients your connection handed off. The machine-readable payload shape for each event is in the "webhooks" section of the OpenAPI document above; this table is the conceptual summary. Text messaging has its own `message.outbound` event, which is not in this table and is not a FHIR bundle: see "Text messaging" below.',
         },
         {
           kind: 'table',
@@ -126,6 +126,70 @@ export const praxisGuide: AppGuide = {
           kind: 'note',
           tone: 'info',
           text: 'Missed or out-of-order delivery? Use the read-only FHIR API below to pull current state directly instead of waiting for a redelivery.',
+        },
+      ],
+    },
+    {
+      id: 'messaging',
+      title: 'Text messaging',
+      blocks: [
+        {
+          kind: 'paragraph',
+          text: 'Praxis providers can text the patients you handed off. Praxis never sends the text itself: it hands each message to your EMR, which sends it from your own number and reports back through the API. Turn it on with the **Messaging** switch on your connection (Admin > EMR Connections). Until it is on, every messaging endpoint returns `403 messaging_disabled`. The switch is the subscription: you do not tick a separate event.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'When a provider sends a message, Praxis delivers a `message.outbound` webhook. It uses the same signature and retry rules as every other event, with `X-Praxis-Event: message.outbound`, but the body is plain JSON, not a FHIR bundle:',
+        },
+        {
+          kind: 'code',
+          language: 'json',
+          code:
+            '{\n  "eventId": "9b2f1c0e-...",\n  "messageId": "4c6a77d2-...",\n  "externalPatientId": "your-emr-id-123",\n  "body": "Your labs are ready to review.",\n  "sentAt": "2026-10-07T16:04:59.000Z",\n  "provider": { "id": "c1a8...", "displayName": "Jordan Rivera, NP" }\n}',
+        },
+        {
+          kind: 'note',
+          tone: 'warning',
+          text: 'Deduplicate on `eventId`. It stays the same across Praxis\'s automatic redeliveries of one event. A provider can also resend a message that failed: that arrives with a new `eventId` and a `messageId` you have already seen. Send it again; do not drop it as a duplicate.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Send the text, then report what happened:',
+        },
+        {
+          kind: 'table',
+          table: {
+            headers: ['Endpoint', 'Use it to'],
+            rows: [
+              ['POST /api/v1/messages/{messageId}/status', 'Report `sent`, `delivered`, or `failed` (with an optional `reason`, up to 200 characters, which the provider sees).'],
+              ['POST /api/v1/patients/{externalPatientId}/messages', 'Record a patient reply: `body`, plus optional `receivedAt` and `externalMessageId`.'],
+              ['GET /api/v1/patients/{externalPatientId}/messages', 'Read the thread and the opt-out flag, for backfill or recovery.'],
+              ['PUT /api/v1/patients/{externalPatientId}/messaging', 'Set `smsOptOut` to `true` or `false`.'],
+            ],
+          },
+        },
+        {
+          kind: 'code',
+          language: 'bash',
+          code:
+            'curl -X POST https://praxisnp.co/api/v1/patients/your-emr-id-123/messages \\\n  -H "Authorization: Bearer prx_live_..." \\\n  -H "Content-Type: application/json" \\\n  -H "Idempotency-Key: reply-8841" \\\n  -d \'{ "body": "Thanks, I will come in Friday.", "externalMessageId": "sms-8841" }\'',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Status only moves forward: `queued`, then `sent`, then `delivered`. A late or repeated update is ignored and still returns `200` with the current status. `delivered` is final. A `failed` message can still become `sent` or `delivered` if you report it later, because your EMR knows what really happened. A reply is stored once per `externalMessageId`, whatever `Idempotency-Key` you use, and a new reply returns `201` while a repeat returns `200`.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Messages are limited to 1,600 characters, counted as Unicode code points, so an emoji counts as one. A longer reply returns `422 message_too_long`. A `receivedAt` more than 5 minutes in the future is clamped to now.',
+        },
+        {
+          kind: 'note',
+          tone: 'info',
+          text: 'Opt-outs are your EMR\'s job: detect `STOP` in your own inbound handling and call `PUT .../messaging` with `{ "smsOptOut": true }`. While a patient is opted out, Praxis blocks providers from sending. Replies that still arrive are recorded.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'If a message cannot be delivered to you, Praxis marks it `failed` and the provider sees a Retry button. That happens when your webhook keeps failing after the usual retries, and also when the connection is paused or Messaging is turned off while a message is still waiting. While paused, your calls return `403 connection_paused`. With Messaging off, they return `403 messaging_disabled`.',
         },
       ],
     },
@@ -172,11 +236,11 @@ export const praxisGuide: AppGuide = {
             headers: ['Status', '/api/v1 code', '/api/fhir/r4 issue code'],
             rows: [
               ['401', 'invalid_api_key', 'security'],
-              ['403', 'connection_paused', 'forbidden'],
+              ['403', 'connection_paused / messaging_disabled', 'forbidden'],
               ['404', 'not_found', 'not-found'],
               ['409', 'conflict', '--'],
               ['413', 'payload_too_large', '--'],
-              ['422', 'validation_failed / idempotency_key_reuse', 'invalid'],
+              ['422', 'validation_failed / idempotency_key_reuse / message_too_long', 'invalid'],
               ['429', 'rate_limited', 'throttled'],
             ],
           },
