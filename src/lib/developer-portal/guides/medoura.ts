@@ -155,6 +155,7 @@ export const medouraGuide: AppGuide = {
             rows: [
               ['401', 'invalid_key', 'The key is missing, invalid or revoked.'],
               ['403', 'feature_not_enabled', 'The Landing Page API is not enabled for this account. Enabling the add-on can take up to 5 minutes to take effect, and turning it off likewise.'],
+              ['403', 'account_locked', 'The account is locked (for example for billing). Contact support.'],
               ['404', 'not_found', 'Unknown category or page key.'],
               ['422', 'validation_failed', 'A query parameter is invalid, such as an unsupported locale.'],
               ['429', 'rate_limited', 'Too many requests. Wait for `Retry-After` seconds.'],
