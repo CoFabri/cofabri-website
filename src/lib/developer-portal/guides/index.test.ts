@@ -44,4 +44,21 @@ describe('getAppGuide', () => {
     const text = JSON.stringify(fhirMapping);
     expect(text).toContain('urn:cofabri:praxis:external-patient-id');
   });
+
+  it('returns a well-formed medoura guide covering the Landing Page API sections', () => {
+    const guide = getAppGuide('medoura');
+    expect(guide).not.toBeNull();
+    expect(guide!.appId).toBe('medoura');
+    const ids = guide!.sections.map((s) => s.id);
+    expect(ids).toEqual(
+      expect.arrayContaining(['overview', 'quickstart', 'authentication', 'rate-limits', 'caching', 'errors', 'categories-filter', 'content', 'versioning'])
+    );
+    for (const section of guide!.sections) {
+      expect(section.blocks.length, `section "${section.id}" has no blocks`).toBeGreaterThan(0);
+    }
+    const text = JSON.stringify(guide);
+    for (const endpoint of ['/api/v1/branding', '/api/v1/categories', '/api/v1/products', '/api/v1/pricing', '/api/v1/content/home']) {
+      expect(text).toContain(endpoint);
+    }
+  });
 });
