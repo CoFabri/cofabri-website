@@ -44,11 +44,11 @@ export const medouraGuide: AppGuide = {
           kind: 'code',
           language: 'bash',
           code:
-            'export MEDOURA_API_KEY="med_live_..."\nexport MEDOURA_HOST="https://your-practice-domain.com"\n\n# Branding: name, logo, colors\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/branding"\n\n# Categories: the treatment categories you offer\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/categories"\n\n# Products, optionally filtered to one category\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/products?category=weight-loss"\n\n# Pricing, plans and promotions\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/pricing"\n\n# Published home-page content, in English or Spanish\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/content/home?locale=en"',
+            'export MEDOURA_API_KEY="med_live_..."\nexport MEDOURA_HOST="https://your-practice-domain.com"\n\n# Branding: name, logo, colors\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/branding"\n\n# Categories: the treatment categories you offer\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/categories"\n\n# Products, optionally filtered to one category\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/products?category=weightLoss"\n\n# Pricing, plans and promotions\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/pricing"\n\n# Published home-page content, in English or Spanish\ncurl -H "Authorization: Bearer $MEDOURA_API_KEY" "$MEDOURA_HOST/api/v1/content/home?locale=en"',
         },
         {
           kind: 'paragraph',
-          text: 'Use a `category` value returned by `/api/v1/categories`. The category in the example above is illustrative.',
+          text: 'Category keys are camelCase (for example `weightLoss`). Take the `key` values from `GET /api/v1/categories` rather than guessing; the key in the example above is illustrative.',
         },
       ],
     },
@@ -92,7 +92,7 @@ export const medouraGuide: AppGuide = {
         },
         {
           kind: 'paragraph',
-          text: 'Over the limit, the API returns `429 rate_limited` with a `Retry-After` header giving the seconds to wait. Combine the caching below with your own server-side cache so a busy landing page does not spend your budget on every visit.',
+          text: 'Over the limit, the API returns `429 rate_limited` with a `Retry-After` header giving the seconds to wait. Requests count against both limits even when they end in `304 Not Modified`. Requests with a missing or invalid key are limited separately, to 20 per minute per IP address, and also answer `429` with `Retry-After`. Combine the caching below with your own server-side cache so a busy landing page does not spend your budget on every visit.',
         },
       ],
     },
@@ -102,7 +102,7 @@ export const medouraGuide: AppGuide = {
       blocks: [
         {
           kind: 'paragraph',
-          text: 'Responses carry `Cache-Control: private, max-age=<seconds>` and a weak `ETag`. Send the ETag back in `If-None-Match` and an unchanged response returns `304 Not Modified` with no body.',
+          text: 'Responses carry `Cache-Control: private, max-age=<seconds>, stale-while-revalidate=<seconds>` (both values equal the TTL below), `Vary: Authorization` and a weak `ETag`. A cache may serve a response for up to the TTL and then, while it revalidates, up to the same time again, so data can be up to about twice the TTL old. Send the ETag back in `If-None-Match` and an unchanged response returns `304 Not Modified` with no body.',
         },
         {
           kind: 'table',
@@ -154,7 +154,7 @@ export const medouraGuide: AppGuide = {
             headers: ['Status', 'Code', 'Meaning'],
             rows: [
               ['401', 'invalid_key', 'The key is missing, invalid or revoked.'],
-              ['403', 'feature_not_enabled', 'The Landing Page API is not enabled for this account.'],
+              ['403', 'feature_not_enabled', 'The Landing Page API is not enabled for this account. Enabling the add-on can take up to 5 minutes to take effect, and turning it off likewise.'],
               ['404', 'not_found', 'Unknown category or page key.'],
               ['422', 'validation_failed', 'A query parameter is invalid, such as an unsupported locale.'],
               ['429', 'rate_limited', 'Too many requests. Wait for `Retry-After` seconds.'],
@@ -184,7 +184,7 @@ export const medouraGuide: AppGuide = {
       blocks: [
         {
           kind: 'paragraph',
-          text: 'In v1 the only content page is `home`: `GET /api/v1/content/home`. Any other page key returns `404 not_found`. Add `?locale=en` or `?locale=es` to choose the language (default `en`). Only published content is returned; drafts are never exposed.',
+          text: 'In v1 the only content page is `home`: `GET /api/v1/content/home`. Any other page key returns `404 not_found`. If the practice has no published home content, `content` is `null`. Add `?locale=en` or `?locale=es` to choose the language (default `en`). Only published content is returned; drafts are never exposed.',
         },
       ],
     },
