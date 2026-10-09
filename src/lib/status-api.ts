@@ -69,6 +69,12 @@ interface StatusFeedResponse {
   }>;
 }
 
+// Every page that shows the status dot (and every 404 a crawler triggers)
+// reads this feed, so a burst of requests used to fan out into one upstream
+// call each and pile onto cofabri-core. Failed responses aren't cached, so a
+// bad moment doesn't stick for the whole window.
+const STATUS_FEED_REVALIDATE_SECONDS = 60;
+
 async function fetchStatusFeedIncidents(): Promise<SystemStatus[]> {
   const baseUrl = process.env.COFABRI_API_BASE_URL;
   if (!baseUrl) {
@@ -77,6 +83,7 @@ async function fetchStatusFeedIncidents(): Promise<SystemStatus[]> {
 
   const response = await fetch(`${baseUrl}/web/content/status-feed`, {
     signal: AbortSignal.timeout(10_000),
+    next: { revalidate: STATUS_FEED_REVALIDATE_SECONDS },
   });
   if (!response.ok) {
     throw new Error(`cofabri-api status-feed returned ${response.status}`);
@@ -112,7 +119,9 @@ export async function getSystemStatus(): Promise<SystemStatus[]> {
   try {
     return await fetchStatusFeedIncidents();
   } catch (error) {
-    console.error('Error fetching system status:', error);
+    // Handled: callers get [] and the page renders without the status dot,
+    // so this is a warning rather than a runtime error (which files a Core task).
+    console.warn('Error fetching system status:', error);
     return [];
   }
 }
@@ -144,6 +153,7 @@ export async function getServiceUptimeHistory(): Promise<ServiceUptimeHistory[]>
 
     const response = await fetch(`${baseUrl}/web/content/status-feed`, {
       signal: AbortSignal.timeout(10_000),
+      next: { revalidate: STATUS_FEED_REVALIDATE_SECONDS },
     });
     if (!response.ok) {
       throw new Error(`cofabri-api status-feed returned ${response.status}`);
@@ -162,7 +172,7 @@ export async function getServiceUptimeHistory(): Promise<ServiceUptimeHistory[]>
         history: s.history ?? [],
       }));
   } catch (error) {
-    console.error('Error fetching service uptime history:', error);
+    console.warn('Error fetching service uptime history:', error);
     return [];
   }
 }
