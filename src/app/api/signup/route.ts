@@ -6,6 +6,17 @@ interface ApiError {
   details?: string;
 }
 
+// A connection that failed before TLS finished (or never resolved) means the
+// request was never sent, so one retry cannot double-submit a signup.
+function failedBeforeSending(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string; message?: string } } | null)?.cause;
+  if (!(error instanceof TypeError) || !cause) return false;
+  return (
+    ['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN'].includes(cause.code ?? '') ||
+    /before secure TLS connection was established/.test(cause.message ?? '')
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -18,7 +29,7 @@ export async function POST(request: Request) {
 
     // Submit to cofabri-api, which persists the waitlist signup in Supabase
     // and enforces beta capacity server-side.
-    const apiRes = await fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/waitlist`, {
+    const send = () => fetch(`${process.env.COFABRI_API_BASE_URL}/web/forms/waitlist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,6 +45,14 @@ export async function POST(request: Request) {
         statement: statement || undefined,
       }),
     });
+    let apiRes: Response;
+    try {
+      apiRes = await send();
+    } catch (error) {
+      if (!failedBeforeSending(error)) throw error;
+      console.warn('cofabri-api waitlist connection failed before sending, retrying once');
+      apiRes = await send();
+    }
 
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
@@ -60,6 +79,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, waitlistRecord });
   } catch (error: unknown) {
     const err = error as ApiError;
+    if (failedBeforeSending(error)) {
+      console.warn('cofabri-api unreachable for waitlist signup:', err.message);
+      return NextResponse.json({ error: 'Failed to create record' }, { status: 502 });
+    }
     console.error('Detailed error in signup route:', {
       message: err.message,
       stack: err.stack,
