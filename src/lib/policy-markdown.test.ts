@@ -54,6 +54,20 @@ describe('renderPolicyHtml', () => {
       expect(html, md).toContain('x');
     }
   });
+  it('drops links whose destination hides a control character or space (browsers strip tabs and newlines from URLs)', () => {
+    for (const md of [
+      '[x](</\t/evil.com>)',
+      '[x](<\t//evil.com>)',
+      '[x](</ /evil.com>)',
+      '[x](<https://exa\tmple.com>)',
+      '[x](<mailto:a@b.com\u0000>)',
+      '[x](<#a b>)',
+    ]) {
+      const html = renderPolicyHtml(md);
+      expect(html, JSON.stringify(md)).not.toMatch(/href=/i);
+      expect(html, JSON.stringify(md)).toContain('x');
+    }
+  });
   it('keeps same-site paths, path anchors and fragment links', () => {
     expect(renderPolicyHtml('[x](/legal/other)')).toContain('href="/legal/other"');
     expect(renderPolicyHtml('[x](/#a)')).toContain('href="/#a"');
