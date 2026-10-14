@@ -28,3 +28,14 @@ export function groupPoliciesByApp(policies: PolicySummary[], appNames: Record<s
     }))
     .sort((a, b) => a.appName.localeCompare(b.appName));
 }
+
+export function filterPolicyGroups(groups: PolicyGroup[], search: string): PolicyGroup[] {
+  const q = search.trim().toLowerCase();
+  if (!q) return groups;
+  return groups
+    .map((group) => {
+      if (group.appName.toLowerCase().includes(q)) return group;
+      return { ...group, policies: group.policies.filter((p) => p.title.toLowerCase().includes(q)) };
+    })
+    .filter((group) => group.policies.length > 0);
+}

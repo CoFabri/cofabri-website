@@ -12,6 +12,8 @@ import RevealSection from '@/components/marketing/RevealSection';
 import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
 import { Pagination } from '@/components/marketing/Pagination';
+import { filterPolicyGroups, type PolicyGroup } from '@/lib/policy-groups';
+import PolicyDocumentsSection from './PolicyDocumentsSection';
 
 const DOCUMENTS_PER_PAGE = 6;
 
@@ -45,7 +47,11 @@ function statusTextClasses(status: string): string {
   }
 }
 
-export default function LegalDocumentsContent() {
+interface LegalDocumentsContentProps {
+  policyGroups?: PolicyGroup[];
+}
+
+export default function LegalDocumentsContent({ policyGroups = [] }: LegalDocumentsContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -94,6 +100,9 @@ export default function LegalDocumentsContent() {
       }),
     [documents, searchInput, selectedType]
   );
+
+  // The type filter describes the old rows only, so a selected type hides the new section.
+  const showPolicySection = !selectedType && filterPolicyGroups(policyGroups, searchInput).length > 0;
 
   const totalPages = Math.max(1, Math.ceil(filteredDocuments.length / DOCUMENTS_PER_PAGE));
   const paginatedDocuments = filteredDocuments.slice(
@@ -176,6 +185,8 @@ export default function LegalDocumentsContent() {
         </div>
       )}
 
+      {!selectedType && <PolicyDocumentsSection groups={policyGroups} search={searchInput} />}
+
       <RevealSection>
       {isLoading ? (
         <div className="mt-16 flex justify-center">
@@ -186,6 +197,7 @@ export default function LegalDocumentsContent() {
           <ErrorState title="Couldn't load legal documents" description={error} onRetry={fetchDocuments} />
         </div>
       ) : filteredDocuments.length === 0 ? (
+        showPolicySection ? null : (
         <div className="mt-16">
           <EmptyState
             icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -194,8 +206,14 @@ export default function LegalDocumentsContent() {
             action={{ label: 'Clear Filters', onClick: clearFilters }}
           />
         </div>
+        )
       ) : (
         <>
+          {showPolicySection && (
+            <h2 className="m-0 mt-14 text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
+              Other Documents
+            </h2>
+          )}
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {paginatedDocuments.map((doc) => {
               const card = (

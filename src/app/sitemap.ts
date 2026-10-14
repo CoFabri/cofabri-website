@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client'
+import { getApps, getKnowledgeBaseArticles, getPolicies } from '@/lib/api-client'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://cofabri.com'
@@ -77,9 +77,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch dynamic content directly through the shared API client (not an
   // HTTP round-trip to this site's own /api routes) — avoids depending on
   // this deployment's own base URL resolving correctly at sitemap-build time.
-  const [apps, articles] = await Promise.all([
+  const [apps, articles, policies] = await Promise.all([
     getApps().catch(() => []),
     getKnowledgeBaseArticles().catch(() => []),
+    getPolicies().catch(() => []),
   ])
 
   const appPages: MetadataRoute.Sitemap = apps.map((app) => ({
@@ -96,5 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...appPages, ...articlePages]
+  const policyPages: MetadataRoute.Sitemap = policies.map((policy) => ({
+    url: `${baseUrl}/legal/${policy.slug}`,
+    lastModified: new Date(policy.publishedAt || Date.now()),
+    changeFrequency: 'monthly' as const,
+    priority: 0.5,
+  }))
+
+  return [...staticPages, ...appPages, ...articlePages, ...policyPages]
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupPoliciesByApp } from './policy-groups';
+import { filterPolicyGroups, groupPoliciesByApp } from './policy-groups';
 
 const p = (slug: string, title: string, apps: string[]) => ({ slug, title, policyType: 'legal', apps, versionNumber: 1 });
 
@@ -20,5 +20,29 @@ describe('groupPoliciesByApp', () => {
   it('returns no groups for no policies, and ignores policies with no apps', () => {
     expect(groupPoliciesByApp([], {})).toEqual([]);
     expect(groupPoliciesByApp([p('x', 'X', [])], {})).toEqual([]);
+  });
+});
+
+describe('filterPolicyGroups', () => {
+  const groups = groupPoliciesByApp(
+    [p('a', 'Privacy Policy', ['tradecraft']), p('b', 'Terms Of Use', ['tradecraft']), p('c', 'Privacy Policy', ['gathr'])],
+    { tradecraft: 'Tradecraft', gathr: 'Gathr' },
+  );
+  it('returns everything for a blank search', () => {
+    expect(filterPolicyGroups(groups, '  ')).toEqual(groups);
+  });
+  it('matches title case-insensitively and drops emptied groups', () => {
+    const out = filterPolicyGroups(groups, 'TERMS');
+    expect(out.map((g) => g.appName)).toEqual(['Tradecraft']);
+    expect(out[0]!.policies.map((x) => x.slug)).toEqual(['b']);
+  });
+  it('matches the app name and keeps all of that app\'s policies', () => {
+    const out = filterPolicyGroups(groups, 'gath');
+    expect(out.map((g) => g.appName)).toEqual(['Gathr']);
+    expect(out[0]!.policies).toHaveLength(1);
+  });
+  it('returns [] for no groups or no match', () => {
+    expect(filterPolicyGroups([], 'x')).toEqual([]);
+    expect(filterPolicyGroups(groups, 'zzz')).toEqual([]);
   });
 });
