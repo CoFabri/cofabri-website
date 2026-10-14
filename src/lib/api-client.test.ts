@@ -526,3 +526,40 @@ describe('getKnowledgeBaseArticle published date mapping', () => {
     expect((await getKnowledgeBaseArticle('a'))?.publishedAt).toBe('2026-09-28T00:00:00Z');
   });
 });
+
+describe('apiFetch transient-failure retry', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+  });
+
+  it('retries a dropped connection and returns the data from the next attempt', async () => {
+    global.fetch = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+    const { getTeam } = await import('./api-client');
+    await expect(getTeam()).resolves.toEqual([]);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries a 502 but does not retry a 404', async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 502, statusText: 'Bad Gateway' })
+      .mockResolvedValueOnce({ ok: false, status: 404, statusText: 'Not Found' });
+
+    const { getApp } = await import('./api-client');
+    await expect(getApp('missing')).resolves.toBeNull();
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+});
