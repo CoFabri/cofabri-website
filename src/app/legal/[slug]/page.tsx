@@ -4,6 +4,7 @@ import { getApps, getPolicy } from '@/lib/api-client';
 import { renderPolicyHtml } from '@/lib/policy-markdown';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
+// Documents are published in Core; a retired document must stop rendering within this window.
 export const revalidate = 300;
 
 interface LegalDocumentPageProps {
