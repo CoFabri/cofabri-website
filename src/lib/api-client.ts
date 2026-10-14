@@ -8,6 +8,26 @@ class CofabriApiError extends Error {
   }
 }
 
+// api.cofabri.com occasionally drops the TLS handshake (ECONNRESET) or returns a
+// 502/503/504 for a moment. Retry those a couple of times so a blip doesn't
+// surface as a runtime error (and an auto-created Core task); real 4xx/5xx
+// responses and persistent outages still fall through to the caller.
+const RETRY_DELAYS_MS = [200, 600];
+const TRANSIENT_STATUSES = new Set([502, 503, 504]);
+
+async function fetchWithRetry(url: string): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const delay = RETRY_DELAYS_MS[attempt];
+    try {
+      const res = await fetch(url, { next: { revalidate: 300 } });
+      if (delay === undefined || !TRANSIENT_STATUSES.has(res.status)) return res;
+    } catch (error) {
+      if (delay === undefined) throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+}
+
 async function apiFetch<T>(path: string): Promise<T> {
   if (!COFABRI_API_BASE_URL) {
     throw new Error('COFABRI_API_BASE_URL is not configured');
@@ -15,7 +35,7 @@ async function apiFetch<T>(path: string): Promise<T> {
   // 5-minute ISR window: CMS-driven marketing content doesn't need per-request
   // freshness, and this is what lets every page reading through this client
   // render statically/incrementally instead of force-dynamic on every request.
-  const res = await fetch(`${COFABRI_API_BASE_URL}${path}`, { next: { revalidate: 300 } });
+  const res = await fetchWithRetry(`${COFABRI_API_BASE_URL}${path}`);
   if (!res.ok) {
     throw new CofabriApiError(res.status, path, res.statusText);
   }
