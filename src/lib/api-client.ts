@@ -15,11 +15,11 @@ class CofabriApiError extends Error {
 const RETRY_DELAYS_MS = [200, 600];
 const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 
-async function fetchWithRetry(url: string): Promise<Response> {
+async function fetchWithRetry(url: string, init?: RequestInit): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     const delay = RETRY_DELAYS_MS[attempt];
     try {
-      const res = await fetch(url, { next: { revalidate: 300 } });
+      const res = await fetch(url, init ?? { next: { revalidate: 300 } });
       if (delay === undefined || !TRANSIENT_STATUSES.has(res.status)) return res;
     } catch (error) {
       if (delay === undefined) throw error;
@@ -28,14 +28,14 @@ async function fetchWithRetry(url: string): Promise<Response> {
   }
 }
 
-async function apiFetch<T>(path: string): Promise<T> {
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!COFABRI_API_BASE_URL) {
     throw new Error('COFABRI_API_BASE_URL is not configured');
   }
   // 5-minute ISR window: CMS-driven marketing content doesn't need per-request
   // freshness, and this is what lets every page reading through this client
   // render statically/incrementally instead of force-dynamic on every request.
-  const res = await fetchWithRetry(`${COFABRI_API_BASE_URL}${path}`);
+  const res = await fetchWithRetry(`${COFABRI_API_BASE_URL}${path}`, init);
   if (!res.ok) {
     throw new CofabriApiError(res.status, path, res.statusText);
   }
@@ -629,7 +629,9 @@ export async function getPolicies(): Promise<PolicySummary[]> {
 export async function getPolicy(slug: string): Promise<Policy | null> {
   if (slug.length > 100 || !POLICY_SLUG_RE.test(slug)) return null;
   try {
-    const row = await apiFetch<PolicyRow>(`/web/content/policies/${slug}`);
+    // Uncached: Next keeps serving a stale cached copy when the refresh is a 404, so a retired
+    // document would otherwise stay visible.
+    const row = await apiFetch<PolicyRow>(`/web/content/policies/${slug}`, { cache: 'no-store' });
     const base = mapPolicy(row);
     if (!base || typeof row.body !== 'string') return null;
     return { ...base, body: row.body };

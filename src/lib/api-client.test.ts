@@ -612,6 +612,15 @@ describe('policies', () => {
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it('fetches a single policy uncached so a retired document stops rendering', async () => {
+      const fetchMock = mockFetchJson({
+        slug: 'a-b', title: 'A B', policy_type: 'legal', apps: ['tradecraft'], version_number: 1, published_at: 'x', body: '# A B',
+      });
+      const { getPolicy } = await import('./api-client');
+      await getPolicy('a-b');
+      expect(fetchMock.mock.calls[0]![1]).toEqual({ cache: 'no-store' });
+    });
+
     it('returns null when the body is missing', async () => {
       mockFetchJson({ slug: 'a-b', title: 'A B' });
       const { getPolicy } = await import('./api-client');
