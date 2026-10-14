@@ -46,6 +46,43 @@ describe('renderPolicyHtml', () => {
     expect(renderPolicyHtml('[a](/legal/other)')).toContain('href="/legal/other"');
     expect(renderPolicyHtml('[a](#sec)')).toContain('href="#sec"');
   });
+  it('drops protocol-relative and backslash links that would leave the site', () => {
+    for (const md of ['[x](//evil.com)', '[x](/\\evil.com)', '[x](\\\\evil.com)']) {
+      const html = renderPolicyHtml(md);
+      expect(html, md).not.toMatch(/href=/i);
+      expect(html, md).not.toMatch(/<a\b/i);
+      expect(html, md).toContain('x');
+    }
+  });
+  it('keeps same-site paths, path anchors and fragment links', () => {
+    expect(renderPolicyHtml('[x](/legal/other)')).toContain('href="/legal/other"');
+    expect(renderPolicyHtml('[x](/#a)')).toContain('href="/#a"');
+    expect(renderPolicyHtml('[x](#sec)')).toContain('href="#sec"');
+  });
+  it('drops a leading level-1 heading, since the page renders the title itself', () => {
+    const html = renderPolicyHtml('# Title\n\n## 1. A\n\nText.');
+    expect(html).not.toContain('<h1');
+    expect(html).toContain('<h2 id="1-a">');
+    expect(html).toContain('Text.');
+  });
+  it('drops a leading level-1 heading after leading blank lines', () => {
+    expect(renderPolicyHtml('\n\n# Title\n\nBody')).not.toContain('<h1');
+  });
+  it('leaves a body without a leading level-1 heading unchanged', () => {
+    const md = '## A\n\nText.\n\n# Later';
+    const html = renderPolicyHtml(md);
+    expect(html).toContain('<h2 id="a">');
+    expect(html).toContain('<h1 id="later">Later</h1>');
+  });
+  it('keeps a level-1 heading that is not the first block', () => {
+    const html = renderPolicyHtml('# Title\n\nIntro\n\n# Part Two');
+    expect(html).not.toContain('<h1 id="title"');
+    expect(html).toContain('<h1 id="part-two">Part Two</h1>');
+  });
+  it('renders an empty string for a body that is only a level-1 heading', () => {
+    expect(renderPolicyHtml('# Title')).toBe('');
+    expect(renderPolicyHtml('# Title\n\n')).toBe('');
+  });
   it('accepts uppercase schemes safely', () => {
     const html = renderPolicyHtml('[a](HTTPS://example.com)');
     expect(html).toContain('href="HTTPS://example.com"');
