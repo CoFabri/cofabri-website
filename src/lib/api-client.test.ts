@@ -575,6 +575,22 @@ describe('policies', () => {
     });
   });
 
+  describe('getPolicies logging', () => {
+    it('warns (not errors) when the route is missing, and errors on other failures', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { getPolicies } = await import('./api-client');
+      mockFetchStatus(404);
+      expect(await getPolicies()).toEqual([]);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(error).not.toHaveBeenCalled();
+      mockFetchStatus(500);
+      expect(await getPolicies()).toEqual([]);
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('getPolicy', () => {
     it('returns the policy with its body', async () => {
       const fetchMock = mockFetchJson({

@@ -596,7 +596,12 @@ export async function getPolicies(): Promise<PolicySummary[]> {
     if (!Array.isArray(rows)) return [];
     return rows.map(mapPolicy).filter((p): p is PolicySummary => p !== null);
   } catch (error) {
-    console.error('Error fetching policies:', error);
+    // A 404 is expected until the API's policies route is deployed.
+    if (error instanceof CofabriApiError && error.status === 404) {
+      console.warn('Policies route not available yet:', error);
+    } else {
+      console.error('Error fetching policies:', error);
+    }
     return [];
   }
 }
