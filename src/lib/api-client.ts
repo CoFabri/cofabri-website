@@ -553,6 +553,69 @@ export async function getLegalDocument(id: string): Promise<LegalDocument | null
   }
 }
 
+export interface PolicySummary {
+  slug: string;
+  title: string;
+  policyType: string;
+  apps: string[];
+  versionNumber: number;
+  publishedAt?: string;
+}
+
+export interface Policy extends PolicySummary {
+  body: string;
+}
+
+interface PolicyRow {
+  slug?: unknown;
+  title?: unknown;
+  policy_type?: unknown;
+  apps?: unknown;
+  version_number?: unknown;
+  published_at?: unknown;
+  body?: unknown;
+}
+
+const POLICY_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function mapPolicy(row: PolicyRow | null): PolicySummary | null {
+  if (!row || typeof row.slug !== 'string' || typeof row.title !== 'string') return null;
+  return {
+    slug: row.slug,
+    title: row.title,
+    policyType: typeof row.policy_type === 'string' ? row.policy_type : 'legal',
+    apps: Array.isArray(row.apps) ? row.apps.filter((a): a is string => typeof a === 'string') : [],
+    versionNumber: typeof row.version_number === 'number' ? row.version_number : 1,
+    publishedAt: typeof row.published_at === 'string' ? row.published_at : undefined,
+  };
+}
+
+export async function getPolicies(): Promise<PolicySummary[]> {
+  try {
+    const rows = await apiFetch<PolicyRow[]>('/web/content/policies');
+    if (!Array.isArray(rows)) return [];
+    return rows.map(mapPolicy).filter((p): p is PolicySummary => p !== null);
+  } catch (error) {
+    console.error('Error fetching policies:', error);
+    return [];
+  }
+}
+
+export async function getPolicy(slug: string): Promise<Policy | null> {
+  if (slug.length > 100 || !POLICY_SLUG_RE.test(slug)) return null;
+  try {
+    const row = await apiFetch<PolicyRow>(`/web/content/policies/${slug}`);
+    const base = mapPolicy(row);
+    if (!base || typeof row.body !== 'string') return null;
+    return { ...base, body: row.body };
+  } catch (error) {
+    if (!(error instanceof CofabriApiError && error.status === 404)) {
+      console.error('Error fetching policy:', error);
+    }
+    return null;
+  }
+}
+
 export interface Banner {
   id: string;
   title: string;

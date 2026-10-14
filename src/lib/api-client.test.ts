@@ -526,3 +526,80 @@ describe('getKnowledgeBaseArticle published date mapping', () => {
     expect((await getKnowledgeBaseArticle('a'))?.publishedAt).toBe('2026-09-28T00:00:00Z');
   });
 });
+
+describe('policies', () => {
+  const originalFetch = global.fetch;
+  const originalBaseUrl = process.env.COFABRI_API_BASE_URL;
+
+  beforeEach(() => {
+    process.env.COFABRI_API_BASE_URL = 'https://api.cofabri.com';
+    vi.resetModules();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    process.env.COFABRI_API_BASE_URL = originalBaseUrl;
+    vi.restoreAllMocks();
+  });
+
+  const mockFetchJson = (json: unknown) => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => json });
+    return global.fetch as ReturnType<typeof vi.fn>;
+  };
+  const mockFetchStatus = (status: number) => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status, statusText: 'x', json: async () => ({}) });
+    return global.fetch as ReturnType<typeof vi.fn>;
+  };
+
+  describe('getPolicies', () => {
+    it('maps the API rows and sorts nothing itself', async () => {
+      const fetchMock = mockFetchJson([
+        { slug: 'a-b', title: 'A B', policy_type: 'legal', apps: ['tradecraft'], version_number: 2, published_at: '2026-10-14T20:00:00Z' },
+      ]);
+      const { getPolicies } = await import('./api-client');
+      expect(await getPolicies()).toEqual([
+        { slug: 'a-b', title: 'A B', policyType: 'legal', apps: ['tradecraft'], versionNumber: 2, publishedAt: '2026-10-14T20:00:00Z' },
+      ]);
+      expect(fetchMock.mock.calls[0]![0]).toContain('/web/content/policies');
+    });
+
+    it('returns an empty list on an error status or a thrown fetch, and drops malformed rows', async () => {
+      const { getPolicies } = await import('./api-client');
+      mockFetchStatus(500);
+      expect(await getPolicies()).toEqual([]);
+      global.fetch = vi.fn().mockRejectedValue(new Error('network'));
+      expect(await getPolicies()).toEqual([]);
+      mockFetchJson([{ slug: 'ok', title: 'Ok', policy_type: 'legal', apps: ['x'], version_number: 1 }, { title: 'no slug' }, null]);
+      expect((await getPolicies()).map((p) => p.slug)).toEqual(['ok']);
+    });
+  });
+
+  describe('getPolicy', () => {
+    it('returns the policy with its body', async () => {
+      const fetchMock = mockFetchJson({
+        slug: 'a-b', title: 'A B', policy_type: 'legal', apps: ['tradecraft'], version_number: 1, published_at: 'x', body: '# A B',
+      });
+      const { getPolicy } = await import('./api-client');
+      expect(await getPolicy('a-b')).toMatchObject({ slug: 'a-b', body: '# A B', versionNumber: 1 });
+      expect(fetchMock.mock.calls[0]![0]).toContain('/web/content/policies/a-b');
+    });
+
+    it('returns null for 404, errors and malformed slugs without fetching', async () => {
+      const { getPolicy } = await import('./api-client');
+      mockFetchStatus(404);
+      expect(await getPolicy('missing')).toBeNull();
+      const fetchMock = mockFetchStatus(500);
+      expect(await getPolicy('boom')).toBeNull();
+      expect(await getPolicy('../etc/passwd')).toBeNull();
+      expect(await getPolicy('a'.repeat(101))).toBeNull();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns null when the body is missing', async () => {
+      mockFetchJson({ slug: 'a-b', title: 'A B' });
+      const { getPolicy } = await import('./api-client');
+      expect(await getPolicy('a-b')).toBeNull();
+    });
+  });
+});
