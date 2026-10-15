@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: LegalDocumentPageProps): Prom
     return {
       title: 'Document Not Found | Legal',
       description: 'The requested document could not be found.',
+      robots: { index: false, follow: true },
     };
   }
 
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: LegalDocumentPageProps): Prom
     description,
     alternates: { canonical: `https://cofabri.com/legal/${slug}` },
     openGraph: { title: policy.title, description, url: `https://cofabri.com/legal/${slug}` },
+    robots: { index: false, follow: true },
   };
 }
 

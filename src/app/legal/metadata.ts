@@ -24,15 +24,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://cofabri.com/legal',
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
+  // Policy text is reference material, not a search landing page: reachable, not indexed.
+  robots: { index: false, follow: true },
 };

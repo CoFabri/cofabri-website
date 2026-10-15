@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/status',
   },
+  robots: { index: false, follow: true },
 };
 
 export default async function StatusPage() {

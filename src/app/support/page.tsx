@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/support',
   },
+  robots: { index: false, follow: true },
   openGraph: {
     title: 'Support | CoFabri',
     description: 'Get help with any CoFabri app. Real people reply within one business day.',
