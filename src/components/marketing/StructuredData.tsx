@@ -1,4 +1,4 @@
-import Script from 'next/script';
+import { serializeJsonLd } from '@/lib/structured-data';
 
 interface StructuredDataProps {
   type: 'organization' | 'website' | 'article' | 'breadcrumb' | 'softwareApplication' | 'faqPage' | 'itemList' | 'service';
@@ -159,13 +159,13 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
     }
   };
 
+  // A plain <script>, not next/script: next/script defers inline JSON-LD to the
+  // client, so it never appears as a real tag in the server-rendered HTML.
   return (
-    <Script
+    <script
       id={`structured-data-${type}`}
       type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(getStructuredData())
-      }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(getStructuredData() as Record<string, unknown>) }}
     />
   );
 }
