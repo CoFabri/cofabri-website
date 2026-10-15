@@ -12,6 +12,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         return {
           "@context": "https://schema.org",
           "@type": "Organization",
+          "@id": "https://cofabri.com/#organization",
           "name": "CoFabri",
           "url": "https://cofabri.com",
           "logo": "https://files.cofabri.com/logos/cofabri/mark-1024-light.png",

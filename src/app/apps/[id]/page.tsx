@@ -10,7 +10,8 @@ import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalett
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
 import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-display';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
-import StructuredData from '@/components/marketing/StructuredData';
+import JsonLd from '@/components/marketing/JsonLd';
+import { buildSoftwareApplicationSchema } from '@/lib/structured-data';
 
 interface AppDetailPageProps {
   params: Promise<{ id: string }>;
@@ -105,14 +106,15 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <StructuredData
-        type="softwareApplication"
-        data={{
+      <JsonLd
+        data={buildSoftwareApplicationSchema({
+          id: app.id,
           name: app.name,
           description: app.description,
-          url: app.url ? `https://${hostname(app.url)}` : `https://cofabri.com/apps/${app.id}`,
-          applicationCategory: app.category,
-        }}
+          // Same rule as the Website row: only point at the app's own domain once it is live.
+          appUrl: showStatusDot ? app.url : undefined,
+          category: app.category,
+        })}
       />
       <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
         <div className="mb-14">

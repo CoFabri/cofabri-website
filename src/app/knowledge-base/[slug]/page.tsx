@@ -7,6 +7,8 @@ import { Metadata } from 'next';
 import { marked } from 'marked';
 import { AppMarkGroup } from '@/components/marketing/AppMarkGroup';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
+import JsonLd from '@/components/marketing/JsonLd';
+import { buildArticleSchema } from '@/lib/structured-data';
 import { Twitter, Linkedin } from 'lucide-react';
 
 marked.setOptions({
@@ -147,6 +149,16 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd
+        data={buildArticleSchema({
+          slug: article.slug,
+          title: article.title,
+          description: article.excerpt,
+          publishedAt: article.publishedAt,
+          lastUpdated: article.lastUpdated,
+          tags: article.tags,
+        })}
+      />
       <div className="mx-auto max-w-[1200px] px-6 pt-9 pb-24 sm:px-10">
         <div className="mb-14">
           <Breadcrumbs
