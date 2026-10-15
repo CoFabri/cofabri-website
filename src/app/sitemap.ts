@@ -1,108 +1,79 @@
 import { MetadataRoute } from 'next'
-import { getApps, getKnowledgeBaseArticles, getPolicies } from '@/lib/api-client'
+import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client'
+
+const baseUrl = 'https://cofabri.com'
+
+/**
+ * Last-modified dates for pages whose content lives in this repo. Bump a date
+ * by hand when that page's copy changes. Pages driven by live data (apps list,
+ * roadmaps, changelog, knowledge base index) carry no lastmod rather than a
+ * made-up one.
+ *
+ * /support, /status and /legal (and its documents) are noindex, so they are
+ * deliberately absent from the sitemap.
+ */
+const STATIC_PAGES: {
+  path: string
+  lastModified?: string
+  changeFrequency: 'daily' | 'weekly' | 'monthly'
+  priority: number
+}[] = [
+  { path: '', lastModified: '2026-10-15', changeFrequency: 'weekly', priority: 1 },
+  { path: '/apps', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/co-build', lastModified: '2026-09-15', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/contact', lastModified: '2026-09-02', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/about', lastModified: '2026-09-28', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/knowledge-base', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/roadmaps', changeFrequency: 'weekly', priority: 0.8 },
+  { path: '/changelog', changeFrequency: 'weekly', priority: 0.7 },
+  { path: '/developers', lastModified: '2026-09-21', changeFrequency: 'monthly', priority: 0.6 },
+]
+
+/** A real, non-future date or undefined (the entry then omits lastmod). */
+function validPastDate(...candidates: (string | undefined)[]): Date | undefined {
+  const now = Date.now()
+  for (const value of candidates) {
+    if (!value) continue
+    const date = new Date(value)
+    if (!Number.isNaN(date.getTime()) && date.getTime() <= now) return date
+  }
+  return undefined
+}
+
+function entry(
+  url: string,
+  lastModified: Date | undefined,
+  changeFrequency: 'daily' | 'weekly' | 'monthly',
+  priority: number,
+): MetadataRoute.Sitemap[number] {
+  return { url, ...(lastModified ? { lastModified } : {}), changeFrequency, priority }
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://cofabri.com'
-
-  // Static pages
-  const staticPages = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/apps`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/co-build`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/knowledge-base`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/roadmaps`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/changelog`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/status`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/support`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/legal`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    },
-  ]
+  const staticPages = STATIC_PAGES.map((page) =>
+    entry(`${baseUrl}${page.path}`, validPastDate(page.lastModified), page.changeFrequency, page.priority),
+  )
 
   // Fetch dynamic content directly through the shared API client (not an
   // HTTP round-trip to this site's own /api routes) — avoids depending on
   // this deployment's own base URL resolving correctly at sitemap-build time.
-  const [apps, articles, policies] = await Promise.all([
+  const [apps, articles] = await Promise.all([
     getApps().catch(() => []),
     getKnowledgeBaseArticles().catch(() => []),
-    getPolicies().catch(() => []),
   ])
 
-  const appPages: MetadataRoute.Sitemap = apps.map((app) => ({
-    url: `${baseUrl}/apps/${app.id}`,
-    lastModified: new Date(app.releaseDate || app.launchDate || Date.now()),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }))
+  const appPages = apps.map((app) =>
+    entry(`${baseUrl}/apps/${app.id}`, validPastDate(app.releaseDate, app.launchDate), 'monthly', 0.6),
+  )
 
-  const articlePages: MetadataRoute.Sitemap = articles.map((article) => ({
-    url: `${baseUrl}/knowledge-base/${article.slug}`,
-    lastModified: new Date(article.lastUpdated || article.publishedAt || Date.now()),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }))
+  const articlePages = articles.map((article) =>
+    entry(
+      `${baseUrl}/knowledge-base/${article.slug}`,
+      validPastDate(article.lastUpdated, article.publishedAt),
+      'monthly',
+      0.6,
+    ),
+  )
 
-  const policyPages: MetadataRoute.Sitemap = policies.map((policy) => ({
-    url: `${baseUrl}/legal/${policy.slug}`,
-    lastModified: new Date(policy.publishedAt || Date.now()),
-    changeFrequency: 'monthly' as const,
-    priority: 0.5,
-  }))
-
-  return [...staticPages, ...appPages, ...articlePages, ...policyPages]
+  return [...staticPages, ...appPages, ...articlePages]
 }
