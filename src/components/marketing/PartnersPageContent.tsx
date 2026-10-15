@@ -65,7 +65,7 @@ export default function PartnersPageContent() {
           <strong className="font-semibold text-foreground">Medoura</strong>: a platform that runs
           both sides of the business. They brought years in the industry, existing patients, and
           a professional network to bring in early customers. Today Medoura is live, selling, and
-          the partner holds a real stake in the company.
+          the partner holds a real stake in the product.
         </p>
 
         <blockquote className="mt-8 max-w-[640px] border-l-2 border-primary pl-6 text-lg italic leading-[1.6] text-foreground">
