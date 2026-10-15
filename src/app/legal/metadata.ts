@@ -18,8 +18,10 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    card: 'summary_large_image',
     title: 'Legal Documents | CoFabri',
     description: 'Access our comprehensive collection of legal documents including privacy policies, terms of service, and cookie policies.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
   alternates: {
     canonical: 'https://cofabri.com/legal',

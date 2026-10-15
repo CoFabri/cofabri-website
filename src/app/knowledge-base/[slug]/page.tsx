@@ -9,6 +9,7 @@ import { AppMarkGroup } from '@/components/marketing/AppMarkGroup';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import JsonLd from '@/components/marketing/JsonLd';
 import { buildArticleSchema } from '@/lib/structured-data';
+import { buildDescription } from '@/lib/meta-description';
 import { Twitter, Linkedin } from 'lucide-react';
 
 marked.setOptions({
@@ -38,10 +39,11 @@ export async function generateMetadata({ params }: KnowledgeBaseArticlePageProps
     };
   }
 
-  const description = article.excerpt || article.content.slice(0, 160);
+  const description = buildDescription(article.excerpt, [article.content]);
 
   return {
-    title: `${article.title} | Knowledge Base`,
+    // The root layout's title template appends " | CoFabri"; no extra suffix, to keep titles short.
+    title: article.title,
     description,
     alternates: {
       canonical: `https://cofabri.com/knowledge-base/${slug}`,

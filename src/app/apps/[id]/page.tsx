@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { getApp, getAppReleases, getKnowledgeBaseArticles, getRoadmapFeatures } from '@/lib/api-client';
 import { pickAppIntroArticles } from '@/lib/kb-links';
+import { buildDescription } from '@/lib/meta-description';
 import { getSystemStatus } from '@/lib/status-api';
 import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalette, pickReadableTextColor, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
@@ -45,7 +46,11 @@ export async function generateMetadata({ params }: AppDetailPageProps): Promise<
     };
   }
 
-  const description = app.description?.slice(0, 160) || `${app.name} — part of the CoFabri suite.`;
+  const description = buildDescription(
+    app.description,
+    [[app.feature1, app.feature2, app.feature3].filter(Boolean).join('. '), app.category],
+    `${app.name} — part of the CoFabri suite.`,
+  );
 
   return {
     title: app.name,

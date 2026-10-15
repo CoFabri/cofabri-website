@@ -20,8 +20,10 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    card: 'summary_large_image',
     title: 'Our Apps | CoFabri',
     description: 'Every app CoFabri builds, in one place — each one solves a single problem, none of them overlap.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
   alternates: {
     canonical: '/apps',

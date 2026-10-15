@@ -7,7 +7,7 @@ import { hasActiveRoadmap } from '@/lib/app-display';
 
 export const metadata: Metadata = {
   title: 'Changelog',
-  description: 'Released features across the CoFabri suite, most recent first.',
+  description: 'Released features and updates across every CoFabri app, most recent first, with the date each one shipped.',
   keywords: ['changelog', 'release notes', "what's new", 'product updates'],
   alternates: {
     canonical: '/changelog',

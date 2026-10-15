@@ -2,10 +2,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import AboutPageContent from '@/components/marketing/AboutPageContent';
 import { getTeam } from '@/lib/api-client';
+import { missionStatement } from '@/components/marketing/about-content';
 
 export const metadata: Metadata = {
   title: 'About',
-  description: 'The name, the mark, and the people behind CoFabri — one studio, every industry.',
+  description: `The name, the mark, and the people behind CoFabri — one studio, every industry. ${missionStatement}`,
   openGraph: {
     title: 'About | CoFabri',
     description: 'The name, the mark, and the people behind CoFabri — one studio, every industry.',
@@ -20,8 +21,10 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    card: 'summary_large_image',
     title: 'About | CoFabri',
     description: 'The name, the mark, and the people behind CoFabri — one studio, every industry.',
+    images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
   },
   alternates: {
     canonical: '/about',
