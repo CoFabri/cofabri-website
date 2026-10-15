@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { getApp, getAppReleases, getRoadmapFeatures } from '@/lib/api-client';
+import { getApp, getAppReleases, getKnowledgeBaseArticles, getRoadmapFeatures } from '@/lib/api-client';
+import { pickAppIntroArticles } from '@/lib/kb-links';
 import { getSystemStatus } from '@/lib/status-api';
 import { actionHref, actionLabel, hasActiveRoadmap, isExternalAction, markPalette, pickReadableTextColor, statusExplainer, statusPillClasses } from '@/lib/app-display';
 import { incidentDotClasses, matchAppIncident } from '@/lib/incident-display';
@@ -85,6 +86,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   // "shipped" list below is the same data filtered to "released".
   const roadmapItems = appFeatures.filter((f) => f.status !== 'Released' && f.status !== 'Cancelled').slice(0, 5);
   const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
+  const guides = pickAppIntroArticles(app.id, await getKnowledgeBaseArticles());
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
 
   // Only fully live apps get a status dot — an uptime signal reads as noise
@@ -283,6 +285,26 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {guides.length > 0 && (
+          <div className="mt-[88px] grid grid-cols-1 gap-10 lg:grid-cols-[320px_1fr] lg:gap-20">
+            <h2 className="m-0 text-[32px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground">
+              Knowledge base
+            </h2>
+            <ul className="m-0 list-none p-0">
+              {guides.map((guide) => (
+                <li key={guide.slug} className="border-t border-border py-4 first:border-t-0 first:pt-0">
+                  <Link
+                    href={`/knowledge-base/${guide.slug}`}
+                    className="text-[17px] font-medium text-foreground transition-colors hover:text-primary"
+                  >
+                    {guide.title} →
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

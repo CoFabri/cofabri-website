@@ -14,9 +14,6 @@ import RevealSection from '@/components/marketing/RevealSection';
 import StructuredData from '@/components/marketing/StructuredData';
 import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
-import { Pagination } from '@/components/marketing/Pagination';
-
-const ARTICLES_PER_PAGE = 6;
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -41,7 +38,6 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
   // if that server fetch came back empty, as a client-side recovery path.
   const [isLoading, setIsLoading] = useState(initialArticles.length === 0);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Initialize from URL parameters
   useEffect(() => {
@@ -94,12 +90,6 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
     [articles, searchQuery, selectedCategory]
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE));
-  const paginatedArticles = filteredArticles.slice(
-    (currentPage - 1) * ARTICLES_PER_PAGE,
-    currentPage * ARTICLES_PER_PAGE
-  );
-
   const updateURL = (newCategory?: string, newSearch?: string) => {
     const params = new URLSearchParams();
     if (newCategory) params.set('category', newCategory);
@@ -110,20 +100,17 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1);
     updateURL(category || undefined, searchQuery || undefined);
   };
 
   const handleSearchChange = (search: string) => {
     setSearchQuery(search);
-    setCurrentPage(1);
     updateURL(selectedCategory || undefined, search || undefined);
   };
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
-    setCurrentPage(1);
     updateURL(undefined, undefined);
   };
 
@@ -200,7 +187,7 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
       ) : (
         <>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {paginatedArticles.map((article) => (
+            {filteredArticles.map((article) => (
               <Link
                 key={article.id}
                 href={`/knowledge-base/${article.slug}`}
@@ -225,8 +212,6 @@ export default function KnowledgeBaseContent({ initialArticles }: KnowledgeBaseC
               </Link>
             ))}
           </div>
-
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </>
       )}
       </RevealSection>

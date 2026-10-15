@@ -275,6 +275,19 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
               ))}
             </div>
           )}
+          {article.applications.length > 0 && (
+            <div className="flex flex-wrap gap-x-6 gap-y-2 lg:col-start-2">
+              {article.applications.map((linked) => (
+                <Link
+                  key={linked.id}
+                  href={`/apps/${linked.id}`}
+                  className="border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  {linked.name} →
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mt-14 max-w-[720px] border-t border-border pt-14">
