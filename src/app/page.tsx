@@ -8,6 +8,7 @@ import CompactRoadmap from '@/components/marketing/CompactRoadmap';
 import FAQ from '@/components/marketing/FAQ';
 import LiveChat from '@/components/marketing/LiveChat';
 import HomeContent from '@/components/marketing/HomeContent';
+import { HOME_DESCRIPTION, HOME_TITLE } from '@/lib/site-metadata';
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
@@ -15,14 +16,14 @@ export const dynamic = 'force-dynamic';
 // Generate metadata for the homepage
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'CoFabri — We don\'t build platforms. We build answers.',
-    description: 'CoFabri is a software studio building a portfolio of focused apps — each one solves a single problem and stays out of your way.',
+    title: { absolute: HOME_TITLE },
+    description: HOME_DESCRIPTION,
     alternates: {
-      canonical: 'https://cofabri.com/',
+      canonical: '/',
     },
     openGraph: {
-      title: 'CoFabri — We don\'t build platforms. We build answers.',
-      description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
       url: 'https://cofabri.com/',
       images: [
         {
@@ -34,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     twitter: {
-      title: 'CoFabri — We don\'t build platforms. We build answers.',
-      description: 'A software studio building a portfolio of focused apps, each solving a single problem.',
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
       images: ['https://files.cofabri.com/logos/cofabri/cofabri-og-image.png'],
     },
   };
