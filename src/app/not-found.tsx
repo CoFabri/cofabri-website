@@ -1,8 +1,16 @@
+import type { Metadata } from 'next';
 import NotFoundContent, { type NotFoundIncident } from '@/components/marketing/NotFoundContent';
 import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client';
 import { hasActiveRoadmap } from '@/lib/app-display';
 import { matchAppIncident, mostSevereIncident } from '@/lib/incident-display';
 import { getSystemStatus } from '@/lib/status-api';
+
+// A 404 gets its own title (not the homepage's) and is kept out of the index.
+// No canonical: there is no real URL to point to.
+export const metadata: Metadata = {
+  title: 'Page Not Found',
+  robots: { index: false, follow: true },
+};
 
 // A 404 should never fail for want of data: each fetch already resolves to []
 // on error, so a down API just yields the plain page without lists.
