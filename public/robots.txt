@@ -13,13 +13,6 @@ Disallow: /debug/
 Disallow: /health
 Disallow: /api/health
 
-# Disallow preview routes with Airtable IDs
-Disallow: /preview/*/rec*
-Disallow: /api/preview/*/rec*
-
-# Disallow any URLs with Airtable record IDs
-Disallow: /*/rec*
-
 # Everything else is covered by the default "Allow: /" above — no need to
 # re-list individual pages.
 
