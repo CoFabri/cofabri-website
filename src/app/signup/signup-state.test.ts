@@ -66,6 +66,7 @@ describe('getSignupCopy', () => {
   it('describes unavailable differently for a live app than for any other status', () => {
     const live = getSignupCopy({ kind: 'unavailable', status: 'Live' }, 'Medoura');
     expect(live.title).toContain('live');
+    expect(getSignupCopy({ kind: 'unavailable', status: 'Live' }, 'Medoura', 'medoura').cta.href).toBe('/apps/medoura');
     const other = getSignupCopy({ kind: 'unavailable', status: 'Paused' }, 'Medoura');
     expect(other.title).not.toContain('live');
   });

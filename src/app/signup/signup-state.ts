@@ -27,31 +27,58 @@ export function getSignupState(appData: SignupAppData): SignupState {
   return { kind: 'open', capacity: appData.betaCapacity, filled: appData.betaSpotsFilled, remaining };
 }
 
+export interface SignupCopy {
+  eyebrow: string;
+  title: string;
+  body: string;
+  cta: { label: string; href: string };
+  cta2: { label: string; href: string };
+}
+
 // Only called for states that hide the form and show a block instead —
 // 'legacy-waitlist' and 'open' keep showing the real form and never reach here.
-export function getSignupCopy(state: SignupState, appName: string): { title: string; body: string } {
+export function getSignupCopy(state: SignupState, appName: string, appId = ''): SignupCopy {
+  const explore = { label: 'Explore apps', href: '/apps' };
   switch (state.kind) {
     case 'not-open':
       return {
-        title: `Beta signups for ${appName} aren't open yet`,
-        body: "We're not accepting beta signups for this app just yet. Check back soon.",
+        eyebrow: 'Beta not open',
+        title: `${appName} beta signups open soon`,
+        body: "We're not taking beta signups yet. Check back shortly.",
+        cta: explore,
+        cta2: { label: 'Roadmap', href: '/roadmaps' },
       };
     case 'closed':
       return {
-        title: `Beta signups for ${appName} are closed`,
-        body: 'This beta is no longer accepting new signups.',
+        eyebrow: 'Beta closed',
+        title: `The ${appName} beta has closed`,
+        body: "It's no longer taking new signups. It opens to everyone at launch.",
+        cta: explore,
+        cta2: { label: 'Roadmap', href: '/roadmaps' },
       };
     case 'full':
       return {
-        title: `All beta spots for ${appName} are filled`,
-        body: 'Every spot has been claimed. Check back later or explore our other apps.',
+        eyebrow: 'Beta full',
+        title: `Every beta spot for ${appName} is taken`,
+        body: `All ${state.capacity} spots have been claimed. We'll open more as the beta grows.`,
+        cta: explore,
+        cta2: { label: 'Contact us', href: '/contact' },
       };
     case 'unavailable':
       return state.status === 'Live' || state.status === 'Active'
-        ? { title: `${appName} is live!`, body: 'This app has launched — head over and start using it.' }
+        ? {
+            eyebrow: 'Launched',
+            title: `${appName} is live`,
+            body: "There's no waitlist anymore — sign up and start using it.",
+            cta: { label: `View ${appName}`, href: appId ? `/apps/${appId}` : '/apps' },
+            cta2: { label: 'All apps', href: '/apps' },
+          }
         : {
-            title: `Beta signups aren't available for ${appName} right now`,
-            body: 'This signup page is not currently available for this app.',
+            eyebrow: 'Unavailable',
+            title: `Signups for ${appName} aren't open right now`,
+            body: "This page isn't taking signups for this app at the moment.",
+            cta: explore,
+            cta2: { label: 'Contact us', href: '/contact' },
           };
     case 'legacy-waitlist':
     case 'open':

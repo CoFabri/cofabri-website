@@ -9,6 +9,8 @@ interface AppData {
   betaSpotsFilled: number;
   status: string;
   name: string;
+  primaryColor?: string;
+  faviconUrl?: string;
   betaStatements: BetaStatement[];
 }
 
@@ -30,6 +32,8 @@ export async function GET(
       betaSpotsFilled: app.betaSpotsFilled ?? 0,
       status: app.status || 'Coming Soon',
       name: app.name || 'Unknown App',
+      primaryColor: app.primaryColor,
+      faviconUrl: app.faviconUrl,
       betaStatements: app.betaStatements || [],
     };
 
