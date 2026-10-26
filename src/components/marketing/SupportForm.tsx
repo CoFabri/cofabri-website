@@ -265,6 +265,13 @@ export default function SupportForm() {
   const [selectedApps, setSelectedApps] = useState<string[]>([]);
   const [urlAppsInitialized, setUrlAppsInitialized] = useState(false);
   const [phoneCountry, setPhoneCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  // One id per form load, resent on retries so the intake can drop duplicates.
+  const submissionIdRef = useRef<string>('');
+  if (!submissionIdRef.current && typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    submissionIdRef.current = crypto.randomUUID();
+  }
+  // Honeypot: people never see or fill this; bots do.
+  const [honeypot, setHoneypot] = useState('');
 
 
 
@@ -463,7 +470,7 @@ export default function SupportForm() {
     
     // Validate file sizes (10MB limit per file, 50MB total for Vercel Blob)
     const maxFileSize = 10 * 1024 * 1024; // 10MB
-    const maxTotalSize = 50 * 1024 * 1024; // 50MB
+    const maxTotalSize = 2.5 * 1024 * 1024; // 2.5MB: the host caps the whole request near 4.5MB
     
     const validFiles = files.filter(file => {
       if (file.size > maxFileSize) {
@@ -475,7 +482,7 @@ export default function SupportForm() {
     
     const totalSize = validFiles.reduce((sum, file) => sum + file.size, 0);
     if (totalSize > maxTotalSize) {
-      alert(`Total file size is too large. Maximum total size is 50MB.`);
+      alert(`Total file size is too large. Maximum total size is 2.5MB.`);
       return;
     }
     
@@ -536,6 +543,12 @@ export default function SupportForm() {
       formDataToSend.append('entryPoint', params.from);
       formDataToSend.append('tenantName', params.tenant);
       formDataToSend.append('audience', params.audience);
+      formDataToSend.append('submissionId', submissionIdRef.current);
+      formDataToSend.append('website', honeypot);
+      formDataToSend.append(
+        'applicationNames',
+        JSON.stringify(formData.applications.map((id) => apps.find((a) => a.id === id)?.name).filter(Boolean))
+      );
 
       // Append screenshots
       formData.screenshots.forEach((file) => {
@@ -549,6 +562,9 @@ export default function SupportForm() {
 
       if (response.ok) {
         setSubmitStatus('success');
+        // The next ticket is a new submission.
+        if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) submissionIdRef.current = crypto.randomUUID();
+        setHoneypot('');
         setEditingIdentity(false);
         setIdentityFromUrl(false);
         setChangingApp(false);
@@ -695,6 +711,16 @@ export default function SupportForm() {
 
           
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+          />
+        </div>
         {/* Contact Information Section */}
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-foreground">Contact Information</h3>
@@ -1056,7 +1082,7 @@ export default function SupportForm() {
                 Screenshots
               </label>
               <p className="text-sm text-muted-foreground mb-3">
-                Supported formats: JPG, PNG, GIF, WebP, BMP (max 10MB per file, 50MB total)
+                Supported formats: JPG, PNG, GIF, WebP (up to 2.5MB in total)
               </p>
               <div className="border border-dashed border-border-strong rounded-lg p-6 text-center">
                 <input

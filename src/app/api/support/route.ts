@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { supportSchema } from '@/lib/validation/schemas';
 import { sanitizeAudience, sanitizeEntryPoint, sanitizeTenant } from '@/lib/support/params';
+import {
+  buildIntakePayload,
+  filesToAttachments,
+  getSupportBackend,
+  submitToMavenos,
+  SUBMISSION_ID,
+} from '@/lib/support/mavenos';
 import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
@@ -148,6 +155,58 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+    }
+
+    // SUPPORT_BACKEND=mavenos: forward to the MavenOS intake instead of
+    // cofabri-api. cofabri-api is NOT called on this path, so it sends no CS-n
+    // confirmation email; MavenOS sends its own acknowledgement.
+    if (getSupportBackend() === 'mavenos') {
+      const rawSubmissionId = formData.get('submissionId');
+      const submissionId =
+        typeof rawSubmissionId === 'string' && SUBMISSION_ID.test(rawSubmissionId) ? rawSubmissionId : crypto.randomUUID();
+      const files = audience === 'patient' ? [] : (formData.getAll('screenshots').filter((f) => typeof f !== 'string') as File[]);
+      const attached = await filesToAttachments(files);
+      if (!attached.ok) {
+        return NextResponse.json({ error: attached.error }, { status: 400 });
+      }
+      let appNames: string[] = [];
+      try {
+        const rawNames = formData.get('applicationNames');
+        const parsedNames: unknown = typeof rawNames === 'string' && rawNames ? JSON.parse(rawNames) : [];
+        if (Array.isArray(parsedNames)) appNames = parsedNames.filter((n): n is string => typeof n === 'string').slice(0, 5);
+      } catch {
+        appNames = [];
+      }
+      const website = formData.get('website');
+      const payload = buildIntakePayload({
+        submissionId,
+        firstName: normalizedFirstName,
+        lastName: normalizedLastName,
+        email: normalizedEmail,
+        phone: normalizedPhone,
+        categoryLabel: toApiSubjectLabel(normalizedSubject),
+        subjectType: toApiSubjectType(normalizedSubject),
+        description: normalizedDescription,
+        entryPoint,
+        audience,
+        tenantName,
+        appId: typeof applicationsArray[0] === 'string' ? applicationsArray[0] : undefined,
+        appNames,
+        languagePreference: normalizedLanguagePreference,
+        preferredContactMethod: normalizedPreferredContactMethod,
+        companyOrganization: normalizedCompanyOrganization,
+        website: typeof website === 'string' ? website : undefined,
+        attachments: attached.attachments,
+      });
+      const outcome = await submitToMavenos(payload);
+      if (!outcome.ok) {
+        return NextResponse.json({ error: outcome.clientError }, { status: outcome.clientStatus });
+      }
+      // A duplicate submission or honeypot answers 202 without an id; still a success.
+      return NextResponse.json(
+        { message: 'Support ticket submitted successfully', recordId: outcome.id ?? null },
+        { status: 200 }
+      );
     }
 
     // Check if cofabri-api credentials are available
