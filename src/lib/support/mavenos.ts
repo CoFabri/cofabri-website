@@ -4,6 +4,7 @@
 // Reads MAVENOS_INTAKE_URL and MAVENOS_SUPPORT_INTAKE_KEY at request time, so a
 // change to either needs a new deployment (the Ignored Build Step skips a build
 // that only touches docs, so edit a source file to force one).
+// SUPPORT_BACKEND was switched to mavenos for production on 2026-10-27.
 
 export type SupportBackend = 'mavenos' | 'core';
 
