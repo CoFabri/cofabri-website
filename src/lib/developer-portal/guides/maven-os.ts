@@ -26,7 +26,7 @@ export const mavenOsGuide: AppGuide = {
         },
         {
           kind: 'paragraph',
-          text: 'The endpoint is on your MavenOS address: `https://YOUR-MAVENOS-HOST/api/mcp`. The Assistant page in MavenOS shows the exact address for your workspace.',
+          text: 'The endpoint is on your MavenOS address: `https://os.mavenx.co/api/mcp`. The Assistant page in MavenOS shows the exact address for your workspace.',
         },
         {
           kind: 'note',
@@ -66,7 +66,7 @@ export const mavenOsGuide: AppGuide = {
           kind: 'code',
           language: 'bash',
           code:
-            'claude mcp add --transport http mavenos https://YOUR-MAVENOS-HOST/api/mcp \\\n  --header "Authorization: Bearer YOUR_ASSISTANT_KEY"',
+            'claude mcp add --transport http mavenos https://os.mavenx.co/api/mcp \\\n  --header "Authorization: Bearer YOUR_ASSISTANT_KEY"',
         },
         {
           kind: 'paragraph',
@@ -76,7 +76,7 @@ export const mavenOsGuide: AppGuide = {
           kind: 'code',
           language: 'json',
           code:
-            '{\n  "mcpServers": {\n    "mavenos": {\n      "url": "https://YOUR-MAVENOS-HOST/api/mcp",\n      "headers": { "Authorization": "Bearer YOUR_ASSISTANT_KEY" }\n    }\n  }\n}',
+            '{\n  "mcpServers": {\n    "mavenos": {\n      "url": "https://os.mavenx.co/api/mcp",\n      "headers": { "Authorization": "Bearer YOUR_ASSISTANT_KEY" }\n    }\n  }\n}',
         },
         {
           kind: 'paragraph',
@@ -86,7 +86,7 @@ export const mavenOsGuide: AppGuide = {
           kind: 'code',
           language: 'json',
           code:
-            '{\n  "mcpServers": {\n    "mavenos": {\n      "command": "npx",\n      "args": ["-y", "mcp-remote", "https://YOUR-MAVENOS-HOST/api/mcp", "--header", "Authorization:${MAVENOS_AUTH}"],\n      "env": { "MAVENOS_AUTH": "Bearer YOUR_ASSISTANT_KEY" }\n    }\n  }\n}',
+            '{\n  "mcpServers": {\n    "mavenos": {\n      "command": "npx",\n      "args": ["-y", "mcp-remote", "https://os.mavenx.co/api/mcp", "--header", "Authorization:${MAVENOS_AUTH}"],\n      "env": { "MAVENOS_AUTH": "Bearer YOUR_ASSISTANT_KEY" }\n    }\n  }\n}',
         },
         {
           kind: 'paragraph',
@@ -96,7 +96,7 @@ export const mavenOsGuide: AppGuide = {
           kind: 'code',
           language: 'bash',
           code:
-            'curl -X POST https://YOUR-MAVENOS-HOST/api/mcp \\\n  -H "Authorization: Bearer YOUR_ASSISTANT_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}\'',
+            'curl -X POST https://os.mavenx.co/api/mcp \\\n  -H "Authorization: Bearer YOUR_ASSISTANT_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}\'',
         },
         {
           kind: 'paragraph',
@@ -288,13 +288,13 @@ export const mavenOsGuide: AppGuide = {
         },
         {
           kind: 'paragraph',
-          text: 'Paths are scoped to a workspace: `https://YOUR-MAVENOS-HOST/api/v2/YOUR_WORKSPACE/...`. The API access page in MavenOS shows the exact address with your workspace name filled in.',
+          text: 'Paths are scoped to a workspace: `https://os.mavenx.co/api/v2/YOUR_WORKSPACE/...`. The API access page in MavenOS shows the exact address with your workspace name filled in.',
         },
         {
           kind: 'code',
           language: 'bash',
           code:
-            'export MAVENOS_API_KEY="YOUR_API_KEY"\nexport MAVENOS_ROOT="https://YOUR-MAVENOS-HOST/api/v2/YOUR_WORKSPACE"\n\n# Who is this key?\ncurl -H "Authorization: Bearer $MAVENOS_API_KEY" "$MAVENOS_ROOT/me"\n\n# Create a task\ncurl -X POST "$MAVENOS_ROOT/tasks" \\\n  -H "Authorization: Bearer $MAVENOS_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Idempotency-Key: $(uuidgen)" \\\n  -d \'{"title":"Follow up with the client"}\'',
+            'export MAVENOS_API_KEY="YOUR_API_KEY"\nexport MAVENOS_ROOT="https://os.mavenx.co/api/v2/YOUR_WORKSPACE"\n\n# Who is this key?\ncurl -H "Authorization: Bearer $MAVENOS_API_KEY" "$MAVENOS_ROOT/me"\n\n# Create a task\ncurl -X POST "$MAVENOS_ROOT/tasks" \\\n  -H "Authorization: Bearer $MAVENOS_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Idempotency-Key: $(uuidgen)" \\\n  -d \'{"title":"Follow up with the client"}\'',
         },
       ],
     },

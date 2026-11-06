@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { getApp } from '@/lib/api-client';
 import { fetchAppSpec, type AppSpecFailureReason } from '@/lib/developer-portal/fetch-app-spec';
 import { flattenEndpoints, groupByTag } from '@/lib/developer-portal/openapi-types';
+import { sanitizePublicSpec } from '@/lib/developer-portal/spec-audit';
 import { getAppGuide } from '@/lib/developer-portal/guides';
 import { AppMonogram } from '@/components/developer-portal/AppMonogram';
 import { DocsSidebar } from '@/components/developer-portal/docs/DocsSidebar';
@@ -115,7 +116,9 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
     return <NoDocsState appName={app.name} appUrl={app.url} reason={specResult.reason} />;
   }
 
-  const { spec, specUrl, llmsTxtUrl } = specResult;
+  // Defence in depth: anything an app's spec marks internal, and anything shaped like a secret, never renders. A clean spec comes back untouched.
+  const { specUrl, llmsTxtUrl } = specResult;
+  const spec = sanitizePublicSpec(specResult.spec);
   const endpoints = flattenEndpoints(spec);
   const groups = groupByTag(endpoints);
   const baseUrl = spec.servers?.[0]?.url;

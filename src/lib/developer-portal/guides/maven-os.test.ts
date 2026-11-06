@@ -47,7 +47,7 @@ describe('maven-os guide', () => {
 
   it('documents the endpoint and the real limits', () => {
     const text = JSON.stringify(guide);
-    expect(text).toContain('https://YOUR-MAVENOS-HOST/api/mcp');
+    expect(text).toContain('https://os.mavenx.co/api/mcp');
     expect(text).toContain('60 calls a minute');
     expect(text).toContain('Streamable HTTP');
   });
