@@ -15,7 +15,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getApp } from '@/lib/api-client';
-import { fetchAppSpec, type AppSpecFailureReason } from '@/lib/developer-portal/fetch-app-spec';
+import { fetchAppSpec, publicAppUrl, type AppSpecFailureReason } from '@/lib/developer-portal/fetch-app-spec';
 import { flattenEndpoints, groupByTag } from '@/lib/developer-portal/openapi-types';
 import { sanitizePublicSpec } from '@/lib/developer-portal/spec-audit';
 import { getAppGuide } from '@/lib/developer-portal/guides';
@@ -113,7 +113,7 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
   const guide = getAppGuide(appId);
 
   if (!specResult.ok) {
-    return <NoDocsState appName={app.name} appUrl={app.url} reason={specResult.reason} />;
+    return <NoDocsState appName={app.name} appUrl={publicAppUrl(appId, app.url)} reason={specResult.reason} />;
   }
 
   // Defence in depth: anything an app's spec marks internal, and anything shaped like a secret, never renders. A clean spec comes back untouched.

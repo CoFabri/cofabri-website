@@ -3,9 +3,9 @@
 // Only lists entries this app actually publishes -- no MCP row, no
 // llms-full.txt row, unless/until a real one exists to point at.
 
-export function AiPanel({ specUrl, llmsTxtUrl }: { specUrl: string; llmsTxtUrl: string }) {
+export function AiPanel({ specUrl, llmsTxtUrl }: { specUrl: string; llmsTxtUrl: string | null }) {
   const items = [
-    { href: llmsTxtUrl, label: 'llms.txt', desc: 'Flat index for an agent to crawl' },
+    ...(llmsTxtUrl ? [{ href: llmsTxtUrl, label: 'llms.txt', desc: 'Flat index for an agent to crawl' }] : []),
     { href: specUrl, label: 'openapi.json', desc: 'Full OpenAPI 3.1 spec' },
   ];
 

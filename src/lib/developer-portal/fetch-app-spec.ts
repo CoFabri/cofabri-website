@@ -14,7 +14,8 @@ export interface AppSpecResult {
   ok: true;
   spec: OpenApiDocument;
   specUrl: string;
-  llmsTxtUrl: string;
+  /** null when the app publishes no llms.txt. */
+  llmsTxtUrl: string | null;
 }
 
 // `no-spec`: the app has no usable /openapi.json (no URL, 404, or not an OpenAPI
@@ -35,12 +36,19 @@ function originFor(appUrl: string): string | null {
   }
 }
 
-// Apps whose spec is not at the default /openapi.json. Keyed by the app id.
-export const SPEC_PATH_OVERRIDES: Record<string, string> = {
-  'maven-os': '/api/v2/openapi.json',
+// Apps whose spec does not live at `${app_url origin}/openapi.json`. Keyed by the app id. `origin` is the
+// app's own address, used instead of the Core record's app_url (MavenOS's record points at its marketing page).
+export const SPEC_SOURCES: Record<string, { origin: string; specPath: string; llmsTxt: boolean }> = {
+  // MavenOS publishes no llms.txt, so none is linked.
+  'maven-os': { origin: 'https://os.mavenx.co', specPath: '/api/v2/openapi.json', llmsTxt: false },
 };
 
 const DEFAULT_SPEC_PATH = '/openapi.json';
+
+/** The address to show and link for an app: its own origin when it has a spec source, else the record's app_url. */
+export function publicAppUrl(appId: string, appUrl: string | undefined): string | undefined {
+  return SPEC_SOURCES[appId]?.origin ?? appUrl;
+}
 
 // A relative servers[0].url (e.g. "/") would render as a non-absolute base URL;
 // resolve it against the app origin. Absolute urls are left untouched.
@@ -65,12 +73,14 @@ export async function fetchAppSpec(
   appUrl: string | undefined,
   appId?: string,
 ): Promise<AppSpecResult | AppSpecFailure> {
-  if (!appUrl) return { ok: false, reason: 'no-spec' };
-  const origin = originFor(appUrl);
+  const source = appId ? SPEC_SOURCES[appId] : undefined;
+  // An app with its own spec source never depends on the record's app_url.
+  if (!source && !appUrl) return { ok: false, reason: 'no-spec' };
+  const origin = source ? source.origin : originFor(appUrl as string);
   if (!origin) return { ok: false, reason: 'no-spec' };
 
-  const specUrl = `${origin}${(appId && SPEC_PATH_OVERRIDES[appId]) || DEFAULT_SPEC_PATH}`;
-  const llmsTxtUrl = `${origin}/llms.txt`;
+  const specUrl = `${origin}${source?.specPath ?? DEFAULT_SPEC_PATH}`;
+  const llmsTxtUrl = source && !source.llmsTxt ? null : `${origin}/llms.txt`;
 
   try {
     const res = await fetch(specUrl, { next: { revalidate: 300 } });

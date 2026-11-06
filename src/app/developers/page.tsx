@@ -10,6 +10,7 @@
 // apps.documentation is exposed on it.
 import { Metadata } from 'next';
 import { getApps } from '@/lib/api-client';
+import { publicAppUrl } from '@/lib/developer-portal/fetch-app-spec';
 import { AppCard } from '@/components/developer-portal/AppCard';
 import type { DeveloperPortalApp } from '@/lib/developer-portal/types';
 
@@ -27,7 +28,7 @@ function toDirectoryApp(app: Awaited<ReturnType<typeof getApps>>[number]): Devel
     appName: app.name,
     logoUrl: null,
     faviconUrl: app.faviconUrl ?? null,
-    appUrl: app.url ?? null,
+    appUrl: publicAppUrl(app.id, app.url) ?? null,
     description: app.description ?? null,
     apiDocsUrl: app.documentation ?? null,
   };

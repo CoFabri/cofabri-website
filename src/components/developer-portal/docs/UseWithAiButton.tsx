@@ -11,16 +11,15 @@
 import { useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-function buildPrompt(appName: string, specUrl: string, llmsTxtUrl: string): string {
+function buildPrompt(appName: string, specUrl: string, llmsTxtUrl: string | null): string {
   return `I'm integrating with the ${appName} API. Before writing any code, fetch and read its live reference:
 
 - OpenAPI 3.1 spec: ${specUrl}
-- Plain-text endpoint index: ${llmsTxtUrl}
-
+${llmsTxtUrl ? `- Plain-text endpoint index: ${llmsTxtUrl}\n` : ''}
 Use the real endpoints, parameters, and schemas from those URLs -- don't guess at the API shape.`;
 }
 
-export function UseWithAiButton({ appName, specUrl, llmsTxtUrl }: { appName: string; specUrl: string; llmsTxtUrl: string }) {
+export function UseWithAiButton({ appName, specUrl, llmsTxtUrl }: { appName: string; specUrl: string; llmsTxtUrl: string | null }) {
   const [copied, setCopied] = useState(false);
 
   async function copyPrompt() {
@@ -49,12 +48,14 @@ export function UseWithAiButton({ appName, specUrl, llmsTxtUrl }: { appName: str
           <span className="text-[13.5px] font-semibold">{copied ? 'Copied!' : 'Copy prompt for AI'}</span>
           <span className="text-[12px] text-muted-foreground">Paste into Claude, ChatGPT, or your editor</span>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="flex-col items-start gap-0.5 py-2.5">
-          <a href={llmsTxtUrl} target="_blank" rel="noopener noreferrer">
-            <span className="text-[13.5px] font-semibold">llms.txt</span>
-            <span className="text-[12px] text-muted-foreground">Flat endpoint index for an agent to crawl</span>
-          </a>
-        </DropdownMenuItem>
+        {llmsTxtUrl ? (
+          <DropdownMenuItem asChild className="flex-col items-start gap-0.5 py-2.5">
+            <a href={llmsTxtUrl} target="_blank" rel="noopener noreferrer">
+              <span className="text-[13.5px] font-semibold">llms.txt</span>
+              <span className="text-[12px] text-muted-foreground">Flat endpoint index for an agent to crawl</span>
+            </a>
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem asChild className="flex-col items-start gap-0.5 py-2.5">
           <a href={specUrl} target="_blank" rel="noopener noreferrer">
             <span className="text-[13.5px] font-semibold">openapi.json</span>
