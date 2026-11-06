@@ -35,12 +35,41 @@ function originFor(appUrl: string): string | null {
   }
 }
 
-export async function fetchAppSpec(appUrl: string | undefined): Promise<AppSpecResult | AppSpecFailure> {
+// Apps whose spec is not at the default /openapi.json. Keyed by the app id.
+export const SPEC_PATH_OVERRIDES: Record<string, string> = {
+  'maven-os': '/api/v2/openapi.json',
+};
+
+const DEFAULT_SPEC_PATH = '/openapi.json';
+
+// A relative servers[0].url (e.g. "/") would render as a non-absolute base URL;
+// resolve it against the app origin. Absolute urls are left untouched.
+function withAbsoluteServer(spec: OpenApiDocument, origin: string): OpenApiDocument {
+  const first = spec.servers?.[0];
+  if (!first || typeof first.url !== 'string') return spec;
+  try {
+    new URL(first.url);
+    return spec;
+  } catch {
+    // relative; resolve below
+  }
+  try {
+    const resolved = new URL(first.url, `${origin}/`).toString();
+    return { ...spec, servers: [{ ...first, url: resolved }, ...(spec.servers?.slice(1) ?? [])] };
+  } catch {
+    return spec;
+  }
+}
+
+export async function fetchAppSpec(
+  appUrl: string | undefined,
+  appId?: string,
+): Promise<AppSpecResult | AppSpecFailure> {
   if (!appUrl) return { ok: false, reason: 'no-spec' };
   const origin = originFor(appUrl);
   if (!origin) return { ok: false, reason: 'no-spec' };
 
-  const specUrl = `${origin}/openapi.json`;
+  const specUrl = `${origin}${(appId && SPEC_PATH_OVERRIDES[appId]) || DEFAULT_SPEC_PATH}`;
   const llmsTxtUrl = `${origin}/llms.txt`;
 
   try {
@@ -48,7 +77,7 @@ export async function fetchAppSpec(appUrl: string | undefined): Promise<AppSpecR
     if (!res.ok) return { ok: false, reason: res.status >= 500 ? 'unreachable' : 'no-spec' };
     const spec = (await res.json()) as OpenApiDocument;
     if (!spec || typeof spec !== 'object' || !spec.paths) return { ok: false, reason: 'no-spec' };
-    return { ok: true, spec, specUrl, llmsTxtUrl };
+    return { ok: true, spec: withAbsoluteServer(spec, origin), specUrl, llmsTxtUrl };
   } catch (error) {
     // res.json() on an HTML 200 (e.g. an app's catch-all page) throws a SyntaxError:
     // that's an app with no spec, not an outage. Anything else (fetch/network) is unreachable.

@@ -46,4 +46,30 @@ describe('fetchAppSpec', () => {
     });
     expect(await fetchAppSpec('https://meetgathr.co')).toEqual({ ok: false, reason: 'unreachable' });
   });
+
+  const spec = (servers?: { url: string }[]) => ({ openapi: '3.1.0', info: { title: 'X', version: '1' }, paths: {}, servers });
+
+  it('uses the per-app override path for maven-os and the default for others', async () => {
+    const f = vi.fn(async () => new Response(JSON.stringify(spec()), { status: 200 }));
+    vi.stubGlobal('fetch', f);
+    const mos = await fetchAppSpec('https://mavenos.example/app', 'maven-os');
+    expect(f).toHaveBeenLastCalledWith('https://mavenos.example/api/v2/openapi.json', expect.anything());
+    expect(mos).toMatchObject({ ok: true, specUrl: 'https://mavenos.example/api/v2/openapi.json', llmsTxtUrl: 'https://mavenos.example/llms.txt' });
+    await fetchAppSpec('https://meetgathr.co', 'gathr');
+    expect(f).toHaveBeenLastCalledWith('https://meetgathr.co/openapi.json', expect.anything());
+    await fetchAppSpec('https://meetgathr.co');
+    expect(f).toHaveBeenLastCalledWith('https://meetgathr.co/openapi.json', expect.anything());
+  });
+
+  it('resolves a relative servers[0].url against the app origin', async () => {
+    mockFetch(async () => new Response(JSON.stringify(spec([{ url: '/' }])), { status: 200 }));
+    const r = await fetchAppSpec('https://mavenos.example/x', 'maven-os');
+    expect(r.ok && r.spec.servers?.[0].url).toBe('https://mavenos.example/');
+  });
+
+  it('leaves an absolute servers[0].url untouched', async () => {
+    mockFetch(async () => new Response(JSON.stringify(spec([{ url: 'https://api.other.com/v1' }])), { status: 200 }));
+    const r = await fetchAppSpec('https://mavenos.example', 'maven-os');
+    expect(r.ok && r.spec.servers?.[0].url).toBe('https://api.other.com/v1');
+  });
 });

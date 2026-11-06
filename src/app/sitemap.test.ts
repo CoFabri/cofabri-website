@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api-client', () => ({ getApps: vi.fn(), getKnowledgeBaseArticles: vi.fn() }));
+vi.mock('@/lib/api-client', () => ({ getMarketingApps: vi.fn(), getKnowledgeBaseArticles: vi.fn() }));
 
-import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client';
+import { getMarketingApps, getKnowledgeBaseArticles } from '@/lib/api-client';
 import sitemap from './sitemap';
 
-const mockedApps = vi.mocked(getApps);
+const mockedApps = vi.mocked(getMarketingApps);
 const mockedArticles = vi.mocked(getKnowledgeBaseArticles);
 
 beforeEach(() => {
   mockedApps.mockResolvedValue([
     { id: 'medoura', name: 'Medoura', status: 'live', releaseDate: '2026-03-01' },
     { id: 'future', name: 'Future', status: 'beta', launchDate: '2999-10-19' },
-  ] as Awaited<ReturnType<typeof getApps>>);
+  ] as Awaited<ReturnType<typeof getMarketingApps>>);
   mockedArticles.mockResolvedValue([
     { slug: 'a-guide', lastUpdated: '2026-05-01', publishedAt: '2026-04-01' },
     { slug: 'undated', publishedAt: '' },
@@ -25,6 +25,11 @@ describe('sitemap', () => {
     expect(urls).toContain('https://cofabri.com/developers');
     expect(urls).toContain('https://cofabri.com/apps/medoura');
     expect(urls).toContain('https://cofabri.com/knowledge-base/a-guide');
+  });
+
+  it('reads app pages from the marketing list only', async () => {
+    await sitemap();
+    expect(mockedApps).toHaveBeenCalled();
   });
 
   it('leaves out noindex pages and legal documents', async () => {

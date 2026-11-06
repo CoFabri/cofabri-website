@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client'
+import { getMarketingApps, getKnowledgeBaseArticles } from '@/lib/api-client'
 
 const baseUrl = 'https://cofabri.com'
 
@@ -58,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // HTTP round-trip to this site's own /api routes) — avoids depending on
   // this deployment's own base URL resolving correctly at sitemap-build time.
   const [apps, articles] = await Promise.all([
-    getApps().catch(() => []),
+    getMarketingApps().catch(() => []),
     getKnowledgeBaseArticles().catch(() => []),
   ])
 

@@ -108,7 +108,7 @@ export default async function AppDocsPage({ params }: AppDocsPageProps) {
   const app = await getApp(appId);
   if (!app) notFound();
 
-  const specResult = await fetchAppSpec(app.url);
+  const specResult = await fetchAppSpec(app.url, appId);
   const guide = getAppGuide(appId);
 
   if (!specResult.ok) {

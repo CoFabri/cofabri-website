@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { CoreLoader } from '@/components/ui/core-loader';
 import ChangelogContent from './ChangelogContent';
-import { getApps, getRoadmapFeatures } from '@/lib/api-client';
+import { getMarketingApps, getRoadmapFeatures } from '@/lib/api-client';
 import { hasActiveRoadmap } from '@/lib/app-display';
 
 export const metadata: Metadata = {
@@ -33,10 +33,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ChangelogPage() {
-  const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getApps()]);
+  const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getMarketingApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
   const notifyApps = apps.map((a) => ({ id: a.id, name: a.name }));
-  // An app with no row in getApps() (retired apps are dropped from that
+  // An app with no row in getMarketingApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public changelog with releases for a product no one's working on.
   // A Released item with no app_id at all used to bypass this filter

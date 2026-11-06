@@ -1,7 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import AppsPageContent from '@/components/marketing/AppsPageContent';
-import { getApps, getRoadmapFeatures } from '@/lib/api-client';
+import { getMarketingApps, getRoadmapFeatures } from '@/lib/api-client';
 
 export const metadata: Metadata = {
   title: 'Our Apps',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AppsPage() {
-  const [apps, roadmap] = await Promise.all([getApps(), getRoadmapFeatures()]);
+  const [apps, roadmap] = await Promise.all([getMarketingApps(), getRoadmapFeatures()]);
 
   return (
     <div className="min-h-screen bg-background">

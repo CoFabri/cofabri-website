@@ -157,6 +157,15 @@ export async function getApps(): Promise<App[]> {
   }
 }
 
+// Apps that exist only in the developer portal (/developers), never on the
+// marketing site (/apps, changelog, sitemap app pages).
+export const DEVELOPERS_ONLY_APP_IDS: string[] = ['maven-os'];
+
+export async function getMarketingApps(): Promise<App[]> {
+  const apps = await getApps();
+  return apps.filter((app) => !DEVELOPERS_ONLY_APP_IDS.includes(app.id));
+}
+
 export async function getApp(appId: string): Promise<App | null> {
   try {
     const row = await apiFetch<AppRow>(`/web/content/apps/${encodeURIComponent(appId)}`);
