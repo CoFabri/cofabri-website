@@ -4,11 +4,13 @@ import type { AppGuide } from './types';
 import { rxBridgeGuide } from './rx-bridge';
 import { praxisGuide } from './praxis';
 import { medouraGuide } from './medoura';
+import { mavenOsGuide } from './maven-os';
 
 const GUIDES: Record<string, AppGuide> = {
   'rx-bridge': rxBridgeGuide,
   praxis: praxisGuide,
   medoura: medouraGuide,
+  'maven-os': mavenOsGuide,
 };
 
 export function getAppGuide(appId: string): AppGuide | null {

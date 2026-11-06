@@ -10,6 +10,10 @@ describe('getAppGuide', () => {
     expect(getAppGuide('rx-bridge')?.appId).toBe('rx-bridge');
   });
 
+  it('registers the maven-os guide', () => {
+    expect(getAppGuide('maven-os')?.appId).toBe('maven-os');
+  });
+
   it('returns a well-formed praxis guide covering every section the spec requires', () => {
     const guide = getAppGuide('praxis');
     expect(guide).not.toBeNull();
