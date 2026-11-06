@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getSystemStatus, getServiceUptimeHistory } from '@/lib/status-api';
-import { getApps } from '@/lib/api-client';
+import { getMarketingApps } from '@/lib/api-client';
 import { StatusPageContent } from '@/components/marketing/StatusPageContent';
 
 // Force dynamic rendering for this page
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 export default async function StatusPage() {
-  const [statuses, apps, uptimeHistory] = await Promise.all([getSystemStatus(), getApps(), getServiceUptimeHistory()]);
+  const [statuses, apps, uptimeHistory] = await Promise.all([getSystemStatus(), getMarketingApps(), getServiceUptimeHistory()]);
 
   return <StatusPageContent initialStatuses={statuses} apps={apps} uptimeHistory={uptimeHistory} />;
 }

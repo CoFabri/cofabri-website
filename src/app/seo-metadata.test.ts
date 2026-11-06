@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api-client', () => ({
-  getApps: vi.fn(),
+  getApps: vi.fn(), getMarketingApps: vi.fn(),
   getApp: vi.fn(async () => ({
     id: 'medoura',
     name: 'Medoura',

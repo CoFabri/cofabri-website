@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api-client', () => ({
-  getApps: vi.fn(),
+  getApps: vi.fn(), getMarketingApps: vi.fn(),
   getPolicies: vi.fn(),
   getPolicy: vi.fn(async () => ({ slug: 'privacy', title: 'Privacy Policy', versionNumber: 2, apps: [], policyType: 'privacy', body: '' })),
 }));

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/api-client', () => ({ getApps: vi.fn(), getKnowledgeBaseArticles: vi.fn() }));
+vi.mock('@/lib/api-client', () => ({ getApps: vi.fn(), getMarketingApps: vi.fn(), getKnowledgeBaseArticles: vi.fn() }));
 vi.mock('@/lib/status-api', () => ({ getSystemStatus: vi.fn() }));
 
 import { metadata } from './not-found';

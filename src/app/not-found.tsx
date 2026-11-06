@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import NotFoundContent, { type NotFoundIncident } from '@/components/marketing/NotFoundContent';
-import { getApps, getKnowledgeBaseArticles } from '@/lib/api-client';
+import { getMarketingApps, getKnowledgeBaseArticles } from '@/lib/api-client';
 import { hasActiveRoadmap } from '@/lib/app-display';
 import { matchAppIncident, mostSevereIncident } from '@/lib/incident-display';
 import { getSystemStatus } from '@/lib/status-api';
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // on error, so a down API just yields the plain page without lists.
 export default async function NotFound() {
   const [allApps, allArticles, statuses] = await Promise.all([
-    getApps(),
+    getMarketingApps(),
     getKnowledgeBaseArticles(),
     getSystemStatus(),
   ]);

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getApps, getPolicy } from '@/lib/api-client';
+import { getMarketingApps, getPolicy } from '@/lib/api-client';
 import { renderPolicyHtml } from '@/lib/policy-markdown';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 
@@ -47,7 +47,7 @@ export default async function LegalDocumentPage({ params }: LegalDocumentPagePro
     notFound();
   }
 
-  const apps = await getApps().catch(() => []);
+  const apps = await getMarketingApps().catch(() => []);
   const names = Object.fromEntries(apps.map((a) => [a.id, a.name]));
   const html = renderPolicyHtml(policy.body);
   const effective = formatLongDate(policy.publishedAt);
