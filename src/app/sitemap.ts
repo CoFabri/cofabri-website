@@ -27,6 +27,7 @@ const STATIC_PAGES: {
   { path: '/roadmaps', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/changelog', changeFrequency: 'weekly', priority: 0.7 },
   { path: '/developers', lastModified: '2026-09-21', changeFrequency: 'monthly', priority: 0.6 },
+  { path: '/developers/maven-os', lastModified: '2026-11-06', changeFrequency: 'monthly', priority: 0.5 },
 ]
 
 /** A real, non-future date or undefined (the entry then omits lastmod). */

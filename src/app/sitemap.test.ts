@@ -23,6 +23,7 @@ describe('sitemap', () => {
   it('includes /developers and the dynamic pages', async () => {
     const urls = (await sitemap()).map((e) => e.url);
     expect(urls).toContain('https://cofabri.com/developers');
+    expect(urls).toContain('https://cofabri.com/developers/maven-os');
     expect(urls).toContain('https://cofabri.com/apps/medoura');
     expect(urls).toContain('https://cofabri.com/knowledge-base/a-guide');
   });

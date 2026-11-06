@@ -175,14 +175,14 @@ export const mavenOsGuide: AppGuide = {
       blocks: [
         {
           kind: 'paragraph',
-          text: 'These tools read financial data. They return data only to people whose role allows it. Owners, admins and finance may see money; for everyone else the answer is empty or says the figures are not available.',
+          text: 'These tools read financial data. They return data only to people who can read Finance in your workspace: owners, admins and finance by default, and anyone who has been given Finance read access. For everyone else the answer is empty or says the figures are not available.',
         },
         {
           kind: 'table',
           table: {
             headers: ['Tool', 'What it does'],
             rows: [
-              ['list_invoices', 'Answers "who owes me money": open Stripe invoices with amount left in cents, due date and whether each is late. Only owners, admins and finance get rows.'],
+              ['list_invoices', 'Answers "who owes me money": open Stripe invoices with amount left in cents, due date and whether each is late. Only people who can read Finance get rows.'],
               ['list_expenses_to_review', 'Lists filed expenses waiting for approval, with vendor and amount in cents (short list).'],
               ['get_safe_to_withdraw', 'Says how much the owner can safely take out of the business, as plain lines in cents. The tax line is an estimate, not tax advice.'],
             ],
