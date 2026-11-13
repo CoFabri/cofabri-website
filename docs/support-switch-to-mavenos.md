@@ -20,7 +20,7 @@ name = first + last; description -> message; tenantName -> tenant_name; entryPoi
 
 Screenshots: PNG, JPEG, WebP or GIF, up to 5, 2.5 MB combined (the host caps the request near 4.5 MB and base64 adds a third). Patient tickets never send screenshots.
 
-App slug: the site only knows an app's cofabri-api UUID and name, and no id-to-slug data exists, so the table in `src/lib/support/mavenos.ts` (`APP_SLUGS`) starts empty. An unmapped app sends no `app_slug`, so the MavenOS ticket source is `form`, and the app name is put in the Details block instead. Fill `SUPPORT_APP_SLUGS` (or `APP_SLUGS`) to get source `app`.
+App slug: the apps feed's id is already the readable slug (gathr, rx-bridge, ...) and the form sends it, so `resolveAppSlug` in `src/lib/support/mavenos.ts` passes a slug-shaped id through as `app_slug` (source `app`). `SUPPORT_APP_SLUGS` and the `APP_SLUGS` table take priority, and they are needed only for an id that is not slug-shaped, such as a UUID. An unmapped UUID sends no `app_slug`, so the MavenOS ticket source is `form` and the app name goes in the Details block instead.
 
 Errors: 401/415/5xx and network failures show the usual "Failed to save support ticket" message (502); 429 shows a "too many requests" message. Upstream details are never returned or logged beyond the status code. A duplicate submission or honeypot hit answers 202 without an id and is treated as success.
 
