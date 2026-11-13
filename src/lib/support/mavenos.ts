@@ -13,12 +13,15 @@ export function getSupportBackend(value: string | undefined = process.env.SUPPOR
   return value?.trim().toLowerCase() === 'mavenos' ? 'mavenos' : 'core';
 }
 
-// The form sends the app's cofabri-api UUID. MavenOS wants a short slug. No
-// id -> slug data exists on this site (the apps feed carries id and name
-// only), so the table starts empty: an unmapped app sends no app_slug and
-// the MavenOS ticket source is 'form'. Add entries here, or set the env var
-// SUPPORT_APP_SLUGS to a JSON object ({"<app uuid>":"medoura"}) without a
-// code change. The env var wins over this table.
+// The form sends the app's id from the cofabri-api apps feed, which is already
+// the readable slug (gathr, medoura, rx-bridge, ...). MavenOS wants that slug,
+// so an id that is slug-shaped passes through as it is. An id that is not
+// (a UUID) needs a mapping: add it here, or set the env var SUPPORT_APP_SLUGS to
+// a JSON object ({"<app uuid>":"medoura"}) without a code change. The env var
+// wins over this table, and both win over the pass-through. An unmapped,
+// non-slug id sends no app_slug and the MavenOS ticket source is 'form'.
+const SLUG_SHAPE = /^[a-z0-9][a-z0-9_-]{0,39}$/;
+const UUID_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const APP_SLUGS: Record<string, string> = {};
 
 export function resolveAppSlug(appId: string | undefined, envJson: string | undefined = process.env.SUPPORT_APP_SLUGS): string | undefined {
@@ -33,7 +36,10 @@ export function resolveAppSlug(appId: string | undefined, envJson: string | unde
     }
   }
   const raw = fromEnv[appId] ?? APP_SLUGS[appId];
-  return typeof raw === 'string' && /^[a-z0-9][a-z0-9_-]{0,39}$/.test(raw) ? raw : undefined;
+  if (typeof raw === 'string') return SLUG_SHAPE.test(raw) ? raw : undefined;
+  // No mapping: the id itself is the slug when it looks like one. A UUID is 36 characters of
+  // hex and dashes, which also fits the slug pattern, so it is excluded by name.
+  return SLUG_SHAPE.test(appId) && !UUID_SHAPE.test(appId) ? appId : undefined;
 }
 
 export const MAX_ATTACHMENTS = 5;

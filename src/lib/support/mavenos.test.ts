@@ -42,14 +42,32 @@ describe('buildSubject', () => {
 });
 
 describe('resolveAppSlug', () => {
-  it('returns nothing when unmapped', () => {
-    expect(resolveAppSlug('some-uuid', undefined)).toBeUndefined();
+  const UUID = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
+  it('returns nothing when there is no id', () => {
     expect(resolveAppSlug(undefined, '{"a":"b"}')).toBeUndefined();
+    expect(resolveAppSlug('', undefined)).toBeUndefined();
+  });
+  it('passes a slug-shaped id through', () => {
+    expect(resolveAppSlug('gathr', undefined)).toBe('gathr');
+    expect(resolveAppSlug('rx-bridge', undefined)).toBe('rx-bridge');
+  });
+  it('leaves an unmapped UUID or a non-slug id unset', () => {
+    expect(resolveAppSlug(UUID, undefined)).toBeUndefined();
+    expect(resolveAppSlug(UUID.toUpperCase(), undefined)).toBeUndefined();
+    expect(resolveAppSlug('Gathr', undefined)).toBeUndefined();
+    expect(resolveAppSlug('not a slug!', undefined)).toBeUndefined();
+  });
+  it('resolves a mapped UUID', () => {
+    expect(resolveAppSlug(UUID, JSON.stringify({ [UUID]: 'medoura' }))).toBe('medoura');
+  });
+  it('lets the env override win over the pass-through', () => {
+    expect(resolveAppSlug('gathr', '{"gathr":"gathr-app"}')).toBe('gathr-app');
   });
   it('uses the env override and rejects bad slugs or bad JSON', () => {
     expect(resolveAppSlug('u1', '{"u1":"medoura"}')).toBe('medoura');
     expect(resolveAppSlug('u1', '{"u1":"Bad Slug!"}')).toBeUndefined();
-    expect(resolveAppSlug('u1', 'not json')).toBeUndefined();
+    // A malformed override is ignored: a UUID then has nothing to resolve to.
+    expect(resolveAppSlug('3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b', 'not json')).toBeUndefined();
   });
 });
 
