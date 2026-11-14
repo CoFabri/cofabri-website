@@ -4,6 +4,7 @@ import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import useSWR from 'swr';
 import { usePathname } from 'next/navigation';
+import { safeHref } from '@/lib/safe-url';
 
 interface Banner {
   id: string;
@@ -155,7 +156,7 @@ export default function SitewideBanner() {
           <div className="flex items-center gap-3">
             {banner.link && (
               <a
-                href={banner.link.url}
+                href={safeHref(banner.link.url)}
                 className="text-sm font-medium inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 transition-all duration-200 group"
               >
                 {banner.link.text}

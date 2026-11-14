@@ -25,6 +25,7 @@ import { UseWithAiButton } from '@/components/developer-portal/docs/UseWithAiBut
 import { AiPanel } from '@/components/developer-portal/docs/AiPanel';
 import { GuideBlockView } from '@/components/developer-portal/docs/GuideBlockView';
 import { EndpointCard, endpointSlug } from '@/components/developer-portal/docs/EndpointCard';
+import { safeHref } from '@/lib/safe-url';
 
 interface AppDocsPageProps {
   params: Promise<{ appId: string }>;
@@ -56,7 +57,7 @@ function NoDocsState({
   const unreachable = reason === 'unreachable';
   let host: string | null = null;
   try {
-    host = appUrl ? new URL(appUrl).hostname : null;
+    host = safeHref(appUrl) ? new URL(appUrl as string).hostname : null;
   } catch {
     host = null;
   }

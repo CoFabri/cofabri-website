@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { safeHref } from '@/lib/safe-url';
 
 interface MarketingPopupProps {
   title: string;
@@ -135,7 +136,7 @@ export default function MarketingPopup({
                 <h2 className="text-2xl font-bold tracking-tight mb-4">{title}</h2>
                 <p className="text-lg mb-8 opacity-90 leading-relaxed">{content}</p>
                 <a
-                  href={buttonLink}
+                  href={safeHref(buttonLink)}
                   className="block w-full text-center py-4 px-6 rounded-xl font-semibold text-white transition-all duration-200 hover:opacity-90 hover:scale-[0.98] active:scale-[0.97]"
                   style={{ backgroundColor: buttonColor }}
                 >

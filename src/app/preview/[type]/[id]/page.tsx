@@ -8,6 +8,7 @@ import type { App } from '@/lib/api-client';
 import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { roadmapMarkdownToHtml, releaseNotesMarkdownToHtml } from '@/lib/utils';
+import { safeHref } from '@/lib/safe-url';
 
 interface PreviewContent {
   id: string;
@@ -582,7 +583,7 @@ export default function PreviewPage() {
                                 {content.linkText && (
                                   <div className="mt-3">
                                     <a
-                                      href={content.linkUrl || '#'}
+                                      href={safeHref(content.linkUrl) || '#'}
                                       className="inline-flex items-center text-sm font-medium text-primary hover:text-accent-hover"
                                     >
                                       {content.linkText}
@@ -625,7 +626,7 @@ export default function PreviewPage() {
                           {content.buttonText && (
                             <div className="text-center">
                               <a
-                                href={content.buttonLink || '#'}
+                                href={safeHref(content.buttonLink) || '#'}
                                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-accent-hover"
                               >
                                 {content.buttonText}

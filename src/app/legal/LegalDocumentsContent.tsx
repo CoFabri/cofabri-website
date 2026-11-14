@@ -14,6 +14,7 @@ import { ErrorState } from '@/components/marketing/ErrorState';
 import { Pagination } from '@/components/marketing/Pagination';
 import { filterPolicyGroups, type PolicyGroup } from '@/lib/policy-groups';
 import PolicyDocumentsSection from './PolicyDocumentsSection';
+import { safeHref } from '@/lib/safe-url';
 
 const DOCUMENTS_PER_PAGE = 6;
 
@@ -255,10 +256,10 @@ export default function LegalDocumentsContent({ policyGroups = [] }: LegalDocume
                 </>
               );
 
-              return doc.documentUrl ? (
+              return safeHref(doc.documentUrl) ? (
                 <a
                   key={doc.id}
-                  href={doc.documentUrl}
+                  href={safeHref(doc.documentUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block rounded-xl border border-border p-6 text-foreground transition-all duration-200 hover:-translate-y-px hover:border-ink-disabled"

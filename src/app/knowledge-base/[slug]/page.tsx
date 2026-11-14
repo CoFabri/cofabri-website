@@ -11,6 +11,7 @@ import JsonLd from '@/components/marketing/JsonLd';
 import { buildArticleSchema } from '@/lib/structured-data';
 import { buildDescription } from '@/lib/meta-description';
 import { Twitter, Linkedin } from 'lucide-react';
+import { safeHref } from '@/lib/safe-url';
 
 interface KnowledgeBaseArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -118,9 +119,9 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
         k: 'Application',
         v: applicationNames.length > 0 ? applicationNames.join(', ') : undefined,
         node:
-          article.applications.length === 0 ? undefined : singleApp?.appUrl ? (
+          article.applications.length === 0 ? undefined : singleApp && safeHref(singleApp.appUrl) ? (
             <a
-              href={singleApp.appUrl}
+              href={safeHref(singleApp.appUrl)}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 font-mono text-[13px] text-ink-body transition-colors hover:text-foreground"
@@ -230,11 +231,11 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                       {article.authorProfile.bio}
                     </p>
                   )}
-                  {(article.authorProfile.twitterUrl || article.authorProfile.linkedinUrl) && (
+                  {(safeHref(article.authorProfile.twitterUrl) || safeHref(article.authorProfile.linkedinUrl)) && (
                     <div className="mt-1.5 flex items-center gap-3">
-                      {article.authorProfile.twitterUrl && (
+                      {safeHref(article.authorProfile.twitterUrl) && (
                         <a
-                          href={article.authorProfile.twitterUrl}
+                          href={safeHref(article.authorProfile.twitterUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-ink-faint transition-colors hover:text-foreground"
@@ -242,9 +243,9 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
                           <Twitter className="h-4 w-4" />
                         </a>
                       )}
-                      {article.authorProfile.linkedinUrl && (
+                      {safeHref(article.authorProfile.linkedinUrl) && (
                         <a
-                          href={article.authorProfile.linkedinUrl}
+                          href={safeHref(article.authorProfile.linkedinUrl)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-ink-faint transition-colors hover:text-foreground"

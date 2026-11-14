@@ -2,6 +2,7 @@
 
 import type { DeveloperPortalApp } from '@/lib/developer-portal/types';
 import { AppMonogram } from './AppMonogram';
+import { safeHref } from '@/lib/safe-url';
 
 function hostFor(appUrl: string | null): string | null {
   if (!appUrl) return null;
@@ -14,7 +15,7 @@ function hostFor(appUrl: string | null): string | null {
 
 export function AppCard({ app }: { app: DeveloperPortalApp }) {
   const host = hostFor(app.appUrl);
-  const hasDocs = Boolean(app.apiDocsUrl);
+  const hasDocs = Boolean(safeHref(app.apiDocsUrl));
 
   return (
     <div
@@ -41,7 +42,7 @@ export function AppCard({ app }: { app: DeveloperPortalApp }) {
       <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-4">
         {hasDocs ? (
           <a
-            href={app.apiDocsUrl!}
+            href={safeHref(app.apiDocsUrl)}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-accent-hover"
           >
             View API Docs
