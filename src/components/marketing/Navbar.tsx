@@ -166,6 +166,9 @@ const Navbar = ({
                 <Image
                   src={account.avatarUrl}
                   alt=""
+                  // Avatars can live on any host the account service allows;
+                  // load them directly rather than through the image optimizer.
+                  unoptimized
                   width={26}
                   height={26}
                   className="size-[26px] shrink-0 rounded-full object-cover"
@@ -272,6 +275,7 @@ const Navbar = ({
                       <Image
                         src={account.avatarUrl}
                         alt=""
+                        unoptimized
                         width={32}
                         height={32}
                         className="size-8 shrink-0 rounded-full object-cover"

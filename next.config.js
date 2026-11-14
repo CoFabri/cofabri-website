@@ -1,22 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Only the hosts the site really loads images from: brand assets and app
+    // logos on files.cofabri.com, team/author photos in the Core Supabase
+    // project's public storage. Anything else 400s at /_next/image instead of
+    // turning the optimizer into an open proxy. Add a host here if a new
+    // image source shows up broken.
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'files.cofabri.com',
         pathname: '/**',
       },
       {
-        protocol: 'http',
-        hostname: '**',
-        pathname: '/**',
-      }
+        protocol: 'https',
+        hostname: 'iwpgwnapxuhpsdndvsrv.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
     // 75 is the default; 90 is used for small avatar photos where softness shows.
     qualities: [75, 90],
     minimumCacheTTL: 60,
-    dangerouslyAllowSVG: true,
+    // Off: next/image serves .svg sources as-is (unoptimized) instead of
+    // passing them through the optimizer.
+    dangerouslyAllowSVG: false,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
