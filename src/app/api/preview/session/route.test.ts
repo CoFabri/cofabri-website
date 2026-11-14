@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
-import { PREVIEW_COOKIE, previewCookieValue } from '@/lib/preview-auth';
+import { PREVIEW_COOKIE, verifyPreviewToken } from '@/lib/preview-auth';
 
 const login = (password: unknown) =>
   POST(new Request('https://cofabri.com/api/preview/session', { method: 'POST', body: JSON.stringify({ password }) }));
@@ -13,7 +13,9 @@ describe('POST /api/preview/session', () => {
     const res = await login('secret');
     expect(res.status).toBe(200);
     const setCookie = res.headers.get('set-cookie') ?? '';
-    expect(setCookie).toContain(`${PREVIEW_COOKIE}=${await previewCookieValue('secret')}`);
+    const token = setCookie.match(new RegExp(`${PREVIEW_COOKIE}=([^;]+)`))?.[1];
+    expect(await verifyPreviewToken(token, 'secret')).toBe(true);
+    expect(setCookie).not.toContain('secret');
     expect(setCookie).toMatch(/HttpOnly/i);
   });
 
@@ -41,7 +43,7 @@ describe('POST /api/preview/session attempt limit', () => {
       POST(
         new Request('https://cofabri.com/api/preview/session', {
           method: 'POST',
-          headers: { 'x-forwarded-for': ip },
+          headers: { 'x-real-ip': ip },
           body: JSON.stringify({ password }),
         })
       );
@@ -60,7 +62,7 @@ describe('POST /api/preview/session attempt limit', () => {
         POST(
           new Request('https://cofabri.com/api/preview/session', {
             method: 'POST',
-            headers: { 'x-forwarded-for': '203.0.113.9' },
+            headers: { 'x-real-ip': '203.0.113.9' },
             body: JSON.stringify({ password: 'nope' }),
           })
         )
@@ -80,13 +82,48 @@ describe('POST /api/preview/session attempt limit', () => {
       POST(
         new Request('https://cofabri.com/api/preview/session', {
           method: 'POST',
-          headers: { 'x-forwarded-for': '203.0.113.10' },
+          headers: { 'x-real-ip': '203.0.113.10' },
           body: JSON.stringify({ password }),
         })
       );
     for (let i = 0; i < 15; i++) expect((await attempt('secret')).status).toBe(200);
     for (let i = 0; i < 10; i++) expect((await attempt('nope')).status).toBe(401);
     expect((await attempt('nope')).status).toBe(429);
+    resetPreviewLoginLimiter();
+  });
+});
+
+describe('preview login limiter IP source and global cap', () => {
+  const attempt = (headers: Record<string, string>, password = 'nope') =>
+    POST(
+      new Request('https://cofabri.com/api/preview/session', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ password }),
+      })
+    );
+
+  it('ignores a spoofed leftmost x-forwarded-for and keys on the platform IP', async () => {
+    const { resetPreviewLoginLimiter } = await import('@/lib/preview-login-limiter');
+    resetPreviewLoginLimiter();
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    for (let i = 0; i < 10; i++) {
+      const res = await attempt({ 'x-forwarded-for': `10.0.0.${i}, 198.51.100.50`, 'x-vercel-forwarded-for': '198.51.100.50' });
+      expect(res.status).toBe(401);
+    }
+    const res = await attempt({ 'x-forwarded-for': '10.9.9.9', 'x-vercel-forwarded-for': '198.51.100.50' });
+    expect(res.status).toBe(429);
+    resetPreviewLoginLimiter();
+  });
+
+  it('caps total failures across all IPs', async () => {
+    const { resetPreviewLoginLimiter } = await import('@/lib/preview-login-limiter');
+    resetPreviewLoginLimiter();
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    for (let i = 0; i < 100; i++) {
+      expect((await attempt({ 'x-real-ip': `192.0.2.${i % 50}-${Math.floor(i / 50)}` })).status).toBe(401);
+    }
+    expect((await attempt({ 'x-real-ip': '203.0.113.200' }, 'secret')).status).toBe(429);
     resetPreviewLoginLimiter();
   });
 });
