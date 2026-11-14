@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { handleBackstop, stripBackstopHeaders } from '@/lib/backstop-middleware';
+import { timingSafeEqual } from '@/lib/backstop';
 
 export async function middleware(request: NextRequest) {
   // First: if cofabri-api is down (or a backstop preview was requested), serve
@@ -69,7 +70,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // If password doesn't match, redirect to preview login
-    if (previewPassword !== expectedPassword) {
+    if (!timingSafeEqual(previewPassword, expectedPassword)) {
       const loginUrl = new URL('/preview/login', request.url);
       loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);

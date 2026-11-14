@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CoreLoader } from '@/components/ui/core-loader';
+import { safePreviewRedirect } from '@/lib/preview-redirect';
 
 export default function LoginPreviewPage() {
   return (
@@ -21,7 +22,7 @@ function LoginPreviewContent() {
   const [error, setError] = useState('');
   const searchParams = useSearchParams();
   const router = useRouter();
-  const redirect = searchParams ? searchParams.get('redirect') || '/' : '/';
+  const redirect = safePreviewRedirect(searchParams?.get('redirect'));
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
