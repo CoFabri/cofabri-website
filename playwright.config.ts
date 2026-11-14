@@ -14,6 +14,13 @@ const TURNSTILE_TEST_ENV = {
   TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
 };
 
+// The e2e servers run a production build (`next start`, NODE_ENV=production)
+// outside Vercel. Without this, the preview gates treat them as production
+// and, with no PREVIEW_PASSWORD, refuse ?backstop=preview (which the backstop
+// servers below use as their readiness URL). Marking them as a Vercel preview
+// deployment keeps the production fail-closed rule intact.
+const E2E_SERVER_ENV = { ...TURNSTILE_TEST_ENV, VERCEL_ENV: 'preview' };
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -45,7 +52,7 @@ export default defineConfig({
       url: baseURL,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
-      env: TURNSTILE_TEST_ENV,
+      env: E2E_SERVER_ENV,
     },
     {
       // Relies on the .next build produced by the first server's command
@@ -58,7 +65,7 @@ export default defineConfig({
       url: 'http://localhost:3100/?backstop=preview',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
-      env: { ...TURNSTILE_TEST_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:9' },
+      env: { ...E2E_SERVER_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:9' },
     },
     // The next two prove a healthy API leaves the site alone (used only by
     // tests/e2e/backstop-healthy.spec.ts): a stub cofabri-api answering 200,
@@ -74,7 +81,7 @@ export default defineConfig({
       url: 'http://localhost:3101/?backstop=preview',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
-      env: { ...TURNSTILE_TEST_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:3200' },
+      env: { ...E2E_SERVER_ENV, COFABRI_API_BASE_URL: 'http://127.0.0.1:3200' },
     },
   ],
 });
