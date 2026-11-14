@@ -50,4 +50,43 @@ describe('POST /api/preview/session attempt limit', () => {
     expect((await attempt('secret', '198.51.100.1')).status).toBe(200);
     resetPreviewLoginLimiter();
   });
+
+  it('caps a parallel burst at 10 password checks', async () => {
+    const { resetPreviewLoginLimiter } = await import('@/lib/preview-login-limiter');
+    resetPreviewLoginLimiter();
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    const burst = await Promise.all(
+      Array.from({ length: 25 }, () =>
+        POST(
+          new Request('https://cofabri.com/api/preview/session', {
+            method: 'POST',
+            headers: { 'x-forwarded-for': '203.0.113.9' },
+            body: JSON.stringify({ password: 'nope' }),
+          })
+        )
+      )
+    );
+    const statuses = burst.map((r) => r.status);
+    expect(statuses.filter((s) => s === 401)).toHaveLength(10);
+    expect(statuses.filter((s) => s === 429)).toHaveLength(15);
+    resetPreviewLoginLimiter();
+  });
+
+  it('does not count correct passwords against the limit', async () => {
+    const { resetPreviewLoginLimiter } = await import('@/lib/preview-login-limiter');
+    resetPreviewLoginLimiter();
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    const attempt = (password: string) =>
+      POST(
+        new Request('https://cofabri.com/api/preview/session', {
+          method: 'POST',
+          headers: { 'x-forwarded-for': '203.0.113.10' },
+          body: JSON.stringify({ password }),
+        })
+      );
+    for (let i = 0; i < 15; i++) expect((await attempt('secret')).status).toBe(200);
+    for (let i = 0; i < 10; i++) expect((await attempt('nope')).status).toBe(401);
+    expect((await attempt('nope')).status).toBe(429);
+    resetPreviewLoginLimiter();
+  });
 });
