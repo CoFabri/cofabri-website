@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mostSevereStatus, incidentHexColor, incidentWidgetMessage } from './status-widget-colors';
+import { mostSevereStatus, incidentHexColor, incidentWidgetMessage, isValidAppSlug, escapeHtml } from './status-widget-colors';
 import type { SystemStatus } from '@/lib/status-api';
 
 function status(overrides: Partial<SystemStatus> = {}): SystemStatus {
@@ -66,5 +66,25 @@ describe('incidentWidgetMessage', () => {
 
   it('falls back to a generic label when there is no message', () => {
     expect(incidentWidgetMessage(status({ publicStatus: 'Monitoring', message: '' }))).toBe('Monitoring Resolution');
+  });
+});
+
+describe('isValidAppSlug', () => {
+  it('accepts app ids', () => {
+    for (const id of ['medoura', 'rx-bridge', 'maven_os', 'gathr2']) {
+      expect(isValidAppSlug(id)).toBe(true);
+    }
+  });
+
+  it('rejects markup, whitespace, empty and overlong values', () => {
+    for (const id of ['', '</title><script>alert(1)</script>', 'a b', '-lead', 'x'.repeat(64), 'a"b', "a'b", 'a/b']) {
+      expect(isValidAppSlug(id)).toBe(false);
+    }
+  });
+});
+
+describe('escapeHtml', () => {
+  it('escapes characters that could break out of an HTML context', () => {
+    expect(escapeHtml(`</title><script>"'&`)).toBe('&lt;/title&gt;&lt;script&gt;&quot;&#39;&amp;');
   });
 });

@@ -1,5 +1,11 @@
 import { getSystemStatusOrThrow, SystemStatus } from '@/lib/status-api';
-import { escapeHtml, incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
+import {
+  escapeHtml,
+  incidentHexColor,
+  incidentWidgetMessage,
+  mostSevereStatus,
+  WIDGET_HTML_SECURITY_HEADERS,
+} from '@/lib/status-widget-colors';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
@@ -176,7 +182,8 @@ export async function GET(request: NextRequest) {
 
     return new NextResponse(html, {
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
+        ...WIDGET_HTML_SECURITY_HEADERS,
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
         'Expires': '0',
@@ -286,7 +293,8 @@ export async function GET(request: NextRequest) {
     return new NextResponse(errorHtml, {
       status: 500,
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
+        ...WIDGET_HTML_SECURITY_HEADERS,
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
       },
     });

@@ -1,5 +1,12 @@
 import { getSystemStatusOrThrow, SystemStatus } from '@/lib/status-api';
-import { escapeHtml, incidentHexColor, incidentWidgetMessage, mostSevereStatus } from '@/lib/status-widget-colors';
+import {
+  escapeHtml,
+  incidentHexColor,
+  incidentWidgetMessage,
+  isValidAppSlug,
+  mostSevereStatus,
+  WIDGET_HTML_SECURITY_HEADERS,
+} from '@/lib/status-widget-colors';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Force dynamic rendering for this route
@@ -22,9 +29,16 @@ export async function GET(
   const overrideColor = request.nextUrl.searchParams.get('color');
   const explicitColor = overrideColor && /^[0-9a-fA-F]{3,8}$/.test(overrideColor) ? `#${overrideColor}` : null;
 
+  const { app: appSlug } = await params;
+  if (!isValidAppSlug(appSlug)) {
+    return new NextResponse('Invalid app id', {
+      status: 400,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', ...WIDGET_HTML_SECURITY_HEADERS },
+    });
+  }
+  const safeAppSlug = escapeHtml(appSlug);
+
   try {
-    const resolvedParams = await params;
-    const appSlug = resolvedParams.app;
     const now = Date.now();
     
     // Check if we have valid cached data
@@ -63,7 +77,7 @@ export async function GET(
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${appSlug} System Status</title>
+    <title>${safeAppSlug} System Status</title>
     <style>
         html {
             background: transparent;
@@ -186,22 +200,22 @@ export async function GET(
 
     return new NextResponse(html, {
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
+        ...WIDGET_HTML_SECURITY_HEADERS,
         'Expires': '0',
       },
     });
   } catch (error) {
-    const resolvedParams = await params;
-    console.error(`Error generating status widget for app ${resolvedParams.app}:`, error);
+    console.error(`Error generating status widget for app ${appSlug}:`, error);
     
     const errorHtml = `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${resolvedParams.app} System Status</title>
+    <title>${safeAppSlug} System Status</title>
     <style>
         html { background: transparent; }
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: transparent; overflow: hidden; }
@@ -281,7 +295,8 @@ export async function GET(
     return new NextResponse(errorHtml, {
       status: 500,
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
+        ...WIDGET_HTML_SECURITY_HEADERS,
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
       },
     });

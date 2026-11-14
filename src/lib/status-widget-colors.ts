@@ -48,6 +48,25 @@ export function incidentWidgetMessage(status: SystemStatus | null): string {
 // The widget text renders admin/third-party-provider free text (incident
 // messages) directly into server-rendered HTML — escape it so an incident
 // message can never break out of the markup.
+// App ids are lowercase slugs (`medoura`, `rx-bridge`). The per-app widget
+// routes take one from the URL path and write it into an HTML document, so
+// anything outside this shape is rejected before it gets near the markup.
+const APP_SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,62}$/i;
+
+export function isValidAppSlug(value: string): boolean {
+  return APP_SLUG_RE.test(value);
+}
+
+// Security headers for the widget HTML documents: no external loads, no
+// network calls, no forms. Inline style/script stay allowed because the
+// widget is one self-contained document. Framing stays open on purpose --
+// the widget is meant to be embedded by other sites.
+export const WIDGET_HTML_SECURITY_HEADERS: Record<string, string> = {
+  'Content-Security-Policy':
+    "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'",
+  'X-Content-Type-Options': 'nosniff',
+};
+
 export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
