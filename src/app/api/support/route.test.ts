@@ -21,6 +21,20 @@ function form(extra: Record<string, string | Blob> = {}) {
 }
 
 describe('POST /api/support', () => {
+  it("rejects the 'development-mode' Turnstile token outside development", async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret');
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: false })));
+    vi.stubGlobal('fetch', fetchMock);
+    const res = await POST(form());
+    expect(res.status).toBe(400);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -28,6 +42,9 @@ describe('POST /api/support', () => {
     vi.stubEnv('COFABRI_API_KEY', 'core-key');
     vi.stubEnv('MAVENOS_INTAKE_URL', 'https://os.example.com');
     vi.stubEnv('MAVENOS_SUPPORT_INTAKE_KEY', 'most_abcdefgh_key');
+    // The 'development-mode' Turnstile token is only honored on a dev server;
+    // these tests cover backend routing, not the bot check.
+    vi.stubEnv('NODE_ENV', 'development');
   });
   afterEach(() => {
     vi.unstubAllEnvs();
