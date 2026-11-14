@@ -44,6 +44,23 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+      {
+        // Pages may only be framed by cofabri.com itself. /api (the status
+        // widgets are meant to be embedded on other sites) and /preview
+        // are left out.
+        source: '/((?!api/|api$|preview/|preview$).*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
+        ],
+      },
+      {
         source: '/api/:path*',
         headers: [
           {
