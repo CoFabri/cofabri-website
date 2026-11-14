@@ -5,6 +5,7 @@ vi.mock('@/lib/api-health', () => ({ getApiHealth: vi.fn() }));
 
 import { getApiHealth } from '@/lib/api-health';
 import { middleware } from './middleware';
+import { PREVIEW_COOKIE, previewCookieValue } from '@/lib/preview-auth';
 
 const mockedHealth = vi.mocked(getApiHealth);
 const req = (path: string, headers?: Record<string, string>) => new NextRequest(`https://cofabri.com${path}`, { headers });
@@ -95,10 +96,44 @@ describe('middleware', () => {
       expect(res.headers.get('location')).toBe(login);
     });
 
-    it('passes through with the right password', async () => {
-      const res = await middleware(req('/preview/apps/1?password=secret'));
+    it('trades a correct ?password= for the cookie and strips it from the URL', async () => {
+      const res = await middleware(req('/preview/apps/1?password=secret&x=1'));
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toBe('https://cofabri.com/preview/apps/1?x=1');
+      const setCookie = res.headers.get('set-cookie') ?? '';
+      expect(setCookie).toContain(`${PREVIEW_COOKIE}=${await previewCookieValue('secret')}`);
+      expect(setCookie).toMatch(/HttpOnly/i);
+      expect(setCookie).not.toContain('secret;');
+    });
+
+    it('passes through with a valid preview cookie', async () => {
+      const res = await middleware(
+        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('secret')}` })
+      );
       expect(res.status).toBe(200);
       expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('rejects a cookie made from another password', async () => {
+      const res = await middleware(
+        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('old')}` })
+      );
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toBe(login);
+    });
+
+    it('fails closed in production when PREVIEW_PASSWORD is unset', async () => {
+      vi.stubEnv('PREVIEW_PASSWORD', '');
+      vi.stubEnv('VERCEL_ENV', 'production');
+      const res = await middleware(req('/preview/apps/1'));
+      expect(res.status).toBe(403);
+    });
+
+    it('stays open off production when PREVIEW_PASSWORD is unset', async () => {
+      vi.stubEnv('PREVIEW_PASSWORD', '');
+      vi.stubEnv('VERCEL_ENV', 'preview');
+      const res = await middleware(req('/preview/apps/1'));
+      expect(res.status).toBe(200);
     });
 
     it('never redirects the login page itself', async () => {

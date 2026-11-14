@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { handleBackstop, stripBackstopHeaders } from '@/lib/backstop-middleware';
-import { timingSafeEqual } from '@/lib/backstop';
+import {
+  cookieMatches,
+  passwordMatches,
+  PREVIEW_COOKIE,
+  previewCookieOptions,
+  previewCookieValue,
+  previewGateState,
+  readPreviewGateEnv,
+} from '@/lib/preview-auth';
 
 export async function middleware(request: NextRequest) {
   // First: if cofabri-api is down (or a backstop preview was requested), serve
@@ -61,16 +69,31 @@ export async function middleware(request: NextRequest) {
 
   // Only apply to preview routes (excluding login page)
   if (request.nextUrl.pathname.startsWith('/preview/') && !request.nextUrl.pathname.startsWith('/preview/login')) {
-    const previewPassword = request.nextUrl.searchParams.get('password');
-    const expectedPassword = process.env.PREVIEW_PASSWORD;
+    const env = readPreviewGateEnv();
+    const state = previewGateState(env);
+    if (state === 'open') return response;
+    if (state === 'closed') {
+      // Production with no PREVIEW_PASSWORD: refuse rather than open up.
+      return new NextResponse('Preview is not available.', { status: 403, headers: { 'Cache-Control': 'no-store' } });
+    }
+    const expectedPassword = env.previewPassword as string;
 
-    // If no password is set in env, allow access
-    if (!expectedPassword) {
-      return response;
+    // Legacy links carry ?password=. Trade a correct one for the cookie and
+    // drop it from the URL; a wrong one goes to the login page.
+    if (request.nextUrl.searchParams.has('password')) {
+      const loginUrl = new URL('/preview/login', request.url);
+      loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
+      if (!passwordMatches(request.nextUrl.searchParams.get('password'), expectedPassword)) {
+        return NextResponse.redirect(loginUrl);
+      }
+      const clean = request.nextUrl.clone();
+      clean.searchParams.delete('password');
+      const redirect = NextResponse.redirect(clean);
+      redirect.cookies.set(PREVIEW_COOKIE, await previewCookieValue(expectedPassword), previewCookieOptions);
+      return redirect;
     }
 
-    // If password doesn't match, redirect to preview login
-    if (!timingSafeEqual(previewPassword, expectedPassword)) {
+    if (!(await cookieMatches(request.cookies.get(PREVIEW_COOKIE)?.value, expectedPassword))) {
       const loginUrl = new URL('/preview/login', request.url);
       loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);

@@ -20,6 +20,7 @@ export default function LoginPreviewPage() {
 function LoginPreviewContent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loginError, setLoginError] = useState('');
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirect = safePreviewRedirect(searchParams?.get('redirect'));
@@ -44,16 +45,24 @@ function LoginPreviewContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
+    setLoginError('');
+
     try {
-      // Instead of checking password on client side, redirect with password as query param
-      // The middleware will handle the authentication
-      const redirectUrl = new URL(redirect, window.location.origin);
-      redirectUrl.searchParams.set('password', password);
-      router.push(redirectUrl.toString());
+      // The server checks the password and sets an HttpOnly preview cookie;
+      // the password never goes into the URL.
+      const response = await fetch('/api/preview/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        setLoginError(body?.error || 'Could not sign in. Please try again.');
+        return;
+      }
+      router.push(redirect);
     } catch {
-      setError('Failed to redirect. Please try again.');
+      setLoginError('Could not sign in. Please try again.');
     }
   };
 
@@ -108,8 +117,8 @@ function LoginPreviewContent() {
             </div>
           </div>
 
-          {error && (
-            <div className="text-danger text-sm text-center">{error}</div>
+          {loginError && (
+            <div role="alert" className="text-danger text-sm text-center">{loginError}</div>
           )}
 
           <div>
