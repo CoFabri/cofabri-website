@@ -34,3 +34,16 @@ describe('releaseNotesMarkdownToHtml', () => {
     expect(releaseNotesMarkdownToHtml('**bold**\nline two')).toBe('<strong>bold</strong><br>line two');
   });
 });
+
+describe('markdown helpers escape raw HTML', () => {
+  it.each([
+    ['markdownToHtml', markdownToHtml],
+    ['roadmapMarkdownToHtml', roadmapMarkdownToHtml],
+    ['releaseNotesMarkdownToHtml', releaseNotesMarkdownToHtml],
+  ])('%s', (_name, fn) => {
+    const html = fn('**ok** <img src=x onerror="alert(1)"> & <script>alert(2)</script>');
+    expect(html).toContain('<strong>ok</strong>');
+    expect(html).not.toMatch(/<img|<script/);
+    expect(html).toContain('&lt;img src=x onerror=&quot;alert(1)&quot;&gt; &amp; &lt;script&gt;');
+  });
+});

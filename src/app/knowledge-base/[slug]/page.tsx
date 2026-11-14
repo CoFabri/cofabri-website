@@ -4,18 +4,13 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { marked } from 'marked';
+import { renderKbArticleHtml } from '@/lib/kb-html';
 import { AppMarkGroup } from '@/components/marketing/AppMarkGroup';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import JsonLd from '@/components/marketing/JsonLd';
 import { buildArticleSchema } from '@/lib/structured-data';
 import { buildDescription } from '@/lib/meta-description';
 import { Twitter, Linkedin } from 'lucide-react';
-
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-});
 
 interface KnowledgeBaseArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -86,7 +81,7 @@ export default async function KnowledgeBaseArticlePage({ params }: KnowledgeBase
     notFound();
   }
 
-  const htmlContent = article.content ? await marked(article.content) : '';
+  const htmlContent = article.content ? await renderKbArticleHtml(article.content) : '';
 
   let relatedArticles = await (async () => {
     if (!article.relatedTopics) return [];

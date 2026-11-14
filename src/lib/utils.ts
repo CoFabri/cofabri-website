@@ -141,6 +141,18 @@ export async function isTestModeClient(): Promise<boolean> {
   }
 } 
 
+// The markdown helpers below feed dangerouslySetInnerHTML with CMS text, so
+// the text is HTML-escaped first and only the tags they add themselves
+// (<strong>, <em>, <br>) can reach the page.
+function escapeHtmlText(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /**
  * Converts markdown text to HTML
  * Handles bold text (**text**), bullet points, and line breaks
@@ -148,7 +160,7 @@ export async function isTestModeClient(): Promise<boolean> {
 export function markdownToHtml(text: string): string {
   if (!text) return '';
   
-  return text
+  return escapeHtmlText(text)
     // Convert bold text (**text** to <strong>text</strong>)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Convert single asterisks (*text* to <em>text</em>) - optional
@@ -164,7 +176,7 @@ export function markdownToHtml(text: string): string {
 export function roadmapMarkdownToHtml(text: string): string {
   if (!text) return '';
   
-  return text
+  return escapeHtmlText(text)
     // Convert bold text (**text** to <strong>text</strong>)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Convert single asterisks (*text* to <em>text</em>)
@@ -178,7 +190,7 @@ export function roadmapMarkdownToHtml(text: string): string {
 export function releaseNotesMarkdownToHtml(text: string): string {
   if (!text) return '';
   
-  return text
+  return escapeHtmlText(text)
     // Convert bold text (**text** to <strong>text</strong>)
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Convert single asterisks (*text* to <em>text</em>)
