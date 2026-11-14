@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,7 +8,16 @@ import { Button } from '@/components/ui/button';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import { markPalette, pickReadableTextColor, statusPillClasses, statusDotClasses } from '@/lib/app-display';
+import Turnstile from '@/components/marketing/Turnstile';
+import { FIELD_LIMITS } from '@/lib/validation/schemas';
 import { getSignupState, getSignupCopy, type SignupState } from './signup-state';
+
+function getTurnstileSiteKey(): string | undefined {
+  if (process.env.NODE_ENV === 'development') {
+    return '1x00000000000000000000AA';
+  }
+  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+}
 
 interface BetaStatement {
   statement: string;
@@ -124,6 +133,14 @@ export default function SignupPageContent() {
   const [submitted, setSubmitted] = useState(false);
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(Boolean(appId));
+  const [turnstileToken, setTurnstileToken] = useState('');
+  // Bumped to remount the widget for a fresh challenge: tokens are
+  // single-use, and Turnstile.tsx only resets on unmount.
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken('');
+    setTurnstileKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     if (!appId) {
@@ -175,6 +192,10 @@ export default function SignupPageContent() {
     if (isSubmitting) return;
     setAttempted(true);
     if (Object.values(errors).some(Boolean)) return;
+    if (!turnstileToken) {
+      setSubmitError('Please complete the security check, then try again.');
+      return;
+    }
 
     setIsSubmitting(true);
     setSubmitError(null);
@@ -190,6 +211,7 @@ export default function SignupPageContent() {
           interestLevel,
           quote: Number(fields.quote),
           statement: fields.statement.trim() || undefined,
+          turnstileToken,
         }),
       });
 
@@ -199,6 +221,7 @@ export default function SignupPageContent() {
       }
       setSubmitted(true);
     } catch (error) {
+      resetTurnstile();
       console.error('Error submitting form:', error);
       setSubmitError(
         error instanceof Error && error.message !== 'Failed to submit form' && error.message !== 'Failed to create record'
@@ -436,6 +459,7 @@ export default function SignupPageContent() {
                   rows={3}
                   value={fields.statement}
                   onChange={setField('statement')}
+                  maxLength={FIELD_LIMITS.statement}
                   placeholder="What would you use it for?"
                   className={`min-h-24 resize-y rounded-[10px] border bg-background px-3.5 py-3 text-[15px] leading-normal text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-ink-faint focus:border-primary focus:ring-[3px] focus:ring-primary/15 border-border-strong`}
                 />
@@ -443,6 +467,17 @@ export default function SignupPageContent() {
               </label>
 
               <div className="mt-0.5 flex flex-col gap-3">
+                {getTurnstileSiteKey() && (
+                  <Turnstile
+                    key={turnstileKey}
+                    siteKey={getTurnstileSiteKey()!}
+                    onVerify={setTurnstileToken}
+                    onError={resetTurnstile}
+                    onExpire={resetTurnstile}
+                    theme="light"
+                    size="normal"
+                  />
+                )}
                 <Button type="submit" disabled={isSubmitting || isLoading} className="h-12 w-full rounded-[9px] text-base font-semibold">
                   {isSubmitting ? (
                     <>

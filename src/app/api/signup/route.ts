@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
+import { waitlistSignupSchema } from '@/lib/validation/schemas';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 interface ApiError {
   message?: string;
-  stack?: string;
-  details?: string;
 }
 
 // A connection that failed before TLS finished (or never resolved) means the
@@ -21,7 +21,22 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    const { firstName, lastName, email, appId, interestLevel, quote, statement } = data;
+    // Validate + normalize here -- this is the security boundary; the
+    // client's own checks are UX only.
+    const parsed = waitlistSignupSchema.safeParse(data);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid form submission' },
+        { status: 400 }
+      );
+    }
+    const { firstName, lastName, email, appId, interestLevel, quote, statement } = parsed.data;
+
+    const turnstileToken = typeof data?.turnstileToken === 'string' ? data.turnstileToken : '';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Security verification failed. Please try again.' }, { status: 400 });
+    }
 
     if (!process.env.COFABRI_API_BASE_URL || !process.env.COFABRI_API_KEY) {
       throw new Error('cofabri-api configuration missing');
@@ -40,8 +55,8 @@ export async function POST(request: Request) {
         last_name: lastName,
         email,
         app_id: appId || undefined,
-        interest_level: Number(interestLevel) || undefined,
-        quote: quote !== undefined && quote !== null && quote !== '' ? Number(quote) : undefined,
+        interest_level: interestLevel,
+        quote,
         statement: statement || undefined,
       }),
     });
@@ -56,7 +71,9 @@ export async function POST(request: Request) {
 
     if (!apiRes.ok) {
       const errorBody = await apiRes.json().catch(() => null);
-      console.error('cofabri-api waitlist submission failed:', apiRes.status, errorBody);
+      // Log only the status and message: the body of a validation failure
+      // echoes the submitted name/email back.
+      console.error('cofabri-api waitlist submission failed:', apiRes.status, errorBody?.message);
 
       // A 400 here means cofabri-api's capacity guard rejected the signup
       // (e.g. someone submitted just as the last spot was taken) — surface
@@ -74,24 +91,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const waitlistRecord = await apiRes.json();
-
-    return NextResponse.json({ success: true, waitlistRecord });
+    return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const err = error as ApiError;
     if (failedBeforeSending(error)) {
       console.warn('cofabri-api unreachable for waitlist signup:', err.message);
       return NextResponse.json({ error: 'Failed to create record' }, { status: 502 });
     }
-    console.error('Detailed error in signup route:', {
-      message: err.message,
-      stack: err.stack,
-      details: err.details || 'No additional details available'
-    });
+    console.error('Error in signup route:', err?.message);
 
-    return NextResponse.json(
-      { error: 'Failed to create record', details: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create record' }, { status: 500 });
   }
 }

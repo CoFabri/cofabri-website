@@ -16,6 +16,7 @@ export const FIELD_LIMITS = {
   industry: 100,
   phone: 30,
   appIds: 50,
+  statement: 1000,
 } as const;
 
 // Shared between the contact form's dropdown/URL-prefill and the server-side
@@ -139,6 +140,29 @@ export const partnerSchema = z.object({
   // UI) does supply one.
   relatedApp: z.string().trim().optional(),
 });
+
+// Beta/waitlist signup (/api/signup). Names and email follow the other
+// forms; the optional numbers are bounded so nothing unreasonable reaches
+// cofabri-api.
+const optionalNumber = (schema: z.ZodNumber) =>
+  z.preprocess((value) => (value === undefined || value === null || value === '' ? undefined : value), schema.optional());
+
+export const waitlistSignupSchema = z.object({
+  firstName: nameField('First name'),
+  lastName: nameField('Last name'),
+  email: emailField,
+  appId: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9][a-z0-9_-]{0,62}$/i, 'Unknown app')
+    .optional()
+    .or(z.literal('')),
+  interestLevel: optionalNumber(z.number().int().min(1).max(5)),
+  quote: optionalNumber(z.number().min(0).max(1_000_000)),
+  statement: optionalCapped('Statement', FIELD_LIMITS.statement),
+});
+
+export type WaitlistSignupValues = z.infer<typeof waitlistSignupSchema>;
 
 export const changelogSubscribeSchema = z
   .object({

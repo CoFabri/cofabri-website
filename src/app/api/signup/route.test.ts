@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+const verifyTurnstile = vi.fn(async (token: string) => token === 'good-token')
+vi.mock('@/lib/turnstile', () => ({ verifyTurnstile: (token: string) => verifyTurnstile(token) }))
+
 const ORIGINAL_ENV = { ...process.env }
 
 function tlsReset() {
@@ -21,12 +24,59 @@ describe('POST /api/signup', () => {
     vi.restoreAllMocks()
   })
 
-  function request() {
+  function request(overrides: Record<string, unknown> = {}) {
     return new Request('http://localhost/api/signup', {
       method: 'POST',
-      body: JSON.stringify({ firstName: 'A', lastName: 'B', email: 'a@b.com', appId: 'medoura', interestLevel: 3 }),
+      body: JSON.stringify({
+        firstName: 'A', lastName: 'B', email: 'a@b.com', appId: 'medoura', interestLevel: 3, quote: 10,
+        turnstileToken: 'good-token', ...overrides,
+      }),
     })
   }
+
+  it('rejects a submission without a valid Turnstile token before calling cofabri-api', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+    const { POST } = await import('./route')
+    for (const token of [undefined, 'development-mode', 'bad']) {
+      const res = await POST(request({ turnstileToken: token }))
+      expect(res.status).toBe(400)
+    }
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects invalid or oversized fields', async () => {
+    vi.stubGlobal('fetch', vi.fn())
+    const { POST } = await import('./route')
+    for (const bad of [
+      { email: 'not-an-email' },
+      { firstName: 'x'.repeat(51) },
+      { statement: 'x'.repeat(1001) },
+      { interestLevel: 9 },
+      { quote: -1 },
+      { appId: '<script>' },
+    ]) {
+      const res = await POST(request(bad))
+      expect(res.status).toBe(400)
+    }
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('returns only success, not the upstream record', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 1, email: 'a@b.com' }), { status: 200 })))
+    const { POST } = await import('./route')
+    const res = await POST(request())
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ success: true })
+  })
+
+  it('does not echo internal error messages', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('secret internal detail')))
+    const { POST } = await import('./route')
+    const res = await POST(request())
+    expect(res.status).toBe(500)
+    expect(JSON.stringify(await res.json())).not.toContain('secret internal detail')
+  })
 
   it('retries once when the connection dies before TLS completes', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
