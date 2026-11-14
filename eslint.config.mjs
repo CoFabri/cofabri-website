@@ -10,6 +10,17 @@ const eslintConfig = [
   { ignores: [".worktrees/**"] },
   ...nextCoreWebVitals,
   ...nextTypescript,
+  // eslint-config-next 16.4 (eslint-plugin-react-hooks 7.1) turned these two
+  // React Compiler rules into errors. They flag ~24 long-standing patterns
+  // (fetch-on-mount effects, a ref read in SupportForm) that were clean under
+  // 16.1. Kept visible as warnings so the security upgrade doesn't also force
+  // a refactor of those components; clean them up separately.
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;
