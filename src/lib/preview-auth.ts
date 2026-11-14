@@ -1,4 +1,4 @@
-import { timingSafeEqual } from '@/lib/backstop';
+import { isProductionEnv, timingSafeEqual } from '@/lib/backstop';
 
 // /preview/* gate. A successful login (the login form, or a legacy
 // ?password= link from the CMS) is turned into an HttpOnly cookie holding a
@@ -30,8 +30,7 @@ export function readPreviewGateEnv(): PreviewGateEnv {
 // anywhere that does not set VERCEL_ENV).
 export function previewGateState(env: PreviewGateEnv): 'open' | 'closed' | 'password' {
   if (env.previewPassword) return 'password';
-  const production = env.vercelEnv ? env.vercelEnv === 'production' : env.nodeEnv === 'production';
-  return production ? 'closed' : 'open';
+  return isProductionEnv(env) ? 'closed' : 'open';
 }
 
 export async function previewCookieValue(password: string): Promise<string> {

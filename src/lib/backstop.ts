@@ -47,15 +47,23 @@ export function previewOptions(params: URLSearchParams): { state: BackstopInitia
   };
 }
 
-// Mirrors the /preview/* gate in middleware.ts: open when no password is
-// configured, otherwise the password param must match. Non-production
-// deployments (local dev, Vercel previews) are always open.
+// Production check shared with the /preview/* gate (src/lib/preview-auth.ts):
+// Vercel production, or a production build hosted anywhere that does not set
+// VERCEL_ENV.
+export function isProductionEnv(env: { vercelEnv?: string; nodeEnv?: string }): boolean {
+  return env.vercelEnv ? env.vercelEnv === 'production' : env.nodeEnv === 'production';
+}
+
+// Non-production deployments (local dev, Vercel previews) are always open.
+// In production the password param must match, and with no PREVIEW_PASSWORD
+// configured the preview is refused (fails closed, like /preview/*). The
+// /preview/* login cookie is also accepted; backstop-middleware checks it.
 export function isPreviewAllowed(
   params: URLSearchParams,
-  env: { vercelEnv?: string; previewPassword?: string },
+  env: { vercelEnv?: string; nodeEnv?: string; previewPassword?: string },
 ): boolean {
-  if (env.vercelEnv !== 'production') return true;
-  if (!env.previewPassword) return true;
+  if (!isProductionEnv(env)) return true;
+  if (!env.previewPassword) return false;
   return timingSafeEqual(params.get('password'), env.previewPassword);
 }
 

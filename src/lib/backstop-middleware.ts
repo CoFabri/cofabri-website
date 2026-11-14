@@ -11,6 +11,7 @@ import {
   type BackstopInitialState,
   type BackstopMode,
 } from '@/lib/backstop';
+import { cookieMatches, PREVIEW_COOKIE, readPreviewGateEnv } from '@/lib/preview-auth';
 
 // Files served as-is that other sites and crawlers fetch directly; a 503 HTML
 // page here would break embeds (status widgets) and SEO files.
@@ -58,14 +59,15 @@ export async function handleBackstop(request: NextRequest): Promise<NextResponse
     const { pathname, searchParams } = request.nextUrl;
     if (INTERNAL_PATH.test(pathname) || STATIC_ASSET.test(pathname)) return null;
 
-    if (
-      isBackstopPreviewRequested(searchParams) &&
-      isPreviewAllowed(searchParams, {
-        vercelEnv: process.env.VERCEL_ENV,
-        previewPassword: process.env.PREVIEW_PASSWORD,
-      })
-    ) {
-      return rewriteToBackstop(request, 'preview', 200, previewOptions(searchParams));
+    if (isBackstopPreviewRequested(searchParams)) {
+      const env = readPreviewGateEnv();
+      const allowed =
+        isPreviewAllowed(searchParams, env) ||
+        (!!env.previewPassword &&
+          (await cookieMatches(request.cookies.get(PREVIEW_COOKIE)?.value, env.previewPassword)));
+      if (allowed) {
+        return rewriteToBackstop(request, 'preview', 200, previewOptions(searchParams));
+      }
     }
 
     if (pathname.toLowerCase() === BACKSTOP_PATH) {

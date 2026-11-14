@@ -5,6 +5,7 @@ vi.mock('@/lib/api-health', () => ({ getApiHealth: vi.fn() }));
 
 import { getApiHealth } from '@/lib/api-health';
 import { handleBackstop, stripBackstopHeaders } from './backstop-middleware';
+import { PREVIEW_COOKIE, previewCookieValue } from '@/lib/preview-auth';
 
 const mockedHealth = vi.mocked(getApiHealth);
 const req = (path: string, init?: ConstructorParameters<typeof NextRequest>[1]) =>
@@ -85,6 +86,26 @@ describe('handleBackstop', () => {
     const ok = await handleBackstop(req('/?backstop=preview&password=secret'));
     expect(ok!.status).toBe(200);
     expect(ok!.headers.get('x-middleware-request-x-cofabri-backstop')).toBe('preview');
+  });
+
+  it('accepts the /preview login cookie on production', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    const ok = await handleBackstop(
+      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('secret')}` } })
+    );
+    expect(ok!.status).toBe(200);
+    const stale = await handleBackstop(
+      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('old')}` } })
+    );
+    expect(stale).toBeNull();
+  });
+
+  it('refuses the preview on production when PREVIEW_PASSWORD is unset', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('PREVIEW_PASSWORD', '');
+    expect(await handleBackstop(req('/?backstop=preview'))).toBeNull();
+    expect(await handleBackstop(req('/?backstop=preview&password='))).toBeNull();
   });
 
   it('a rejected preview on production still shows the real backstop if the API is down', async () => {

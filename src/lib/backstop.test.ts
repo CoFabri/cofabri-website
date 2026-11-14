@@ -71,9 +71,10 @@ describe('isPreviewAllowed', () => {
     expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: 'secret' })).toBe(false);
   });
 
-  it('on production, is open when no password is configured (matches /preview/*)', () => {
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: undefined })).toBe(true);
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: '' })).toBe(true);
+  it('on production, refuses when no password is configured (fails closed, matches /preview/*)', () => {
+    expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: undefined })).toBe(false);
+    expect(isPreviewAllowed(params('password='), { vercelEnv: 'production', previewPassword: '' })).toBe(false);
+    expect(isPreviewAllowed(params(''), { nodeEnv: 'production', previewPassword: undefined })).toBe(false);
   });
 });
 
