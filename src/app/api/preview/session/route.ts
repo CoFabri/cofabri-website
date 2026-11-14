@@ -7,10 +7,16 @@ import {
   previewGateState,
   readPreviewGateEnv,
 } from '@/lib/preview-auth';
+import { clientIp, isLockedOut, recordFailure } from '@/lib/preview-login-limiter';
 
 // Preview login: checks the password and sets the HttpOnly preview cookie,
 // so the password never goes into a URL.
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  const now = Date.now();
+  if (isLockedOut(ip, now)) {
+    return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+  }
   const body = await request.json().catch(() => null);
   const password = typeof body?.password === 'string' ? body.password : '';
   const env = readPreviewGateEnv();
@@ -21,6 +27,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Preview is not available.' }, { status: 403 });
   }
   if (!passwordMatches(password, env.previewPassword as string)) {
+    recordFailure(ip, now);
     return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 });
   }
 

@@ -31,3 +31,23 @@ describe('POST /api/preview/session', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('POST /api/preview/session attempt limit', () => {
+  it('locks an IP out after 10 wrong passwords, even for the right one', async () => {
+    const { resetPreviewLoginLimiter } = await import('@/lib/preview-login-limiter');
+    resetPreviewLoginLimiter();
+    vi.stubEnv('PREVIEW_PASSWORD', 'secret');
+    const attempt = (password: string, ip = '203.0.113.7') =>
+      POST(
+        new Request('https://cofabri.com/api/preview/session', {
+          method: 'POST',
+          headers: { 'x-forwarded-for': ip },
+          body: JSON.stringify({ password }),
+        })
+      );
+    for (let i = 0; i < 10; i++) expect((await attempt('nope')).status).toBe(401);
+    expect((await attempt('secret')).status).toBe(429);
+    expect((await attempt('secret', '198.51.100.1')).status).toBe(200);
+    resetPreviewLoginLimiter();
+  });
+});
