@@ -3,7 +3,7 @@ import {
   passwordMatches,
   PREVIEW_COOKIE,
   previewCookieOptions,
-  previewCookieValue,
+  issuePreviewToken,
   previewGateState,
   readPreviewGateEnv,
 } from '@/lib/preview-auth';
@@ -33,6 +33,6 @@ export async function POST(request: Request) {
 
   refundAttempt(ip);
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(PREVIEW_COOKIE, await previewCookieValue(env.previewPassword as string), previewCookieOptions);
+  res.cookies.set(PREVIEW_COOKIE, await issuePreviewToken(env.previewPassword as string, env.cookieSecret), previewCookieOptions);
   return res;
 }
