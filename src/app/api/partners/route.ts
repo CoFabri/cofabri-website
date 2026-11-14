@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { partnerSchema, checkContactMethodRequirement } from '@/lib/validation/schemas';
 import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
+import { isDevTurnstileBypass } from '@/lib/turnstile';
 
 const getTurnstileSecretKey = () => {
   if (process.env.NODE_ENV === 'development') {
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Security verification required' }, { status: 400 });
     }
 
-    if (turnstileToken !== 'development-mode') {
+    if (!isDevTurnstileBypass(turnstileToken)) {
       const TURNSTILE_SECRET_KEY = getTurnstileSecretKey();
       if (!TURNSTILE_SECRET_KEY) {
         console.error('Turnstile secret key not configured');

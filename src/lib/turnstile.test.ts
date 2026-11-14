@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { verifyTurnstile } from './turnstile';
+import { isDevTurnstileBypass, verifyTurnstile } from './turnstile';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -35,5 +35,21 @@ describe('verifyTurnstile', () => {
     vi.stubGlobal('fetch', fetchMock);
     expect(await verifyTurnstile('tok', '1.1.1.1')).toBe(false);
     expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  });
+});
+
+describe('isDevTurnstileBypass', () => {
+  it('honors the development-mode token only on a dev server', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    expect(isDevTurnstileBypass('development-mode')).toBe(true);
+    vi.stubEnv('NODE_ENV', 'production');
+    expect(isDevTurnstileBypass('development-mode')).toBe(false);
+    vi.stubEnv('NODE_ENV', 'test');
+    expect(isDevTurnstileBypass('development-mode')).toBe(false);
+  });
+  it('never treats other tokens as a bypass', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    expect(isDevTurnstileBypass('tok')).toBe(false);
+    expect(isDevTurnstileBypass(undefined)).toBe(false);
   });
 });

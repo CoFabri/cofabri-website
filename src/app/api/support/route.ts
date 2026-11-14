@@ -9,6 +9,7 @@ import {
   SUBMISSION_ID,
 } from '@/lib/support/mavenos';
 import { isValidPhone, normalizePhone, DEFAULT_COUNTRY, type CountryCode } from '@/lib/validation/phone';
+import { isDevTurnstileBypass } from '@/lib/turnstile';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
 const SUPPORTED_LANGUAGE_PREFERENCES = new Set(['english', 'spanish']);
@@ -121,7 +122,7 @@ export async function POST(request: Request) {
     }
 
     // Skip Turnstile verification in development mode or if token is the development fallback
-    if (turnstileToken === 'development-mode') {
+    if (isDevTurnstileBypass(turnstileToken)) {
       console.log('Skipping Turnstile verification in development mode');
     } else {
       const TURNSTILE_SECRET_KEY = getTurnstileSecretKey();

@@ -3,9 +3,16 @@
 // comes from TURNSTILE_SECRET_KEY; a missing secret fails closed.
 const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
+// The Turnstile widget emits the literal token 'development-mode' when it has
+// no site key. Honor it only on a local dev server: in any other environment
+// it is just a string an attacker can post to skip the bot check.
+export function isDevTurnstileBypass(token: unknown): boolean {
+  return token === 'development-mode' && process.env.NODE_ENV === 'development';
+}
+
 export async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   if (!token) return false;
-  if (token === 'development-mode' && process.env.NODE_ENV === 'development') return true;
+  if (isDevTurnstileBypass(token)) return true;
   const secret =
     process.env.NODE_ENV === 'development' ? '1x0000000000000000000000000000000AA' : process.env.TURNSTILE_SECRET_KEY;
   if (!secret) return false;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { contactSchema, checkContactMethodRequirement } from '@/lib/validation/schemas';
 import { isValidPhone, normalizePhone, DEFAULT_COUNTRY } from '@/lib/validation/phone';
+import { isDevTurnstileBypass } from '@/lib/turnstile';
 
 // cofabri-api only supports 'english' / 'spanish' for language_preference (enum column).
 // The contact form offers many more languages, so anything else is left unset rather
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
     }
 
     // Skip Turnstile verification in development mode or if token is the development fallback
-    if (turnstileToken === 'development-mode') {
+    if (isDevTurnstileBypass(turnstileToken)) {
       console.log('Skipping Turnstile verification in development mode');
     } else {
       const TURNSTILE_SECRET_KEY = getTurnstileSecretKey();
