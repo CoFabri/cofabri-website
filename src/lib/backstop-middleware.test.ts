@@ -5,7 +5,7 @@ vi.mock('@/lib/api-health', () => ({ getApiHealth: vi.fn() }));
 
 import { getApiHealth } from '@/lib/api-health';
 import { handleBackstop, stripBackstopHeaders } from './backstop-middleware';
-import { PREVIEW_COOKIE, previewCookieValue } from '@/lib/preview-auth';
+import { issuePreviewToken, PREVIEW_COOKIE } from '@/lib/preview-auth';
 
 const mockedHealth = vi.mocked(getApiHealth);
 const req = (path: string, init?: ConstructorParameters<typeof NextRequest>[1]) =>
@@ -75,28 +75,25 @@ describe('handleBackstop', () => {
     expect(res!.headers.get('x-middleware-request-x-cofabri-backstop-note')).toBe('1');
   });
 
-  it('requires the password for the preview on production', async () => {
+  it('ignores ?password= for the preview on production (login cookie only)', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('PREVIEW_PASSWORD', 'secret');
 
-    // Wrong or missing password: the param is ignored and the page behaves normally.
+    // The param is never evaluated: the page behaves normally.
     expect(await handleBackstop(req('/?backstop=preview'))).toBeNull();
     expect(await handleBackstop(req('/?backstop=preview&password=wrong'))).toBeNull();
-
-    const ok = await handleBackstop(req('/?backstop=preview&password=secret'));
-    expect(ok!.status).toBe(200);
-    expect(ok!.headers.get('x-middleware-request-x-cofabri-backstop')).toBe('preview');
+    expect(await handleBackstop(req('/?backstop=preview&password=secret'))).toBeNull();
   });
 
   it('accepts the /preview login cookie on production', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     vi.stubEnv('PREVIEW_PASSWORD', 'secret');
     const ok = await handleBackstop(
-      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('secret')}` } })
+      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await issuePreviewToken('secret')}` } })
     );
     expect(ok!.status).toBe(200);
     const stale = await handleBackstop(
-      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('old')}` } })
+      req('/?backstop=preview', { headers: { cookie: `${PREVIEW_COOKIE}=${await issuePreviewToken('old')}` } })
     );
     expect(stale).toBeNull();
   });

@@ -55,16 +55,11 @@ export function isProductionEnv(env: { vercelEnv?: string; nodeEnv?: string }): 
 }
 
 // Non-production deployments (local dev, Vercel previews) are always open.
-// In production the password param must match, and with no PREVIEW_PASSWORD
-// configured the preview is refused (fails closed, like /preview/*). The
-// /preview/* login cookie is also accepted; backstop-middleware checks it.
-export function isPreviewAllowed(
-  params: URLSearchParams,
-  env: { vercelEnv?: string; nodeEnv?: string; previewPassword?: string },
-): boolean {
-  if (!isProductionEnv(env)) return true;
-  if (!env.previewPassword) return false;
-  return timingSafeEqual(params.get('password'), env.previewPassword);
+// In production the backstop preview needs the /preview login cookie (checked
+// in backstop-middleware); a ?password= query is not accepted, so guesses
+// always go through the rate-limited /preview/login.
+export function isPreviewAllowed(env: { vercelEnv?: string; nodeEnv?: string }): boolean {
+  return !isProductionEnv(env);
 }
 
 // Constant-time string compare (no early exit on the first mismatch or on a

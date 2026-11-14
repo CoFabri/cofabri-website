@@ -62,9 +62,7 @@ export async function handleBackstop(request: NextRequest): Promise<NextResponse
     if (isBackstopPreviewRequested(searchParams)) {
       const env = readPreviewGateEnv();
       const allowed =
-        isPreviewAllowed(searchParams, env) ||
-        (!!env.previewPassword &&
-          (await cookieMatches(request.cookies.get(PREVIEW_COOKIE)?.value, env.previewPassword)));
+        isPreviewAllowed(env) || (await cookieMatches(request.cookies.get(PREVIEW_COOKIE)?.value, env));
       if (allowed) {
         return rewriteToBackstop(request, 'preview', 200, previewOptions(searchParams));
       }

@@ -57,24 +57,15 @@ describe('previewOptions', () => {
 });
 
 describe('isPreviewAllowed', () => {
-  const params = (q: string) => new URLSearchParams(q);
-
   it('is open outside production', () => {
-    expect(isPreviewAllowed(params(''), { vercelEnv: undefined, previewPassword: 'secret' })).toBe(true);
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'preview', previewPassword: 'secret' })).toBe(true);
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'development', previewPassword: 'secret' })).toBe(true);
+    expect(isPreviewAllowed({ vercelEnv: undefined })).toBe(true);
+    expect(isPreviewAllowed({ vercelEnv: 'preview', nodeEnv: 'production' })).toBe(true);
+    expect(isPreviewAllowed({ vercelEnv: 'development' })).toBe(true);
   });
 
-  it('on production, requires the preview password', () => {
-    expect(isPreviewAllowed(params('password=secret'), { vercelEnv: 'production', previewPassword: 'secret' })).toBe(true);
-    expect(isPreviewAllowed(params('password=wrong'), { vercelEnv: 'production', previewPassword: 'secret' })).toBe(false);
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: 'secret' })).toBe(false);
-  });
-
-  it('on production, refuses when no password is configured (fails closed, matches /preview/*)', () => {
-    expect(isPreviewAllowed(params(''), { vercelEnv: 'production', previewPassword: undefined })).toBe(false);
-    expect(isPreviewAllowed(params('password='), { vercelEnv: 'production', previewPassword: '' })).toBe(false);
-    expect(isPreviewAllowed(params(''), { nodeEnv: 'production', previewPassword: undefined })).toBe(false);
+  it('is closed in production (the login cookie is checked separately)', () => {
+    expect(isPreviewAllowed({ vercelEnv: 'production' })).toBe(false);
+    expect(isPreviewAllowed({ nodeEnv: 'production' })).toBe(false);
   });
 });
 

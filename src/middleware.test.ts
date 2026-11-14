@@ -5,7 +5,7 @@ vi.mock('@/lib/api-health', () => ({ getApiHealth: vi.fn() }));
 
 import { getApiHealth } from '@/lib/api-health';
 import { middleware } from './middleware';
-import { PREVIEW_COOKIE, previewCookieValue } from '@/lib/preview-auth';
+import { issuePreviewToken, PREVIEW_COOKIE } from '@/lib/preview-auth';
 
 const mockedHealth = vi.mocked(getApiHealth);
 const req = (path: string, headers?: Record<string, string>) => new NextRequest(`https://cofabri.com${path}`, { headers });
@@ -90,33 +90,31 @@ describe('middleware', () => {
       expect(res.headers.get('location')).toBe(login);
     });
 
-    it('redirects to the login page with a wrong password', async () => {
-      const res = await middleware(req('/preview/apps/1?password=nope'));
-      expect(res.status).toBe(307);
-      expect(res.headers.get('location')).toBe(login);
-    });
-
-    it('trades a correct ?password= for the cookie and strips it from the URL', async () => {
+    it('never evaluates ?password=: strips it and falls through to the cookie check', async () => {
       const res = await middleware(req('/preview/apps/1?password=secret&x=1'));
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe('https://cofabri.com/preview/apps/1?x=1');
-      const setCookie = res.headers.get('set-cookie') ?? '';
-      expect(setCookie).toContain(`${PREVIEW_COOKIE}=${await previewCookieValue('secret')}`);
-      expect(setCookie).toMatch(/HttpOnly/i);
-      expect(setCookie).not.toContain('secret;');
+      expect(res.headers.get('set-cookie')).toBeNull();
     });
 
-    it('passes through with a valid preview cookie', async () => {
+    it('sends a request without a cookie to login, keeping the query', async () => {
+      const res = await middleware(req('/preview/apps/1?x=1'));
+      expect(res.headers.get('location')).toBe(
+        'https://cofabri.com/preview/login?redirect=%2Fpreview%2Fapps%2F1%3Fx%3D1'
+      );
+    });
+
+    it('passes through with a valid preview token', async () => {
       const res = await middleware(
-        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('secret')}` })
+        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await issuePreviewToken('secret')}` })
       );
       expect(res.status).toBe(200);
       expect(res.headers.get('location')).toBeNull();
     });
 
-    it('rejects a cookie made from another password', async () => {
+    it('rejects a token issued under another password', async () => {
       const res = await middleware(
-        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await previewCookieValue('old')}` })
+        req('/preview/apps/1', { cookie: `${PREVIEW_COOKIE}=${await issuePreviewToken('old')}` })
       );
       expect(res.status).toBe(307);
       expect(res.headers.get('location')).toBe(login);
