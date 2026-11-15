@@ -44,6 +44,7 @@ jobs:
           CLIENT_SCAN_RUN_ID: ${{ github.event.client_payload.scanRunId }}
           CLIENT_SCAN_RUN_APP_ID: ${{ github.event.client_payload.scanRunAppId }}
           CLIENT_APP_ID: ${{ github.event.client_payload.appId }}
+          CLIENT_CALLBACK_TOKEN: ${{ github.event.client_payload.callbackToken }}
         run: |
           case "$CLIENT_MODEL" in
             claude-sonnet-5|claude-opus-5|claude-haiku-4-5-20251001|claude-fable-5-1) ;;
@@ -59,6 +60,16 @@ jobs:
             echo "Rejecting malformed appId: $CLIENT_APP_ID" >&2
             exit 1
           fi
+          # Per-run callback token (binds this run to one app in Core). Optional only
+          # while Core still accepts the shared secret during the transition.
+          if [ -n "$CLIENT_CALLBACK_TOKEN" ]; then
+            if ! [[ "$CLIENT_CALLBACK_TOKEN" =~ ^[0-9a-f]{64}$ ]]; then
+              echo "Rejecting malformed callback token" >&2
+              exit 1
+            fi
+            echo "::add-mask::$CLIENT_CALLBACK_TOKEN"
+          fi
+          echo "callback_token=$CLIENT_CALLBACK_TOKEN" >> "$GITHUB_OUTPUT"
           echo "model=$CLIENT_MODEL" >> "$GITHUB_OUTPUT"
           echo "scan_run_id=$CLIENT_SCAN_RUN_ID" >> "$GITHUB_OUTPUT"
           echo "scan_run_app_id=$CLIENT_SCAN_RUN_APP_ID" >> "$GITHUB_OUTPUT"
@@ -67,8 +78,9 @@ jobs:
       - name: Fetch reconciliation context
         id: context
         run: |
-          curl -sf -H "x-webhook-secret: ${{ secrets.SECURITY_SCAN_WEBHOOK_SECRET }}" \
-            "https://core.cofabri.com/api/security-scans/context?appId=${{ steps.validate.outputs.app_id }}" \
+          curl -sf -H "x-scan-run-token: ${{ steps.validate.outputs.callback_token }}" \
+            -H "x-webhook-secret: ${{ secrets.SECURITY_SCAN_WEBHOOK_SECRET }}" \
+            "https://core.cofabri.com/api/security-scans/context?scanRunAppId=${{ steps.validate.outputs.scan_run_app_id }}&appId=${{ steps.validate.outputs.app_id }}" \
             -o prior-findings.json || echo '{"findings":[]}' > prior-findings.json
 
       - name: Run dependency audit
@@ -188,7 +200,8 @@ jobs:
             --argjson results "$RESULTS_BODY" \
             '{scanRunId: $scanRunId, scanRunAppId: $scanRunAppId, appId: $appId, workflowRunUrl: $workflowRunUrl, status: $status, dependencyAuditSummary: $audit, results: $results.results, passesClean: $results.passesClean}' \
             > callback-payload.json
-          curl -sf -X POST -H "x-webhook-secret: ${{ secrets.SECURITY_SCAN_WEBHOOK_SECRET }}" \
+          curl -sf -X POST -H "x-scan-run-token: ${{ steps.validate.outputs.callback_token }}" \
+            -H "x-webhook-secret: ${{ secrets.SECURITY_SCAN_WEBHOOK_SECRET }}" \
             -H "Content-Type: application/json" \
             -d @callback-payload.json \
             "https://core.cofabri.com/api/webhooks/security-scan"
