@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
-import { summarizeCspReports } from '@/lib/csp-report';
+import { resetCspReportLimiter, summarizeCspReports } from '@/lib/csp-report';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  resetCspReportLimiter();
 });
 
 function post(body: string) {
@@ -42,6 +43,54 @@ describe('POST /api/csp-report', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect((await post('x'.repeat(20_000))).status).toBe(413);
     expect((await post('not json')).status).toBe(400);
+  });
+
+  it('stops reading a chunked body without Content-Length once it passes the cap', async () => {
+    let pulled = 0;
+    const chunk = new TextEncoder().encode('x'.repeat(4096));
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        if (pulled > 1000) controller.close();
+        else controller.enqueue(chunk);
+      },
+    });
+    const res = await POST(
+      new Request('https://cofabri.com/api/csp-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/csp-report' },
+        body,
+        duplex: 'half',
+      } as RequestInit & { duplex: 'half' })
+    );
+    expect(res.status).toBe(413);
+    // 16 KB cap / 4 KB chunks: it gives up after the 5th chunk, not 1000.
+    expect(pulled).toBeLessThan(10);
+  });
+
+  it('rejects non-report content types', async () => {
+    const res = await POST(
+      new Request('https://cofabri.com/api/csp-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: '{}',
+      })
+    );
+    expect(res.status).toBe(415);
+  });
+
+  it('rate-limits a single IP', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const send = () =>
+      POST(
+        new Request('https://cofabri.com/api/csp-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/csp-report', 'x-real-ip': '203.0.113.9' },
+          body: '{}',
+        })
+      );
+    for (let i = 0; i < 30; i += 1) expect((await send()).status).toBe(204);
+    expect((await send()).status).toBe(429);
   });
 });
 
