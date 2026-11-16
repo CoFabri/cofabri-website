@@ -24,9 +24,13 @@ describe('POST /api/signup', () => {
     vi.restoreAllMocks()
   })
 
-  function request(overrides: Record<string, unknown> = {}) {
+  // Each call gets its own client IP unless one is given, so the per-IP
+  // limiter only comes into play in the tests that are about it.
+  let ipCounter = 0
+  function request(overrides: Record<string, unknown> = {}, ip = `203.0.113.${++ipCounter}`) {
     return new Request('http://localhost/api/signup', {
       method: 'POST',
+      headers: { 'x-real-ip': ip },
       body: JSON.stringify({
         firstName: 'A', lastName: 'B', email: 'a@b.com', appId: 'medoura', interestLevel: 3, quote: 10,
         turnstileToken: 'good-token', ...overrides,
@@ -108,5 +112,47 @@ describe('POST /api/signup', () => {
     const res = await POST(request())
     expect(res.status).toBe(500)
     expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('rate-limits a single IP before calling cofabri-api', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
+    const { POST } = await import('./route')
+    const statuses: number[] = []
+    for (let i = 0; i < 7; i++) statuses.push((await POST(request({}, '198.51.100.7'))).status)
+    expect(statuses).toEqual([200, 200, 200, 200, 200, 429, 429])
+    expect(fetch).toHaveBeenCalledTimes(5)
+    // Another visitor is unaffected.
+    expect((await POST(request({}, '198.51.100.8'))).status).toBe(200)
+  })
+
+  it('does not let invalid or unverified submissions consume slots', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
+    const { POST } = await import('./route')
+    for (let i = 0; i < 10; i++) expect((await POST(request({ email: 'bad' }, '198.51.100.9'))).status).toBe(400)
+    for (let i = 0; i < 10; i++) expect((await POST(request({ turnstileToken: 'bad' }, '198.51.100.9'))).status).toBe(400)
+    expect((await POST(request({}, '198.51.100.9'))).status).toBe(200)
+  })
+
+  it('treats two IPv6 addresses in the same /64 as one client', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
+    const { POST } = await import('./route')
+    const statuses: number[] = []
+    for (let i = 1; i <= 6; i++) statuses.push((await POST(request({}, `2001:db8:1:2::${i}`))).status)
+    expect(statuses.at(-1)).toBe(429)
+    expect((await POST(request({}, '2001:db8:1:3::1'))).status).toBe(200)
+  })
+
+  it('ignores a spoofed x-forwarded-for when limiting', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })))
+    const { POST } = await import('./route')
+    const spoofed = (n: number) =>
+      new Request('http://localhost/api/signup', {
+        method: 'POST',
+        headers: { 'x-real-ip': '198.51.100.10', 'x-forwarded-for': `10.0.0.${n}` },
+        body: JSON.stringify({ firstName: 'A', lastName: 'B', email: 'a@b.com', turnstileToken: 'good-token' }),
+      })
+    const statuses: number[] = []
+    for (let i = 0; i < 6; i++) statuses.push((await POST(spoofed(i))).status)
+    expect(statuses.at(-1)).toBe(429)
   })
 })

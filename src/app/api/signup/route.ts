@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { waitlistSignupSchema } from '@/lib/validation/schemas';
 import { verifyTurnstile } from '@/lib/turnstile';
+import { clientIp } from '@/lib/preview-login-limiter';
+import { tryConsumeSignup } from '@/lib/signup-limiter';
 
 interface ApiError {
   message?: string;
@@ -18,6 +20,10 @@ function failedBeforeSending(error: unknown): boolean {
 }
 
 export async function POST(request: Request) {
+  // Platform-set client IP (x-vercel-forwarded-for / x-real-ip); the
+  // client-supplied leftmost x-forwarded-for is never trusted.
+  const ip = clientIp(request);
+
   try {
     const data = await request.json();
 
@@ -33,9 +39,15 @@ export async function POST(request: Request) {
     const { firstName, lastName, email, appId, interestLevel, quote, statement } = parsed.data;
 
     const turnstileToken = typeof data?.turnstileToken === 'string' ? data.turnstileToken : '';
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     if (!(await verifyTurnstile(turnstileToken, ip))) {
       return NextResponse.json({ error: 'Security verification failed. Please try again.' }, { status: 400 });
+    }
+
+    // Only submissions that passed validation and Turnstile take a limiter
+    // slot, so junk requests cannot fill it. Checked synchronously right
+    // before the upstream call.
+    if (!tryConsumeSignup(ip, Date.now())) {
+      return NextResponse.json({ error: 'Too many signups. Please try again later.' }, { status: 429 });
     }
 
     if (!process.env.COFABRI_API_BASE_URL || !process.env.COFABRI_API_KEY) {
