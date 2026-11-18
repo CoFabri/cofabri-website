@@ -12,6 +12,7 @@ import UpdatesTabs from '@/components/marketing/UpdatesTabs';
 import { EmptyState } from '@/components/marketing/EmptyState';
 import { ErrorState } from '@/components/marketing/ErrorState';
 import NotifyMeButton from '@/components/marketing/NotifyMeButton';
+import { AppNameLine } from '@/components/marketing/AppNameLine';
 import { displayAppName } from '@/lib/roadmap-display';
 import { filterPillClasses } from '@/lib/filter-pill';
 import { hasActiveRoadmap } from '@/lib/app-display';
@@ -81,11 +82,21 @@ interface ChangelogContentProps {
   initialShipped: RoadmapFeature[];
   initialAppNames: Record<string, string>;
   notifyApps: { id: string; name: string }[];
+  appMarks?: Record<string, string>;
 }
 
-export default function ChangelogContent({ initialShipped, initialAppNames, notifyApps }: ChangelogContentProps) {
+export default function ChangelogContent({ initialShipped, initialAppNames, notifyApps, appMarks = {} }: ChangelogContentProps) {
   const searchParams = useSearchParams();
-  const [selectedApp, setSelectedApp] = useState<string>('');
+  // ?app=<id> deep-links straight to one app's releases (e.g. "All RxBridge releases" on an app page).
+  const [selectedApp, setSelectedApp] = useState<string>(() => searchParams?.get('app') ?? '');
+
+  const selectApp = useCallback((id: string) => {
+    setSelectedApp(id);
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set('app', id);
+    else url.searchParams.delete('app');
+    window.history.replaceState({}, '', url.toString());
+  }, []);
   const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
   const [shipped, setShipped] = useState<RoadmapFeature[]>(initialShipped);
   // Server already fetched this page's data (see changelog/page.tsx) so the
@@ -199,14 +210,14 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
 
       <div className="mt-11 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-8">
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setSelectedApp('')} className={filterPillClasses(selectedApp === '')}>
+          <button type="button" onClick={() => selectApp('')} className={filterPillClasses(selectedApp === '')}>
             All apps
           </button>
           {applications.map((app) => (
             <button
               key={app}
               type="button"
-              onClick={() => setSelectedApp(app)}
+              onClick={() => selectApp(app)}
               className={filterPillClasses(selectedApp === app)}
             >
               {displayAppName(app, appNames)}
@@ -227,7 +238,7 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
           icon={<MagnifyingGlassIcon className="h-5 w-5" />}
           title={selectedApp ? 'Nothing matches that filter' : 'Nothing has shipped yet'}
           description={selectedApp ? 'Try a different app filter.' : 'Check back once the first release lands.'}
-          action={selectedApp ? { label: 'Clear Filters', onClick: () => setSelectedApp('') } : undefined}
+          action={selectedApp ? { label: 'Clear Filters', onClick: () => selectApp('') } : undefined}
         />
       ) : (
         <div>
@@ -244,28 +255,22 @@ export default function ChangelogContent({ initialShipped, initialAppNames, noti
                   type="button"
                   id={`changelog-entry-${item.id}`}
                   onClick={() => openFeature(item)}
-                  className="flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors hover:bg-muted sm:items-center sm:gap-6 sm:rounded-lg sm:px-3 sm:-mx-3"
+                  className="flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors hover:bg-muted lg:items-center lg:gap-6 lg:rounded-lg lg:px-3 lg:-mx-3"
                 >
-                  <span className="mt-1.5 block h-[9px] w-[9px] flex-shrink-0 rounded-full bg-success sm:mt-0" />
-                  <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
-                    <div className="min-w-0 sm:w-[260px] sm:flex-shrink-0">
+                  <span className="mt-2 block h-[9px] w-[9px] flex-shrink-0 rounded-full bg-success lg:mt-0" />
+                  <div className="min-w-0 flex-1 lg:flex lg:items-center lg:gap-6">
+                    <div className="min-w-0 lg:w-[260px] lg:flex-shrink-0">
                       <div className="text-lg font-semibold tracking-[-0.015em] text-foreground">{item.name}</div>
-                      {item.apps.length > 0 && (
-                        <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
-                          {item.apps.map((app) => displayAppName(app.id, appNames)).join(', ')}
-                        </div>
-                      )}
+                      <AppNameLine apps={item.apps} appNames={appNames} appMarks={appMarks} />
                     </div>
                     {item.description && (
-                      <p className="mt-1.5 text-[15px] leading-[1.5] text-ink-muted sm:mt-0 sm:min-w-0 sm:flex-1">{item.description}</p>
+                      <p className="mt-2 text-[15px] leading-[1.5] text-ink-muted lg:mt-0 lg:min-w-0 lg:flex-1">{item.description}</p>
                     )}
-                    <div className="flex items-center gap-3 sm:ml-auto sm:flex-shrink-0">
+                    <div className="mt-3 flex items-center justify-between gap-3 lg:ml-auto lg:mt-0 lg:flex-shrink-0 lg:justify-end">
                       {item.releasedDate && (
-                        <span className="mt-3 block font-mono text-xs text-ink-faint sm:mt-0">
-                          {formatDate(item.releasedDate)}
-                        </span>
+                        <span className="block font-mono text-xs text-ink-faint">{formatDate(item.releasedDate)}</span>
                       )}
-                      <span className="hidden text-sm font-semibold text-ink-muted sm:block">Details →</span>
+                      <span className="text-sm font-semibold text-ink-muted">Details →</span>
                     </div>
                   </div>
                 </button>

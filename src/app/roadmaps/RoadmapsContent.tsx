@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
 import ProductRoadmap from '@/components/marketing/ProductRoadmap';
@@ -73,6 +74,7 @@ interface RoadmapsContentProps {
   initialAppNames: Record<string, string>;
   initialActiveAppIds: string[];
   notifyApps: { id: string; name: string }[];
+  appMarks?: Record<string, string>;
 }
 
 export default function RoadmapsContent({
@@ -80,8 +82,18 @@ export default function RoadmapsContent({
   initialAppNames,
   initialActiveAppIds,
   notifyApps,
+  appMarks = {},
 }: RoadmapsContentProps) {
-  const [selectedApp, setSelectedApp] = useState<string>('');
+  const searchParams = useSearchParams();
+  // ?app=<id> deep-links straight to one app's items (e.g. "All RxBridge items" on an app page).
+  const [selectedApp, setSelectedApp] = useState<string>(() => searchParams?.get('app') ?? '');
+  const selectApp = (id: string) => {
+    setSelectedApp(id);
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set('app', id);
+    else url.searchParams.delete('app');
+    window.history.replaceState({}, '', url.toString());
+  };
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [appNames, setAppNames] = useState<Record<string, string>>(initialAppNames);
   const [allFeatures, setAllFeatures] = useState<RoadmapFeature[]>(initialFeatures);
@@ -175,7 +187,7 @@ export default function RoadmapsContent({
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setSelectedApp('')}
+            onClick={() => selectApp('')}
             className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
               selectedApp === ''
                 ? 'bg-foreground text-background'
@@ -188,7 +200,7 @@ export default function RoadmapsContent({
             <button
               key={app}
               type="button"
-              onClick={() => setSelectedApp(app)}
+              onClick={() => selectApp(app)}
               className={`rounded-full px-[15px] py-2 text-sm font-medium transition-colors ${
                 selectedApp === app
                   ? 'bg-foreground text-background'
@@ -217,9 +229,10 @@ export default function RoadmapsContent({
           selectedStatus={selectedStatus}
           appNames={appNames}
           activeAppIds={activeAppIds}
+          appMarks={appMarks}
           initialFeatures={allFeatures}
           onClearFilters={() => {
-            setSelectedApp('');
+            selectApp('');
             setSelectedStatus('');
           }}
         />

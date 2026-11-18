@@ -37,6 +37,7 @@ export default async function RoadmapsPage() {
   const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getMarketingApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
   const notifyApps = apps.map((a) => ({ id: a.id, name: a.name }));
+  const appMarks = Object.fromEntries(apps.filter((a) => a.faviconUrl).map((a) => [a.id, a.faviconUrl as string]));
   // An app with no row in getMarketingApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public roadmap with commitments for a product no one's working on.
@@ -63,6 +64,7 @@ export default async function RoadmapsPage() {
         initialAppNames={appNames}
         initialActiveAppIds={Array.from(activeAppIds)}
         notifyApps={notifyApps}
+        appMarks={appMarks}
       />
     </Suspense>
   );

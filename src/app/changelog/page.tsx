@@ -36,6 +36,7 @@ export default async function ChangelogPage() {
   const [allFeatures, apps] = await Promise.all([getRoadmapFeatures(), getMarketingApps()]);
   const appNames = Object.fromEntries(apps.map((a) => [a.id, a.name]));
   const notifyApps = apps.map((a) => ({ id: a.id, name: a.name }));
+  const appMarks = Object.fromEntries(apps.filter((a) => a.faviconUrl).map((a) => [a.id, a.faviconUrl as string]));
   // An app with no row in getMarketingApps() (retired apps are dropped from that
   // endpoint entirely) or a recognized-but-inactive status shouldn't clutter
   // the public changelog with releases for a product no one's working on.
@@ -57,7 +58,7 @@ export default async function ChangelogPage() {
         </div>
       }
     >
-      <ChangelogContent initialShipped={shipped} initialAppNames={appNames} notifyApps={notifyApps} />
+      <ChangelogContent initialShipped={shipped} initialAppNames={appNames} notifyApps={notifyApps} appMarks={appMarks} />
     </Suspense>
   );
 }

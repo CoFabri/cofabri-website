@@ -1,5 +1,6 @@
 'use client';
 
+import { AppNameLine } from '@/components/marketing/AppNameLine';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RoadmapFeature } from '@/lib/api-client';
 import { useSearchParams } from 'next/navigation';
@@ -64,6 +65,7 @@ function groupByMilestone(
 
 interface ProductRoadmapProps {
   selectedApp: string;
+  appMarks?: Record<string, string>;
   selectedStatus: string;
   appNames: Record<string, string>;
   // The true "active" set (narrower than Object.keys(appNames) -- appNames
@@ -77,6 +79,7 @@ interface ProductRoadmapProps {
 
 export default function ProductRoadmap({
   selectedApp,
+  appMarks = {},
   selectedStatus,
   appNames,
   activeAppIds,
@@ -202,28 +205,27 @@ export default function ProductRoadmap({
                 type="button"
                 id={`roadmap-feature-${item.id}`}
                 onClick={() => openFeature(item)}
-                className="group flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors duration-200 hover:bg-muted sm:items-center sm:gap-6 sm:rounded-lg sm:px-3 sm:-mx-3"
+                className="group flex w-full items-start gap-4 border-t border-border py-[22px] text-left transition-colors duration-200 hover:bg-muted lg:items-center lg:gap-6 lg:rounded-lg lg:px-3 lg:-mx-3"
               >
-                <span className={`mt-1.5 block h-[9px] w-[9px] flex-shrink-0 rounded-full sm:mt-0 ${roadmapStatusDotClasses(item.status)}`} />
-                <div className="min-w-0 flex-1 sm:flex sm:items-center sm:gap-6">
-                  <div className="min-w-0 sm:w-[260px] sm:flex-shrink-0">
+                <span className={`mt-2 block h-[9px] w-[9px] flex-shrink-0 rounded-full lg:mt-0 ${roadmapStatusDotClasses(item.status)}`} />
+                <div className="min-w-0 flex-1 lg:flex lg:items-center lg:gap-6">
+                  <div className="min-w-0 lg:w-[260px] lg:flex-shrink-0">
                     <div className="text-lg font-semibold tracking-[-0.015em] text-foreground">{item.name}</div>
-                    {item.apps.length > 0 && (
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-faint">
-                        {item.apps.map((app) => appNames[app.id] || app.name).join(', ')}
-                      </div>
-                    )}
+                    <AppNameLine apps={item.apps} appNames={appNames} appMarks={appMarks} />
                   </div>
                   {item.description && (
-                    <p className="mt-1.5 text-[15px] leading-[1.5] text-ink-muted sm:mt-0 sm:min-w-0 sm:flex-1">{item.description}</p>
+                    <p className="mt-2 text-[15px] leading-[1.5] text-ink-muted lg:mt-0 lg:min-w-0 lg:flex-1">{item.description}</p>
                   )}
-                  <div className="mt-3 flex items-center gap-3 sm:ml-auto sm:mt-0 sm:flex-shrink-0">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 lg:ml-auto lg:mt-0 lg:flex-shrink-0">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${roadmapStatusPillClasses(item.status)}`}>
                       {item.status}
                     </span>
                     <span className="font-mono text-xs text-ink-faint">{formatRoadmapWhen(item)}</span>
+                    <span className="ml-auto text-sm font-semibold text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5 lg:hidden">
+                      Details →
+                    </span>
                   </div>
-                  <span className="hidden text-sm font-semibold text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5 sm:block sm:flex-shrink-0">
+                  <span className="hidden text-sm font-semibold text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5 lg:block lg:flex-shrink-0">
                     Details →
                   </span>
                 </div>

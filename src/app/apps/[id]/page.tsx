@@ -239,7 +239,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 Recently shipped
               </h2>
               <Link
-                href="/changelog"
+                href={`/changelog?app=${encodeURIComponent(app.id)}`}
                 className="mt-4 inline-block border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 All {app.name} releases →
@@ -268,7 +268,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 On the roadmap
               </h2>
               <Link
-                href="/roadmaps"
+                href={`/roadmaps?app=${encodeURIComponent(app.id)}`}
                 className="mt-4 inline-block border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 All {app.name} items →
