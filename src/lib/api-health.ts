@@ -6,6 +6,13 @@
 // The root route returns static JSON without touching the database, so this
 // detects host/network/process outages, not a database-only failure. To probe
 // something deeper, change PROBE_PATH.
+//
+// A single dropped connection is not an outage: the Vercel edge in front of
+// api.cofabri.com occasionally resets a TLS handshake (ECONNRESET) from our
+// functions, and one such blip used to flip every page to the 503 backstop.
+// So a fast failure (network error or 5xx) is retried once, inside the same
+// 3-second budget, before the API counts as down. A timeout is not retried:
+// the budget is already spent.
 
 export type ApiHealth = 'up' | 'down';
 
@@ -46,11 +53,7 @@ function isAbortLike(error: unknown): boolean {
   return name === 'TimeoutError' || name === 'AbortError';
 }
 
-async function probe(baseUrl: string): Promise<ApiHealth> {
-  // Built outside the try so a bug here propagates to getApiHealth's outer
-  // catch, which fails open, instead of being mistaken for an outage.
-  const url = `${baseUrl}${PROBE_PATH}`;
-  const signal = AbortSignal.timeout(PROBE_TIMEOUT_MS);
+async function probeOnce(url: string, signal: AbortSignal): Promise<ApiHealth | 'timeout'> {
   try {
     const response = await fetch(url, {
       headers: { Accept: 'application/json' },
@@ -60,9 +63,23 @@ async function probe(baseUrl: string): Promise<ApiHealth> {
     return response.status >= 500 ? 'down' : 'up';
   } catch (error) {
     // Only a fetch network failure (TypeError) or a timeout/abort is an outage.
-    if (isTypeErrorLike(error) || isAbortLike(error)) return 'down';
+    if (isAbortLike(error)) return 'timeout';
+    if (isTypeErrorLike(error)) return 'down';
     throw error;
   }
+}
+
+async function probe(baseUrl: string): Promise<ApiHealth> {
+  // Built outside the try so a bug here propagates to getApiHealth's outer
+  // catch, which fails open, instead of being mistaken for an outage.
+  const url = `${baseUrl}${PROBE_PATH}`;
+  // One signal for both attempts, so the retry never stretches the budget.
+  const signal = AbortSignal.timeout(PROBE_TIMEOUT_MS);
+  const first = await probeOnce(url, signal);
+  if (first === 'up') return 'up';
+  if (first === 'timeout' || signal.aborted) return 'down';
+  const second = await probeOnce(url, signal);
+  return second === 'up' ? 'up' : 'down';
 }
 
 export async function getApiHealth(): Promise<ApiHealth> {

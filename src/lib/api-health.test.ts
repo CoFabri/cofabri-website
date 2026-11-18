@@ -54,6 +54,45 @@ describe('getApiHealth', () => {
     expect(await getApiHealth()).toBe('down');
   });
 
+  it('retries once after a dropped connection and is up if the retry succeeds', async () => {
+    global.fetch = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('fetch failed'))
+      .mockResolvedValueOnce({ status: 200 });
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('up');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries once after a 5xx and is up if the retry succeeds', async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({ status: 503 }).mockResolvedValueOnce({ status: 200 });
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('up');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('is down only after two failed attempts, and never tries a third', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('down');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not retry after a timeout, since the time budget is spent', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new DOMException('timed out', 'TimeoutError'));
+    const getApiHealth = await load();
+    expect(await getApiHealth()).toBe('down');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the same timeout signal for the retry', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
+    const getApiHealth = await load();
+    await getApiHealth();
+    const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls[0][1].signal).toBe(calls[1][1].signal);
+  });
+
   it('is down on a timeout abort', async () => {
     global.fetch = vi.fn().mockRejectedValue(new DOMException('timed out', 'TimeoutError'));
     const getApiHealth = await load();
@@ -114,17 +153,18 @@ describe('getApiHealth', () => {
     global.fetch = vi
       .fn()
       .mockResolvedValueOnce({ status: 503 })
+      .mockResolvedValueOnce({ status: 503 })
       .mockResolvedValueOnce({ status: 200 });
     const getApiHealth = await load();
 
     expect(await getApiHealth()).toBe('down');
     vi.advanceTimersByTime(4_000);
     expect(await getApiHealth()).toBe('down');
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
 
     vi.advanceTimersByTime(2_000);
     expect(await getApiHealth()).toBe('up');
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 
   it('shares one in-flight probe between concurrent callers', async () => {
@@ -173,7 +213,10 @@ describe('getApiHealth', () => {
 
     it('logs once when up turns down', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      global.fetch = vi.fn().mockResolvedValueOnce({ status: 200 }).mockResolvedValueOnce({ status: 503 });
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({ status: 200 })
+        .mockResolvedValue({ status: 503 });
       const getApiHealth = await load();
       await getApiHealth();
       vi.advanceTimersByTime(16_000);
@@ -189,7 +232,7 @@ describe('getApiHealth', () => {
       await getApiHealth();
       vi.advanceTimersByTime(6_000);
       await getApiHealth();
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(global.fetch).toHaveBeenCalledTimes(4);
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn).toHaveBeenCalledWith('cofabri-api health:', 'down');
     });
@@ -203,12 +246,16 @@ describe('getApiHealth', () => {
       expect(await getApiHealth()).toBe('down');
       vi.advanceTimersByTime(4_000);
       expect(await getApiHealth()).toBe('down');
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledTimes(2);
     });
 
     it('logs up when down recovers', async () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      global.fetch = vi.fn().mockResolvedValueOnce({ status: 503 }).mockResolvedValueOnce({ status: 200 });
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({ status: 503 })
+        .mockResolvedValueOnce({ status: 503 })
+        .mockResolvedValueOnce({ status: 200 });
       const getApiHealth = await load();
       await getApiHealth();
       vi.advanceTimersByTime(6_000);
