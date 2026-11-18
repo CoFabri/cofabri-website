@@ -53,8 +53,13 @@ describe('pickReadableTextColor', () => {
     expect(pickReadableTextColor('#0B5ED7')).toBe('#FFFFFF');
   });
 
-  it('picks black against a lighter brand color where white text would fail contrast', () => {
-    expect(pickReadableTextColor('#3B82F6')).toBe('#000000');
+  it('keeps white on a mid-tone brand blue (white clears 3:1)', () => {
+    expect(pickReadableTextColor('#3B82F6')).toBe('#FFFFFF');
+  });
+
+  it('picks black against a light brand color where white text would fail 3:1', () => {
+    expect(pickReadableTextColor('#22C55E')).toBe('#000000');
+    expect(pickReadableTextColor('#FACC15')).toBe('#000000');
   });
 });
 
