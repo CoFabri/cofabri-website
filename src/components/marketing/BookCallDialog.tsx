@@ -199,7 +199,7 @@ export default function BookCallDialog({ open, onOpenChange, service }: BookCall
               <DialogDescription className="text-base leading-relaxed text-foreground">
                 Thanks. We&apos;ll be in touch within one business day.
               </DialogDescription>
-              <p className="m-0 text-sm text-muted-foreground">We sent a copy to {sentTo}.</p>
+              <p className="m-0 text-sm text-muted-foreground">We&apos;ll reply to {sentTo}.</p>
             </div>
             <div className="border-t border-border px-6 py-4 sm:px-8">
               <button

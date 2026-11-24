@@ -45,7 +45,7 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
           {app.status}
         </div>
         <div className="md:border-l md:border-border md:pl-6">
-          <div className="font-mono text-[11px] uppercase tracking-[0.07em] text-ink-faint">Momentum</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.07em] text-ink-muted">Momentum</div>
           <div className="mt-1 text-sm leading-snug text-ink-body">{momentum}</div>
         </div>
       </div>

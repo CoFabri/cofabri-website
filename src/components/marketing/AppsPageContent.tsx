@@ -191,7 +191,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap, managedSe
                   <div>
                     <div className="mb-1.5 flex items-center gap-2">
                       {featured.featureOnWebsite && (
-                        <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                        <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-[#0857BE] dark:text-accent-foreground">
                           Featured
                         </span>
                       )}
@@ -205,7 +205,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap, managedSe
                   </div>
                 </div>
                 <div className="mt-1 w-full border-t border-border pt-4 text-left md:mt-0 md:w-auto md:flex-shrink-0 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-right">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-faint">Momentum</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">Momentum</div>
                   <div className="mt-1 text-[15.5px] font-semibold text-foreground">{appMomentum(featured, roadmap)}</div>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap, managedSe
                     .filter((f): f is string => !!f)
                     .map((f, i) => (
                       <div key={f} className="max-w-[220px]">
-                        <span className="block font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="block font-mono text-xs text-ink-muted">{String(i + 1).padStart(2, '0')}</span>
                         <span className="mt-1 block text-sm leading-[1.45] text-foreground">{f}</span>
                       </div>
                     ))}

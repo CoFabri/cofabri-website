@@ -10,9 +10,9 @@ export function statusPillClasses(status: string): string {
   switch (status) {
     case 'Live':
     case 'Active':
-      return 'bg-success/15 text-success';
+      return 'bg-success/15 text-[#0F6B3A] dark:text-success';
     case 'Beta':
-      return 'bg-accent text-accent-foreground';
+      return 'bg-accent text-[#0857BE] dark:text-accent-foreground';
     case 'In Development':
       return 'bg-muted text-muted-foreground';
     default:

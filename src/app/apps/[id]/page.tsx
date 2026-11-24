@@ -233,7 +233,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
             <div>
               {features.map((f, i) => (
                 <div key={f} className="grid grid-cols-[48px_1fr] gap-6 border-t border-border py-[26px] first:border-t-0 first:pt-0">
-                  <span className="pt-1 font-mono text-xs text-ink-disabled">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="pt-1 font-mono text-xs text-ink-muted">{String(i + 1).padStart(2, '0')}</span>
                   <p className="m-0 max-w-[520px] text-base leading-[1.6] text-ink-muted">{f}</p>
                 </div>
               ))}
