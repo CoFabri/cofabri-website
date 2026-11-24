@@ -73,12 +73,12 @@ template later.
   pair; confirm).
 - **Self-service app CTA:** the app template needs a "Get started" button that
   goes to an external Stripe link, with monthly and annual choices. Design a
-  simple two-option control. No prices shown, so label them "Monthly" and
-  "Annual (best value)" only if annual is in fact cheaper; otherwise "Annual".
+  simple two-option control. No prices shown. **Decided:** plain labels,
+  "Monthly" and "Annual", with no savings claim.
 - **Footer CTA band** currently says "No demo call. No onboarding fee." That
-  is false for managed services. Suggested change: "Start with one app." plus
-  a second line that doesn't promise no calls, for example "Self-serve apps
-  start in minutes. Managed services start with a conversation."
+  is false for managed services. **Decided:** keep the headline "Start with
+  one app." and change the second line to "Apps start in minutes. Need
+  hands-on help? Talk to us." The Contact Us button stays.
 
 ## Constraints the design must respect
 
@@ -106,12 +106,11 @@ template later.
 ## Open items before build
 
 1. Real included-deliverables list and process steps for Marketing.
-2. Proof: any case studies, numbers, or testimonials we can use? If none,
-   the section is omitted rather than invented.
-3. Is annual cheaper than monthly for CRM and Marketing? Affects the CTA label.
-4. Registration of CoFabri CRM and Marketing in the app catalog API (apps are
-   served from `getMarketingApps()`), and a place for services content. See
-   the engineering notes.
+2. Proof: owner will supply real results or quotes. Until then the proof
+   section is omitted, never invented. Design it as an optional section.
+3. Registration of CoFabri CRM in the app catalog API (apps are served from
+   `getMarketingApps()`). Services content is static in this repo at launch
+   (decided), shaped to match a future API type.
 
 ## Engineering notes (not for the design pass)
 
