@@ -95,9 +95,13 @@ interface NotifyInlineProps {
   /** Stable id for the wrapper, so other controls can scroll to it. */
   id?: string;
   className?: string;
+  /** Style of the closed "Notify Me" button: filled (default) or the secondary outline. */
+  variant?: 'solid' | 'outline';
+  /** Stack the field above its button, for narrow columns. */
+  stacked?: boolean;
 }
 
-export default function NotifyInline({ appId, id, className = '' }: NotifyInlineProps) {
+export default function NotifyInline({ appId, id, className = '', variant = 'solid', stacked = false }: NotifyInlineProps) {
   const shared = useContext(NotifyContext);
   const local = useNotifyController(appId);
   const c = shared ?? local;
@@ -127,7 +131,11 @@ export default function NotifyInline({ appId, id, className = '' }: NotifyInline
           type="button"
           onClick={() => c.openField(id ?? '')}
           aria-expanded="false"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-5 py-3 text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
+          className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40 ${stacked ? 'w-full' : ''} ${
+            variant === 'outline'
+              ? 'border border-border-strong bg-transparent text-foreground hover:bg-muted'
+              : 'bg-brand text-on-brand hover:bg-brand-hover'
+          }`}
         >
           <BellIcon className="h-4 w-4" aria-hidden="true" />
           Notify Me
@@ -149,7 +157,7 @@ export default function NotifyInline({ appId, id, className = '' }: NotifyInline
       <label id={labelId} htmlFor={`${labelId}-input`} className="sr-only">
         Your email
       </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className={`flex flex-col gap-2 ${stacked ? '' : 'sm:flex-row'}`}>
         <input
           id={`${labelId}-input`}
           ref={inputRef}
@@ -162,7 +170,7 @@ export default function NotifyInline({ appId, id, className = '' }: NotifyInline
           disabled={c.status === 'submitting'}
           aria-invalid={c.error ? true : undefined}
           aria-describedby={c.error ? errorId : undefined}
-          className="h-11 min-w-0 flex-1 rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 sm:min-w-[240px]"
+          className={`h-11 min-w-0 flex-1 rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 ${stacked ? '' : 'sm:min-w-[240px]'}`}
         />
         <button
           type="submit"

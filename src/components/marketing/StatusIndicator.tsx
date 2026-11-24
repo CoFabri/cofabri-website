@@ -83,7 +83,7 @@ export default function StatusIndicator({
         <Link
           href="/status"
           aria-label={`Status: ${status.label}`}
-          className={cn(buttonVariants({ variant: 'outline', size: 'icon' }))}
+          className={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'ink-chrome')}
         >
           {/* The dot never animates — a ping/pulse reads as an alarm on a page where nothing is wrong. */}
           <span className={`block h-2 w-2 flex-shrink-0 rounded-full ${status.dotColor}`} />

@@ -97,6 +97,7 @@ function ThemeToggle({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
         <Button
           variant="outline"
           size="icon"
+          className="ink-chrome"
           aria-label={`Theme: ${theme.current}. Click to change.`}
           onClick={cycleTheme}
         >
@@ -112,15 +113,21 @@ function ThemeToggle({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
 
 const Navbar = ({
   logo,
+  inkLogo,
   loginUrl,
   account,
 }: {
   logo: React.ReactNode;
+  /** The inverted logo, shown on the dark header of /services. */
+  inkLogo?: React.ReactNode;
   loginUrl?: string;
   account?: AccountIdentity | null;
 }) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // /services (and only /services, not a service's own page) has a dark header, in both themes,
+  // so the header and the dark hero read as one block.
+  const ink = pathname === '/services';
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -129,10 +136,17 @@ const Navbar = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+    <header
+      data-ink-header={ink ? '' : undefined}
+      className={
+        ink
+          ? 'sticky top-0 z-50 border-b border-transparent bg-[var(--ink-bg)]'
+          : 'sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md'
+      }
+    >
       <TooltipProvider delayDuration={200}>
       <nav className="max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex items-center justify-between gap-6">
-        <div className="flex items-center flex-shrink-0">{logo}</div>
+        <div className="flex items-center flex-shrink-0">{ink && inkLogo ? inkLogo : logo}</div>
 
         <ul className="hidden lg:flex items-center gap-1">
           {navigation.map((item) => {
@@ -142,9 +156,13 @@ const Navbar = ({
                 <Link
                   href={item.href}
                   className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[15px] font-medium leading-none transition-colors duration-200 ${
-                    isActive(item.href)
-                      ? 'bg-muted text-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ink
+                      ? isActive(item.href)
+                        ? 'bg-white/10 text-white'
+                        : 'text-[#B4BEC6] hover:bg-white/10 hover:text-white'
+                      : isActive(item.href)
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
                   <Icon className="h-[15px] w-[15px] flex-shrink-0" />
@@ -196,7 +214,7 @@ const Navbar = ({
           <ThemeToggle />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="Open menu">
+              <Button variant="outline" size="icon" className="ink-chrome" aria-label="Open menu">
                 <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>

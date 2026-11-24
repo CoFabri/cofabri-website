@@ -190,6 +190,59 @@
   -webkit-text-fill-color: transparent;
 }
 
+
+/*
+ * The dark "ink" surface used by the Services page's header, hero and hand-off scene. Only /services
+ * uses these. Text on it: headings #F1F4F6, body #B4BEC6, eyebrows #9AA8B2 (all AA on both ink colours).
+ */
+:root {
+  --ink-bg: #12171B;
+  --ink-line: rgba(255, 255, 255, 0.09);
+}
+.dark {
+  --ink-bg: #0E1317;
+}
+
+/* Gradient text for the /services H1: the three product tile icon colours. */
+.ink-gradient-text {
+  background-image: linear-gradient(100deg in oklch, #CFE4FF, #FFD8D0, #E4DDFF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The site header, dark on /services only (Navbar sets data-ink-header there), in both themes. */
+[data-ink-header] .ink-chrome {
+  background-color: transparent;
+  border-color: var(--ink-line);
+  color: #F1F4F6;
+}
+[data-ink-header] .ink-chrome:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+[data-ink-header] [data-slot='button'][data-variant='default'] {
+  background-color: #0B6BE6;
+  color: #FFFFFF;
+}
+[data-ink-header] [data-slot='button'][data-variant='default']:hover {
+  background-color: #0857BE;
+}
+
+/* Hand-off window: new elements fade up. Off for reduced motion. */
+@keyframes ho-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ho-in {
+  /* `backwards`, not `both`: once finished nothing stays applied (no leftover transform). */
+  animation: ho-fade-up 0.45s ease-out backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-in { animation: none; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

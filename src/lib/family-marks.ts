@@ -42,7 +42,8 @@ export const FAMILY_MARKS: Record<string, FamilyMarkDef> = {
   },
 };
 
-export type FamilyMarkSize = 24 | 36 | 44 | 56;
+/** Pixel size of a tile. The design uses 24, 36, 44 and 56 in the UI, and larger on /services. */
+export type FamilyMarkSize = number;
 
 export function hasFamilyMark(appId: string | undefined): boolean {
   return !!appId && appId in FAMILY_MARKS;
