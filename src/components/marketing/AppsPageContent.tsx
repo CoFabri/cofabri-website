@@ -12,6 +12,9 @@ import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
 import AppsCelebration from './AppsCelebration';
 import AppRow from './AppRow';
+import FamilyMark from './FamilyMark';
+import ManagedServiceCard from './ManagedServiceCard';
+import { hasFamilyMark } from '@/lib/family-marks';
 import RevealSection from './RevealSection';
 import StructuredData from './StructuredData';
 import { EmptyState } from './EmptyState';
@@ -38,9 +41,11 @@ const RESOURCES = [
 interface AppsPageContentProps {
   initialApps: App[];
   initialRoadmap: RoadmapFeature[];
+  /** Services shown as Managed cards, each right after the app it runs on. */
+  managedServices?: App[];
 }
 
-export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPageContentProps) {
+export default function AppsPageContent({ initialApps, initialRoadmap, managedServices = [] }: AppsPageContentProps) {
   const [apps, setApps] = useState<App[]>(initialApps);
   const [roadmap, setRoadmap] = useState<RoadmapFeature[]>(initialRoadmap);
   // Server already fetched this page's data (see apps/page.tsx) so the initial
@@ -90,6 +95,11 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
     }
     return seen;
   }, [rows]);
+
+  const managedAfter = (appId: string) =>
+    managedServices
+      .filter((service) => service.linkedAppId === appId)
+      .map((service) => <ManagedServiceCard key={service.id} service={service} runsOn={apps.find((a) => a.id === appId)?.name} />);
 
   const filteredRows = statusFilter === 'All' ? rows : rows.filter((a) => a.status === statusFilter);
 
@@ -159,7 +169,9 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
             <div className="mt-10 rounded-2xl border border-border bg-card p-9">
               <div className="flex flex-wrap items-start justify-between gap-7">
                 <div className="flex min-w-0 items-center gap-4">
-                  {featured.faviconUrl ? (
+                  {hasFamilyMark(featured.id) ? (
+                    <FamilyMark appId={featured.id} size={56} />
+                  ) : featured.faviconUrl ? (
                     <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
                       <Image
                         src={featured.faviconUrl}
@@ -226,17 +238,21 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                     href={`/apps/${featured.id}`}
                     className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border-strong px-[22px] py-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-muted"
                   >
-                    Learn more
+                    Learn More
                   </Link>
                 </div>
               </div>
             </div>
           )}
+          {featured && statusFilter === 'All' && managedAfter(featured.id)}
 
           {filteredRows.length > 0 ? (
             <div className="mt-2">
               {filteredRows.map((app) => (
-                <AppRow key={app.id} app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
+                <React.Fragment key={app.id}>
+                  <AppRow app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
+                  {managedAfter(app.id)}
+                </React.Fragment>
               ))}
             </div>
           ) : statusFilter !== 'All' ? (
@@ -265,7 +281,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
             >
               <div className="text-lg font-semibold tracking-[-0.015em]">{r.title}</div>
               <p className="mt-2.5 text-[15px] leading-[1.55] text-ink-muted">{r.body}</p>
-              <span className="mt-4 inline-block text-[15px] font-semibold text-primary">Learn more →</span>
+              <span className="mt-4 inline-block text-[15px] font-semibold text-primary">Learn More →</span>
             </Link>
           ))}
         </div>

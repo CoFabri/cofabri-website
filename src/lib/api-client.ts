@@ -67,6 +67,14 @@ export interface App {
   betaCapacity?: number | null;
   betaSpotsFilled?: number;
   documentation?: string;
+  /** 'cofabri_service' rows are services (listed under /services), everything else is an app. */
+  projectType?: string;
+  /** For a service, the app_id of the app it runs on. */
+  linkedAppId?: string;
+  /** Service page copy from apps.metadata.service. Validated by parseServiceContent before use. */
+  service?: unknown;
+  /** Self-service checkout links from apps.metadata.checkout (apps only; never set for services). */
+  checkout?: { monthly?: string; annual?: string };
 }
 
 interface AppRow {
@@ -85,6 +93,10 @@ interface AppRow {
   latest_release_date: string | null;
   featured_app: boolean;
   documentation: string | null;
+  project_type?: string | null;
+  linked_app_id?: string | null;
+  service?: unknown;
+  checkout?: { monthly?: string | null; annual?: string | null } | null;
   // Only present on the single-app endpoint (getApp); the list endpoint
   // (getApps) never includes it.
   beta_statements?: BetaStatement[];
@@ -144,10 +156,27 @@ function mapApp(row: AppRow): App {
     betaCapacity: row.beta_capacity,
     betaSpotsFilled: row.beta_spots_filled,
     documentation: row.documentation || undefined,
+    projectType: row.project_type || undefined,
+    linkedAppId: row.linked_app_id || undefined,
+    service: row.service ?? undefined,
+    checkout: mapCheckout(row.checkout),
   };
 }
 
-export async function getApps(): Promise<App[]> {
+function mapCheckout(raw: AppRow['checkout']): App['checkout'] {
+  if (!raw) return undefined;
+  const monthly = raw.monthly || undefined;
+  const annual = raw.annual || undefined;
+  return monthly || annual ? { monthly, annual } : undefined;
+}
+
+export const SERVICE_PROJECT_TYPE = 'cofabri_service';
+
+export function isService(app: Pick<App, 'projectType'>): boolean {
+  return app.projectType === SERVICE_PROJECT_TYPE;
+}
+
+async function getAllApps(): Promise<App[]> {
   try {
     const rows = await apiFetch<AppRow[]>('/web/content/apps');
     return rows.map(mapApp);
@@ -155,6 +184,23 @@ export async function getApps(): Promise<App[]> {
     console.error('Error fetching apps:', error);
     return [];
   }
+}
+
+// Apps only. Services (project_type = cofabri_service) are excluded here so
+// every consumer (apps list, sitemap, changelog, roadmap, status, developers)
+// stays app-only without each having to filter.
+export async function getApps(): Promise<App[]> {
+  return (await getAllApps()).filter((app) => !isService(app));
+}
+
+// Services only, in the order the API returns them (by name).
+export async function getServices(): Promise<App[]> {
+  return (await getAllApps()).filter(isService);
+}
+
+export async function getService(serviceId: string): Promise<App | null> {
+  const app = await getApp(serviceId);
+  return app && isService(app) ? app : null;
 }
 
 // Apps that exist only in the developer portal (/developers), never on the

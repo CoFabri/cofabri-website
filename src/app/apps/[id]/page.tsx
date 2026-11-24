@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import { getApp, getAppReleases, getKnowledgeBaseArticles, getRoadmapFeatures } from '@/lib/api-client';
+import { getApp, getAppReleases, getKnowledgeBaseArticles, getRoadmapFeatures, getServices, isService } from '@/lib/api-client';
 import { pickAppIntroArticles } from '@/lib/kb-links';
 import { buildDescription } from '@/lib/meta-description';
 import { getSystemStatus } from '@/lib/status-api';
@@ -14,6 +14,10 @@ import { roadmapStatusPillClasses, formatRoadmapWhen } from '@/lib/roadmap-displ
 import Breadcrumbs from '@/components/marketing/Breadcrumbs';
 import JsonLd from '@/components/marketing/JsonLd';
 import { buildSoftwareApplicationSchema } from '@/lib/structured-data';
+import FamilyMark from '@/components/marketing/FamilyMark';
+import CheckoutButtons from '@/components/marketing/CheckoutButtons';
+import { hasFamilyMark } from '@/lib/family-marks';
+import { brandClass, resolveServiceContent } from '@/lib/services';
 
 interface AppDetailPageProps {
   params: Promise<{ id: string }>;
@@ -39,7 +43,7 @@ export async function generateMetadata({ params }: AppDetailPageProps): Promise<
   const { id } = await params;
   const app = await getApp(id);
 
-  if (!app) {
+  if (!app || isService(app)) {
     return {
       title: 'App Not Found',
       description: 'The requested app could not be found.',
@@ -78,7 +82,8 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const { id } = await params;
   const app = await getApp(id);
 
-  if (!app) {
+  // Services live under /services, not /apps.
+  if (!app || isService(app)) {
     notFound();
   }
 
@@ -93,6 +98,10 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
   const guides = pickAppIntroArticles(app.id, await getKnowledgeBaseArticles());
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
+  const linkedServices = (await getServices()).filter((service) => service.linkedAppId === app.id);
+  // Self-service checkout needs both links in apps.metadata.checkout; with either missing the buttons stay hidden.
+  // TODO(checkout): no checkout links are stored in Core yet (CoFabri CRM and others), so none show today.
+  const checkout = app.checkout?.monthly && app.checkout?.annual ? { monthly: app.checkout.monthly, annual: app.checkout.annual } : null;
 
   // Only fully live apps get a status dot — an uptime signal reads as noise
   // (or actively misleading) on something still in development or beta.
@@ -112,7 +121,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   ).filter((row): row is { k: string; v: string } => !!row.v);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${brandClass(app.id)}`}>
       <JsonLd
         data={buildSoftwareApplicationSchema({
           id: app.id,
@@ -131,16 +140,18 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         <div className="grid grid-cols-1 items-start gap-14 lg:grid-cols-[1fr_460px] lg:gap-20">
           <div>
             <div className="mb-5 flex items-center gap-3.5">
-              {app.faviconUrl ? (
-                <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
+              {hasFamilyMark(app.id) ? (
+                <FamilyMark appId={app.id} size={56} />
+              ) : app.faviconUrl ? (
+                <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-secondary">
                   <Image src={app.faviconUrl} alt="" fill className="object-contain" />
                 </div>
               ) : (
                 <div
                   className={
                     app.primaryColor
-                      ? 'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold'
-                      : `flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] text-[19px] font-semibold ${markPalette(app.id)}`
+                      ? 'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-[19px] font-semibold'
+                      : `flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-[19px] font-semibold ${markPalette(app.id)}`
                   }
                   style={app.primaryColor ? { backgroundColor: app.primaryColor, color: pickReadableTextColor(app.primaryColor) } : undefined}
                 >
@@ -175,27 +186,32 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
             {statusExplainer(app.status) && (
               <p className="mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-muted">{statusExplainer(app.status)}</p>
             )}
-            <div className="mt-8 flex flex-wrap gap-3">
+            {checkout && (
+              <div className="mt-8">
+                <CheckoutButtons monthly={checkout.monthly} annual={checkout.annual} />
+              </div>
+            )}
+            <div className={`mt-8 flex flex-wrap gap-3 ${checkout ? 'hidden' : ''}`}>
               <Link
                 href={actionHref(app)}
                 target={isExternalAction(app) ? '_blank' : undefined}
                 rel={isExternalAction(app) ? 'noopener noreferrer' : undefined}
-                className="inline-flex items-center gap-1.5 rounded-[9px] bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-[26px] py-3.5 text-base font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                 style={app.primaryColor ? { backgroundColor: app.primaryColor, color: pickReadableTextColor(app.primaryColor) } : undefined}
               >
                 {actionLabel(app)} {isExternalAction(app) && <ArrowTopRightOnSquareIcon className="h-4 w-4" />}
               </Link>
               <Link
                 href="/apps"
-                className="inline-flex items-center gap-1.5 rounded-[9px] border border-border-strong px-[26px] py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong px-[26px] py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-muted"
               >
-                All apps
+                All Apps
               </Link>
             </div>
           </div>
 
           {meta.length > 0 && (
-            <div className="w-full overflow-hidden rounded-xl border border-border">
+            <div className="w-full overflow-hidden rounded-lg border border-border">
               {meta.map((row) => (
                 <div
                   key={row.k}
@@ -224,6 +240,25 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
             </div>
           </div>
         )}
+
+        {linkedServices.map((service) => {
+          const line = resolveServiceContent(service)?.appBand;
+          return (
+            <div
+              key={service.id}
+              className="mt-12 flex flex-col gap-5 rounded-lg border border-border bg-surface-sunken p-6 sm:flex-row sm:items-center sm:gap-6 sm:p-8"
+            >
+              <FamilyMark appId={service.id} size={56} />
+              <div className="min-w-0 flex-1">
+                <h2 className="m-0 p-0 text-xl font-semibold leading-snug tracking-[-0.02em] text-foreground">Want us to run this for you?</h2>
+                <p className="mt-1.5 max-w-[560px] text-[15px] leading-[1.55] text-ink-muted">{line ?? `${service.name} is a service from the CoFabri team that runs on ${app.name}.`}</p>
+              </div>
+              <Link href={`/services/${service.id}`} className="whitespace-nowrap text-[15px] font-semibold text-primary hover:underline">
+                See {service.name} →
+              </Link>
+            </div>
+          );
+        })}
 
         {shippedItems.length > 0 && (
           <div className="relative mt-[88px] grid grid-cols-1 gap-10 overflow-hidden lg:grid-cols-[320px_1fr] lg:gap-20">

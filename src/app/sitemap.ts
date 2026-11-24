@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getMarketingApps, getKnowledgeBaseArticles } from '@/lib/api-client'
+import { getMarketingApps, getServices, getKnowledgeBaseArticles } from '@/lib/api-client'
 
 const baseUrl = 'https://cofabri.com'
 
@@ -20,6 +20,7 @@ const STATIC_PAGES: {
 }[] = [
   { path: '', lastModified: '2026-10-15', changeFrequency: 'weekly', priority: 1 },
   { path: '/apps', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/services', changeFrequency: 'weekly', priority: 0.9 },
   { path: '/co-build', lastModified: '2026-09-15', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/contact', lastModified: '2026-09-02', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/about', lastModified: '2026-09-28', changeFrequency: 'monthly', priority: 0.7 },
@@ -58,13 +59,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch dynamic content directly through the shared API client (not an
   // HTTP round-trip to this site's own /api routes) — avoids depending on
   // this deployment's own base URL resolving correctly at sitemap-build time.
-  const [apps, articles] = await Promise.all([
+  const [apps, services, articles] = await Promise.all([
     getMarketingApps().catch(() => []),
+    getServices().catch(() => []),
     getKnowledgeBaseArticles().catch(() => []),
   ])
 
   const appPages = apps.map((app) =>
     entry(`${baseUrl}/apps/${app.id}`, validPastDate(app.releaseDate, app.launchDate), 'monthly', 0.6),
+  )
+
+  const servicePages = services.map((service) =>
+    entry(`${baseUrl}/services/${service.id}`, validPastDate(service.releaseDate, service.launchDate), 'monthly', 0.7),
   )
 
   const articlePages = articles.map((article) =>
@@ -76,5 +82,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   )
 
-  return [...staticPages, ...appPages, ...articlePages]
+  return [...staticPages, ...appPages, ...servicePages, ...articlePages]
 }

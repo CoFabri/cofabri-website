@@ -21,6 +21,12 @@ export interface SoftwareApplicationInput {
   category?: string;
 }
 
+export interface ServiceInput {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface ArticleInput {
   slug: string;
   title: string;
@@ -64,6 +70,20 @@ export function buildSoftwareApplicationSchema(input: SoftwareApplicationInput):
     url: normalizeUrl(input.appUrl) ?? `${SITE_URL}/apps/${input.id}`,
     mainEntityOfPage: `${SITE_URL}/apps/${input.id}`,
     publisher: { '@id': ORGANIZATION_ID },
+  });
+}
+
+// A service page: what it is and who provides it. Deliberately no offers or
+// prices, and nothing the page does not say.
+export function buildServiceSchema(input: ServiceInput): JsonLd {
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: input.name,
+    description: input.description?.trim(),
+    url: `${SITE_URL}/services/${input.id}`,
+    mainEntityOfPage: `${SITE_URL}/services/${input.id}`,
+    provider: { '@id': ORGANIZATION_ID },
   });
 }
 

@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/api-client', () => ({
-  getApps: vi.fn(), getMarketingApps: vi.fn(),
+  getApps: vi.fn(), getMarketingApps: vi.fn(), getServices: vi.fn(),
+  isService: (app: { projectType?: string }) => app?.projectType === 'cofabri_service',
+  getService: vi.fn(async (id: string) =>
+    id === 'cofabri-marketing'
+      ? { id, name: 'CoFabri Marketing', description: 'Ads.', status: 'Live', projectType: 'cofabri_service', linkedAppId: 'cofabri-crm' }
+      : null,
+  ),
   getApp: vi.fn(async () => ({
     id: 'medoura',
     name: 'Medoura',
@@ -33,6 +39,8 @@ vi.mock('@/components/marketing/AppsPageContent', () => ({ default: () => null }
 
 import { metadata as aboutMetadata } from './about/page';
 import { metadata as appsMetadata } from './apps/page';
+import { metadata as servicesMetadata } from './services/page';
+import { generateMetadata as serviceMetadata } from './services/[slug]/page';
 import { metadata as changelogMetadata } from './changelog/page';
 import { metadata as legalMetadata } from './legal/page';
 import { generateMetadata as appMetadata } from './apps/[id]/page';
@@ -54,8 +62,27 @@ describe('metadata polish', () => {
     expect(`${m.title} | CoFabri`.length).toBeLessThanOrEqual(60);
   });
 
-  it('uses summary_large_image on /apps, /about and /legal', () => {
-    for (const m of [appsMetadata, aboutMetadata, legalMetadata]) {
+  it('has 100-160 character descriptions on /services and a service page, with a canonical URL', async () => {
+    expect(inRange(servicesMetadata.description)).toBe(true);
+    const m = await serviceMetadata({ params: Promise.resolve({ slug: 'cofabri-marketing' }) });
+    expect(inRange(m.description)).toBe(true);
+    expect(m.title).toBe('CoFabri Marketing');
+    expect(m.alternates?.canonical).toBe('/services/cofabri-marketing');
+    expect(servicesMetadata.alternates?.canonical).toBe('/services');
+  });
+
+  it('answers a missing service page with a not-found title', async () => {
+    const m = await serviceMetadata({ params: Promise.resolve({ slug: 'nope' }) });
+    expect(m.title).toBe('Service Not Found');
+  });
+
+  it('never puts a price in service metadata', async () => {
+    const m = await serviceMetadata({ params: Promise.resolve({ slug: 'cofabri-marketing' }) });
+    expect(JSON.stringify([servicesMetadata, m])).not.toMatch(/\$\s?\d|per month|\/mo\b/i);
+  });
+
+  it('uses summary_large_image on /apps, /about, /legal and /services', () => {
+    for (const m of [appsMetadata, aboutMetadata, legalMetadata, servicesMetadata]) {
       expect((m.twitter as { card?: string }).card).toBe('summary_large_image');
     }
   });

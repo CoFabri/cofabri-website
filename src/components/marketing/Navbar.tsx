@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import {
-  Squares2X2Icon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon, UserGroupIcon,
+  Squares2X2Icon, BriefcaseIcon, ArrowTrendingUpIcon, BookOpenIcon, LifebuoyIcon, UserGroupIcon,
   Bars3Icon, XMarkIcon, SunIcon, MoonIcon, ComputerDesktopIcon, ArrowRightEndOnRectangleIcon, EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ function initialsFor(account: AccountIdentity): string {
 
 const navigation = [
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
+  { name: 'Services', href: '/services', icon: BriefcaseIcon, tag: 'New' },
   { name: 'About', href: '/about', icon: UserGroupIcon },
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpenIcon },
@@ -242,6 +243,11 @@ const Navbar = ({
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span className="text-[26px] font-semibold leading-[1.05] tracking-[-0.035em]">{item.name}</span>
+                    {'tag' in item && item.tag && (
+                      <span className="self-center rounded-full bg-accent-tint px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-[#0857BE] dark:text-accent-hover">
+                        {item.tag}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </nav>

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import type { App, RoadmapFeature } from '@/lib/api-client';
+import FamilyMark from './FamilyMark';
+import { hasFamilyMark } from '@/lib/family-marks';
 import { statusPillClasses, statusDotClasses, markPalette, appMomentum } from '@/lib/app-display';
 
 interface AppRowProps {
@@ -16,15 +18,17 @@ export default function AppRow({ app, roadmap, href }: AppRowProps) {
   return (
     <Link
       href={href}
-      className="group block rounded-[10px] border-b border-border px-6 py-6 text-foreground transition-colors duration-200 hover:bg-muted md:grid md:grid-cols-[40px_1fr_112px_200px_20px] md:items-start md:gap-6"
+      className="group block rounded-lg border-b border-border px-6 py-6 text-foreground transition-colors duration-200 hover:bg-muted md:grid md:grid-cols-[44px_1fr_112px_200px_20px] md:items-start md:gap-6"
     >
       <div className="flex items-center gap-4 md:contents">
-        {app.faviconUrl ? (
-          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-[9px] border border-border bg-secondary">
+        {hasFamilyMark(app.id) ? (
+          <FamilyMark appId={app.id} size={44} />
+        ) : app.faviconUrl ? (
+          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-border bg-secondary">
             <Image src={app.faviconUrl} alt="" fill className="object-contain" unoptimized={process.env.NODE_ENV === 'development'} />
           </div>
         ) : (
-          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[9px] text-[17px] font-semibold tracking-[-0.02em] ${markPalette(app.id)}`}>
+          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-[17px] font-semibold tracking-[-0.02em] ${markPalette(app.id)}`}>
             {app.name.charAt(0).toUpperCase()}
           </div>
         )}
