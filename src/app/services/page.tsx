@@ -48,7 +48,7 @@ export default async function ServicesPage() {
   const [services, apps] = await Promise.all([getServices(), getApps()]);
   const appById = new Map(apps.map((a) => [a.id, a]));
   const layout = servicesLayout(services.length);
-  const composition = buildComposition(services, apps);
+  const composition = buildComposition(services);
   // The hero's Book a Call files the inquiry against the first live service; with none live it goes to /contact.
   const live = services.find((s) => !isComingSoon(s));
 

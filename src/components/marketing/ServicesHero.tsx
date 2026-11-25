@@ -3,10 +3,10 @@ import type { CompositionTile } from '@/lib/services/composition';
 import FamilyMark from './FamilyMark';
 import InkEyebrow from './InkEyebrow';
 
-// The dark /services hero: copy on the left, a 440px family composition on the
-// right, and a meta strip along the bottom. It sits on the ink surface (the
-// header above it is dark too, so the two read as one block). The tiles come
-// from Core, via buildComposition.
+// The dark /services hero: copy on the left, a 440px composition of the services
+// on the right, and a meta strip along the bottom. It sits on the ink surface (the
+// header above it is dark too, so the two read as one block). The tiles are the
+// visible services from Core, via buildComposition. Apps are not part of it.
 
 const META = [
   { key: 'Who does the work', value: 'The CoFabri team' },
@@ -49,7 +49,7 @@ function Label({ tile, className = '' }: { tile: CompositionTile; className?: st
 
 function SimpleRow({ tiles }: { tiles: CompositionTile[] }) {
   return (
-    <ul aria-label="CoFabri apps and services" className="m-0 flex list-none flex-wrap items-start gap-x-4 gap-y-10 p-0 sm:gap-x-10">
+    <ul aria-label="CoFabri services" className="m-0 flex list-none flex-wrap items-start gap-x-4 gap-y-10 p-0 sm:gap-x-10">
       {/* Three to a row on a phone (a third of the width each, so three tiles never wrap); fixed width from sm up. */}
       {tiles.map((tile) => (
         <li key={tile.id} className="flex w-[calc((100%-2rem)/3)] min-w-0 flex-col items-start gap-4 sm:w-[132px]">
@@ -66,28 +66,19 @@ function SimpleRow({ tiles }: { tiles: CompositionTile[] }) {
   );
 }
 
-// The designed arrangement, desktop only: the app top left, the second service
-// bottom left (labels to their right), the first service larger and right of
-// centre with its label below.
+// The designed arrangement, desktop only, for two services: the first larger, upper left, with its
+// label below; the second smaller, lower right, with its label below.
 function Arranged({ tiles }: { tiles: CompositionTile[] }) {
-  const [app, main, other] = tiles;
+  const [main, other] = tiles;
   return (
-    <ul aria-label="CoFabri apps and services" className="relative m-0 hidden h-[400px] list-none p-0 lg:block">
-      <li className="absolute left-0 top-[14px]">
-        <Tile tile={app} size={104} />
-      </li>
-      <li className="absolute left-[132px] top-[42px]">
-        <Label tile={app} />
-      </li>
-      <li className="absolute left-[262px] top-[78px]">
+    <ul aria-label="CoFabri services" className="relative m-0 hidden h-[400px] list-none p-0 lg:block">
+      <li className="absolute left-[24px] top-[48px]">
         <Tile tile={main} size={148} />
         <Label tile={main} className="mt-7" />
       </li>
-      <li className="absolute left-0 top-[290px]">
+      <li className="absolute left-[252px] top-[212px]">
         <Tile tile={other} size={104} />
-      </li>
-      <li className="absolute left-[132px] top-[322px]">
-        <Label tile={other} />
+        <Label tile={other} className="mt-6" />
       </li>
     </ul>
   );
