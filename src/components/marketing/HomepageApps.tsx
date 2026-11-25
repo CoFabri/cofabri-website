@@ -172,7 +172,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
             href="/apps"
             className="hidden sm:inline-flex items-center gap-1.5 flex-shrink-0 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
           >
-            View all apps
+            View All Apps
             <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -270,7 +270,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
 
         <div className="mt-8 text-center sm:hidden">
           <Link href="/apps" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
-            View all apps
+            View All Apps
             <ArrowRightIcon className="h-3.5 w-3.5" />
           </Link>
         </div>
