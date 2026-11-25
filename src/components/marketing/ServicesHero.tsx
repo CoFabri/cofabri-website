@@ -103,7 +103,7 @@ export default function ServicesHero({ tiles, arranged, primaryAction }: Service
   return (
     <section className="br-crm relative overflow-hidden bg-[var(--ink-bg)] text-[#B4BEC6]">
       <div className="relative mx-auto max-w-[1200px] px-6 pt-12 sm:px-10 lg:pt-20">
-        <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[1fr_440px] lg:gap-16">
+        <div className={`grid grid-cols-1 items-center gap-14 lg:gap-16 ${tiles.length > 0 ? 'lg:grid-cols-[1fr_440px]' : ''}`}>
           <div>
             <InkEyebrow>Services</InkEyebrow>
             <h1 className="m-0 mt-6 p-0 text-[42px] font-semibold leading-[1.04] tracking-[-0.035em] text-[#F1F4F6] sm:text-[56px] lg:text-[68px]">
@@ -123,32 +123,34 @@ export default function ServicesHero({ tiles, arranged, primaryAction }: Service
             </div>
           </div>
 
-          <div className="relative">
-            {/* Three soft glows behind the tiles. Plain radial gradients, so nothing repaints on scroll. */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -inset-x-24 -inset-y-20"
-              style={{
-                backgroundImage: [
-                  'radial-gradient(closest-side at 22% 24%, rgba(11,107,230,0.30), transparent)',
-                  'radial-gradient(closest-side at 74% 46%, rgba(194,65,12,0.22), transparent)',
-                  'radial-gradient(closest-side at 20% 84%, rgba(126,47,142,0.28), transparent)',
-                ].join(', '),
-              }}
-            />
+          {tiles.length > 0 && (
             <div className="relative">
-              {arranged ? (
-                <>
-                  <Arranged tiles={tiles} />
-                  <div className="lg:hidden">
-                    <SimpleRow tiles={tiles} />
-                  </div>
-                </>
-              ) : (
-                <SimpleRow tiles={tiles} />
+              {/* Three soft glows behind the tiles. Plain radial gradients, so nothing repaints on scroll. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-x-24 -inset-y-20"
+                style={{
+                  backgroundImage: [
+                    'radial-gradient(closest-side at 22% 24%, rgba(11,107,230,0.30), transparent)',
+                    'radial-gradient(closest-side at 74% 46%, rgba(194,65,12,0.22), transparent)',
+                    'radial-gradient(closest-side at 20% 84%, rgba(126,47,142,0.28), transparent)',
+                  ].join(', '),
+                }}
+              />
+              <div className="relative">
+                {arranged ? (
+                  <>
+                    <Arranged tiles={tiles} />
+                    <div className="lg:hidden">
+                      <SimpleRow tiles={tiles} />
+                    </div>
+                  </>
+                ) : (
+                  <SimpleRow tiles={tiles} />
               )}
             </div>
           </div>
+          )}
         </div>
 
         <dl className="m-0 mt-16 grid grid-cols-2 border-t border-[var(--ink-line)] lg:mt-20 lg:grid-cols-4">

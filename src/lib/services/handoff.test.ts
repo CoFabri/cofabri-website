@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEMO,
   HANDOFF_COPY,
   HANDOFF_STEPS,
   STEP_COUNT,
@@ -15,7 +16,12 @@ describe('hand-off steps', () => {
     expect(HANDOFF_STEPS.map((s) => s.title)).toEqual(['We draft it', 'You approve it', 'We run it', 'You see it land']);
   });
 
-  it('is plain placeholder copy: no price, no real results, no platform name', () => {
+  it('has demo content with no digits, prices or results, labelled Demo', () => {
+    expect(DEMO.tag).toBe('Demo');
+    expect(JSON.stringify(DEMO)).not.toMatch(/\d|\$|%/);
+  });
+
+  it('is plain copy: no price, no real results, no platform name', () => {
     const all = JSON.stringify([HANDOFF_COPY, HANDOFF_STEPS]);
     expect(all).not.toMatch(/\$\s?\d|\d+\s?%|per month|gohighlevel|highlevel|\bghl\b/i);
   });
