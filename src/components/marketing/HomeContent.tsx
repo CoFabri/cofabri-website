@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
+import HomeServices from '@/components/marketing/HomeServices';
 import CoBuildSection from '@/components/marketing/CoBuildSection';
 import About from '@/components/marketing/About';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
@@ -31,6 +32,7 @@ export default function HomeContent() {
       )}
       <Hero />
       <HomepageApps />
+      <HomeServices />
       <CoBuildSection />
       <About />
       <CompactRoadmap />

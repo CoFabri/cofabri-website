@@ -22,7 +22,7 @@ export default function ServiceCard({ service, runsOn = [], solo = false }: Serv
   return (
     <article
       data-service-card={service.id}
-      className={`relative flex h-full rounded-lg border border-border bg-card p-6 ${brandClass(service.id)} ${solo ? 'flex-col gap-6 md:flex-row md:items-center md:gap-10 md:p-8' : 'flex-col'}`}
+      className={`relative flex h-full rounded-lg border border-border bg-card p-6 ${brandClass(service.id)} ${solo ? 'flex-col gap-6 md:flex-row md:items-center md:gap-10 md:p-8 duo:flex-col duo:items-stretch duo:gap-6' : 'flex-col gap-5'}`}
     >
       <div className={solo ? 'flex-1' : ''}>
         <div className={`flex gap-3 ${solo ? 'items-center gap-4' : 'items-start justify-between'}`}>
@@ -41,11 +41,12 @@ export default function ServiceCard({ service, runsOn = [], solo = false }: Serv
       </div>
 
       {/* Footer row has a fixed minimum height so the footers line up across cards. */}
-      <div className={`relative z-10 flex flex-wrap items-center gap-x-5 gap-y-3 ${solo ? 'md:flex-shrink-0' : 'mt-auto min-h-[68px] border-t border-border pt-5'}`}>
-        {comingSoon && <NotifyInline appId={service.id} />}
+      {/* A card footer is a size container, so Notify Me stacks (field above button) when the card is narrow: a two-up card at 768 is about 332px wide. The solo card's footer sizes to its content, so it is not one. */}
+      <div className={`relative z-10 flex flex-wrap items-center gap-x-5 gap-y-3 ${solo ? 'md:flex-shrink-0 duo:flex-shrink' : '@container mt-auto min-h-[68px] border-t border-border pt-5'}`}>
+        {comingSoon && <NotifyInline appId={service.id} stacked={solo ? false : 'container'} />}
         <Link
           href={href}
-          className="text-[15px] font-semibold text-brand-text transition-colors hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
+          className="text-[15px] font-semibold text-brand-text transition-colors hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40 pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center"
         >
           Learn More
         </Link>
