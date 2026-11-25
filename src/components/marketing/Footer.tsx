@@ -28,7 +28,7 @@ const Footer = () => {
           </h2>
           <p className="mt-3.5 text-lg text-[#B4BEC6]">
             Apps start in minutes. Need hands-on help?{' '}
-            <Link href="/contact" className="font-medium text-white underline underline-offset-4 hover:no-underline">
+            <Link href="/contact?topic=sales" className="font-medium text-white underline underline-offset-4 hover:no-underline">
               Talk to us.
             </Link>
           </p>

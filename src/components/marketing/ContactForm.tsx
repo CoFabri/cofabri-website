@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
+import { parseContactPrefill } from '@/lib/contact-prefill';
 import PhoneField from './PhoneField';
 import PreferredContactMethodField from './PreferredContactMethodField';
 import { contactSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS, INQUIRY_TYPES } from '@/lib/validation/schemas';
@@ -289,10 +290,9 @@ export default function ContactForm() {
     const email = searchParams?.get('email') || '';
     const rawPhone = searchParams?.get('phone') || '';
     const language = searchParams?.get('language') || 'English';
-    const urlTopic = searchParams?.get('topic') || '';
-    const topic = INQUIRY_TYPES.some(type => type.value === urlTopic)
-      ? (urlTopic as (typeof INQUIRY_TYPES)[number]['value'])
-      : '';
+    // topic, subject and message come from the link (see lib/contact-prefill); the visitor still reviews and sends.
+    const prefill = parseContactPrefill((name) => searchParams?.get(name));
+    const topic = prefill.topic ?? '';
 
     // Format phone number if it comes from URL parameters. This only runs
     // at mount (before the user could have picked a different country), so
@@ -307,7 +307,9 @@ export default function ContactForm() {
       email,
       phone,
       languagePreference: language,
-      ...(topic ? { inquiryType: topic } : {})
+      ...(topic ? { inquiryType: topic } : {}),
+      ...(prefill.subject ? { subject: prefill.subject } : {}),
+      ...(prefill.message ? { message: prefill.message } : {})
     }));
   }, [searchParams]);
 
