@@ -30,7 +30,7 @@ export default function CoBuildSection() {
               href="/co-build"
               className="mt-7 inline-flex items-center gap-1.5 border-b border-ink-disabled pb-0.5 text-[15px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
             >
-              See how Co-Build works
+              See How Co-Build Works
               <ArrowRightIcon className="h-3.5 w-3.5" />
             </Link>
           </div>
