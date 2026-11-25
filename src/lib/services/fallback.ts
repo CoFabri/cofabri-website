@@ -24,13 +24,13 @@ export const SERVICE_FALLBACKS: Record<string, ServiceContent> = {
         { title: 'Campaign setup', body: 'We build your campaigns in your own ad account, aimed at the customers and area you serve.' },
         { title: 'Ads written for you', body: 'Ad copy written by our team, built around your own photos and video or around images we produce for an added fee. Nothing goes live until you approve it.' },
         { title: 'Ongoing management', body: 'We watch results and adjust audiences, budget split and ads as we learn what works.' },
-        { title: 'Leads in CoFabri CRM', body: 'Every lead lands in CoFabri CRM with where it came from, so you can follow up fast.' },
+        { title: 'Leads in your CoFabri app', body: 'Every lead lands in your CoFabri app (CoFabri CRM or Medoura) with where it came from, so you can follow up fast.' },
         { title: 'Plain-language reports', body: 'What ran, what it cost, and how many leads came in, without the jargon.' },
       ],
     },
     steps: [
       { title: 'Book a call', body: 'We learn about your business, your area and what you want more of.' },
-      { title: 'We set things up', body: 'We connect your ad account to CoFabri CRM and draft your first ads for your approval.' },
+      { title: 'We set things up', body: 'We connect your ad account to your CoFabri app and draft your first ads for your approval.' },
       { title: 'We run your ads', body: "We launch, watch the numbers and adjust, so you don't have to." },
       { title: 'You get reports', body: 'What ran, what it cost and the leads it brought in.' },
     ],
@@ -38,7 +38,7 @@ export const SERVICE_FALLBACKS: Record<string, ServiceContent> = {
       fit: [
         'Local and service businesses that want more leads',
         'Owners who would rather not learn ad tools',
-        'Teams using, or ready to use, CoFabri CRM',
+        'Teams on CoFabri CRM or Medoura, or ready to be',
       ],
       notFit: [
         'Businesses that want to manage their own ads day to day',
@@ -52,7 +52,7 @@ export const SERVICE_FALLBACKS: Record<string, ServiceContent> = {
       { icon: 'needs', title: 'What we need from you', body: 'Your photos and video if you\'re supplying them, approval on every new ad, and a quick reply when we have a question. New campaigns take a few weeks to settle.' },
     ],
     faq: [
-      { q: 'Do I need CoFabri CRM?', a: "Yes. Leads from your ads go into CoFabri CRM so you can follow up in one place. If you don't have it yet, we'll set it up as part of getting started." },
+      { q: 'Do I need a CoFabri app?', a: "Yes. Leads from your ads go into your CoFabri app, CoFabri CRM or Medoura, so you can follow up in one place. If you aren't on one yet, we'll talk through which fits on the call." },
       { q: 'Do you make the images and video?', a: 'We can. Our team produces images and video for an added fee, or you can send your own and we\'ll build the ads around them.' },
       { q: 'Who owns the ad account?', a: 'You do. We work in your account with partner access. If you stop, the account, its history and your ads stay with you.' },
       { q: 'Which ad platforms do you run?', a: "Facebook and Instagram today. Google Ads is planned, and we'll tell you when it's available." },
@@ -60,6 +60,7 @@ export const SERVICE_FALLBACKS: Record<string, ServiceContent> = {
       { q: 'Can I stop at any time?', a: "Yes. It's month to month. Cancel before your next billing date and you won't be charged again." },
     ],
     appBand: 'With CoFabri Marketing, our team runs your paid ads and sends the leads into CoFabri CRM.',
+    appBands: { medoura: 'With CoFabri Marketing, our team runs your paid ads and sends the leads into Medoura.' },
     closing: {
       heading: 'Ready to hand off your ads?',
       body: "A short call to learn about your business. No obligation, and we'll tell you if it isn't a fit.",

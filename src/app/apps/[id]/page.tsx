@@ -244,8 +244,9 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         )}
 
         {linkedServices.map((service) => {
-          // The written line is about the service's primary app (CRM). On any other app it runs on, a plain line.
-          const line = service.linkedAppId === app.id ? resolveServiceContent(service)?.appBand : undefined;
+          // `appBands` has a line per app; `appBand` is about the service's primary app (CRM). Otherwise a plain line.
+          const content = resolveServiceContent(service);
+          const line = content?.appBands?.[app.id] ?? (service.linkedAppId === app.id ? content?.appBand : undefined);
           return (
             <div
               key={service.id}

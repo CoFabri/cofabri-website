@@ -30,6 +30,14 @@ describe('runsOnIds', () => {
     expect(SERVICE_FALLBACKS['cofabri-marketing'].meta?.[0]).toMatchObject({ label: 'Runs on', value: 'CoFabri CRM and Medoura', kind: 'app' });
     expect(parseServiceContent(SERVICE_FALLBACKS['cofabri-marketing'])?.runsOn).toHaveLength(2);
   });
+
+  it('CoFabri Marketing copy names "your CoFabri app", and Medoura gets its own band line', () => {
+    const marketing = parseServiceContent(SERVICE_FALLBACKS['cofabri-marketing']);
+    expect(marketing?.appBands?.medoura).toContain('Medoura');
+    expect(marketing?.appBand).toContain('CoFabri CRM');
+    expect(JSON.stringify(marketing?.faq)).toContain('Do I need a CoFabri app?');
+    expect(JSON.stringify(marketing?.steps)).not.toContain('CoFabri CRM');
+  });
 });
 
 describe('resolveRunsOn', () => {
