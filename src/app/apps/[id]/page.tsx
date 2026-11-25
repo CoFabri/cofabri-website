@@ -18,6 +18,7 @@ import FamilyMark from '@/components/marketing/FamilyMark';
 import CheckoutButtons from '@/components/marketing/CheckoutButtons';
 import { hasFamilyMark } from '@/lib/family-marks';
 import { brandClass, resolveServiceContent } from '@/lib/services';
+import { servicesRunningOn } from '@/lib/services/runs-on';
 
 interface AppDetailPageProps {
   params: Promise<{ id: string }>;
@@ -98,7 +99,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
   const guides = pickAppIntroArticles(app.id, await getKnowledgeBaseArticles());
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
-  const linkedServices = (await getServices()).filter((service) => service.linkedAppId === app.id);
+  const linkedServices = servicesRunningOn(await getServices(), app.id);
   // Self-service checkout needs both links in apps.metadata.checkout; with either missing the buttons stay hidden.
   // TODO(checkout): no checkout links are stored in Core yet (CoFabri CRM and others), so none show today.
   const checkout = app.checkout?.monthly && app.checkout?.annual ? { monthly: app.checkout.monthly, annual: app.checkout.annual } : null;
@@ -242,7 +243,8 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         )}
 
         {linkedServices.map((service) => {
-          const line = resolveServiceContent(service)?.appBand;
+          // The written line is about the service's primary app (CRM). On any other app it runs on, a plain line.
+          const line = service.linkedAppId === app.id ? resolveServiceContent(service)?.appBand : undefined;
           return (
             <div
               key={service.id}

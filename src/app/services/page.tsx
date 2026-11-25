@@ -12,6 +12,7 @@ import StructuredData from '@/components/marketing/StructuredData';
 import { buttonVariants } from '@/components/ui/button';
 import { isComingSoon } from '@/lib/services';
 import { buildComposition, servicesLayout } from '@/lib/services/composition';
+import { resolveRunsOn } from '@/lib/services/runs-on';
 
 const TITLE = 'Services';
 const DESCRIPTION =
@@ -46,7 +47,6 @@ const SECTION = 'mx-auto max-w-[1200px] px-6 sm:px-10';
 
 export default async function ServicesPage() {
   const [services, apps] = await Promise.all([getServices(), getApps()]);
-  const appById = new Map(apps.map((a) => [a.id, a]));
   const layout = servicesLayout(services.length);
   const composition = buildComposition(services);
   // The hero's Book a Call files the inquiry against the first live service; with none live it goes to /contact.
@@ -94,14 +94,14 @@ export default async function ServicesPage() {
         {layout === 'panels' && (
           <div className="flex flex-col gap-5">
             {services.map((service) => (
-              <ServicePanel key={service.id} service={service} linkedApp={service.linkedAppId ? appById.get(service.linkedAppId) : undefined} />
+              <ServicePanel key={service.id} service={service} runsOn={resolveRunsOn(service, apps)} />
             ))}
           </div>
         )}
         {layout === 'grid' && (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
-              <ServiceCard key={service.id} service={service} linkedApp={service.linkedAppId ? appById.get(service.linkedAppId) : undefined} />
+              <ServiceCard key={service.id} service={service} runsOn={resolveRunsOn(service, apps)} />
             ))}
           </div>
         )}

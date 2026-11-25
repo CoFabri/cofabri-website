@@ -4,19 +4,19 @@ import type { App } from '@/lib/api-client';
 import { brandClass, isComingSoon, serviceCardLine } from '@/lib/services';
 import FamilyMark from './FamilyMark';
 import NotifyInline from './NotifyInline';
-import { FAMILY_MARKS } from '@/lib/family-marks';
+import RunsOnLine from './RunsOnLine';
+import type { RunsOnApp } from '@/lib/services/runs-on';
 
 interface ServiceCardProps {
   service: App;
-  /** The app this service runs on, for the "Runs on" line. */
-  linkedApp?: Pick<App, 'id' | 'name'>;
+  /** The apps this service runs on, for the "Runs on" line. */
+  runsOn?: RunsOnApp[];
   /** Exactly one service is visible: lay the card out horizontally. */
   solo?: boolean;
 }
 
-export default function ServiceCard({ service, linkedApp, solo = false }: ServiceCardProps) {
+export default function ServiceCard({ service, runsOn = [], solo = false }: ServiceCardProps) {
   const comingSoon = isComingSoon(service);
-  const runsOn = linkedApp ?? (service.linkedAppId ? { id: service.linkedAppId, name: FAMILY_MARKS[service.linkedAppId]?.label ?? service.linkedAppId } : undefined);
   const href = `/services/${service.id}`;
 
   return (
@@ -37,13 +37,7 @@ export default function ServiceCard({ service, linkedApp, solo = false }: Servic
           </Link>
         </h3>
         <p className="mt-2 max-w-[520px] text-[15px] leading-[1.55] text-ink-muted">{serviceCardLine(service)}</p>
-        {runsOn && (
-          <p className="mt-4 flex items-center gap-2 text-sm text-ink-muted">
-            Runs on
-            <FamilyMark appId={runsOn.id} size={24} />
-            <span className="font-medium text-ink-body">{runsOn.name}</span>
-          </p>
-        )}
+        <RunsOnLine apps={runsOn} className="mt-4" />
       </div>
 
       {/* Footer row has a fixed minimum height so the footers line up across cards. */}

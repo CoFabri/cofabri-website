@@ -12,7 +12,8 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import type { ServiceContent } from '@/lib/services';
 import type { ServiceIconKey } from '@/lib/services/schema';
-import FamilyMark from './FamilyMark';
+import AppTile from './AppTile';
+import type { RunsOnApp } from '@/lib/services/runs-on';
 
 // Building blocks shared by the services index and the service detail pages.
 // Every section uses the same top hairline and padding, with no alternating
@@ -41,8 +42,8 @@ export function PageSection({ id, title, intro, note, children }: { id?: string;
 export interface MetaRow {
   label: string;
   value: string;
-  /** Show the app tile (for a "Runs on" row). */
-  appId?: string;
+  /** Show a tile for each of these apps (for a "Runs on" row). */
+  apps?: RunsOnApp[];
 }
 
 /** The bordered at-a-glance list, in the style of the app detail page. */
@@ -54,7 +55,7 @@ export function MetaCard({ rows }: { rows: MetaRow[] }) {
         <div key={row.label} className="flex items-center justify-between gap-6 border-b border-border px-5 py-[15px] last:border-b-0">
           <dt className="text-sm text-ink-muted">{row.label}</dt>
           <dd className="m-0 flex items-center gap-2 text-right font-mono text-[13px] text-ink-body">
-            {row.appId && <FamilyMark appId={row.appId} size={24} />}
+            {row.apps?.map((app) => <AppTile key={app.id} app={app} size={24} />)}
             {row.value}
           </dd>
         </div>
