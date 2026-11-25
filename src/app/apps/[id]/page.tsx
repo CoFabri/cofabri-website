@@ -17,7 +17,8 @@ import { buildSoftwareApplicationSchema } from '@/lib/structured-data';
 import FamilyMark from '@/components/marketing/FamilyMark';
 import CheckoutButtons from '@/components/marketing/CheckoutButtons';
 import { hasFamilyMark } from '@/lib/family-marks';
-import { brandClass, resolveServiceContent } from '@/lib/services';
+import { brandClass, isComingSoon, resolveServiceContent } from '@/lib/services';
+import BookCallButton from '@/components/marketing/BookCallButton';
 import { servicesRunningOn } from '@/lib/services/runs-on';
 
 interface AppDetailPageProps {
@@ -255,9 +256,17 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 <h2 className="m-0 p-0 text-xl font-semibold leading-snug tracking-[-0.02em] text-foreground">Want us to run this for you?</h2>
                 <p className="mt-1.5 max-w-[560px] text-[15px] leading-[1.55] text-ink-muted">{line ?? `${service.name} is a service from the CoFabri team that runs on ${app.name}.`}</p>
               </div>
-              <Link href={`/services/${service.id}`} className="whitespace-nowrap text-[15px] font-semibold text-primary hover:underline">
-                See {service.name} →
-              </Link>
+              {/* The button takes the service's own accent (Marketing's orange), not the app page's. */}
+              <div className={`flex flex-col gap-3 sm:items-end ${brandClass(service.id)}`}>
+                {!isComingSoon(service) && (
+                  <BookCallButton service={{ id: service.id, name: service.name }} className="w-full sm:w-auto">
+                    Book a Call
+                  </BookCallButton>
+                )}
+                <Link href={`/services/${service.id}`} className="whitespace-nowrap text-[15px] font-semibold text-brand-text hover:underline">
+                  See {service.name} →
+                </Link>
+              </div>
             </div>
           );
         })}

@@ -5,6 +5,7 @@ import { FAMILY_MARKS } from '@/lib/family-marks';
 import type { RunsOnApp } from '@/lib/services/runs-on';
 import { brandClass, isComingSoon, resolveServiceContent } from '@/lib/services';
 import FamilyMark, { FamilyMarkIcon } from './FamilyMark';
+import BookCallButton from './BookCallButton';
 import NotifyInline from './NotifyInline';
 import RunsOnLine from './RunsOnLine';
 
@@ -118,12 +119,17 @@ export default function ServicePanel({ service, runsOn = [] }: ServicePanelProps
               </Link>
             </>
           ) : (
-            <Link
-              href={href}
-              className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
-            >
-              Learn More
-            </Link>
+            <>
+              <Link
+                href={href}
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
+              >
+                Learn More
+              </Link>
+              <BookCallButton service={{ id: service.id, name: service.name }} variant="outline" className="w-full">
+                Book a Call
+              </BookCallButton>
+            </>
           )}
         </div>
       </div>

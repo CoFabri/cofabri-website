@@ -47,3 +47,43 @@ describe('parseContactPrefill', () => {
     expect(fromQuery('message=%3Cscript%3Ealert(1)%3C%2Fscript%3E').message).toBe('<script>alert(1)</script>');
   });
 });
+
+import { buildRelatedOptions, findRelated } from './contact-prefill';
+
+describe('the related app or service list', () => {
+  const apps = [
+    { id: 'cofabri-crm', name: 'CoFabri CRM' },
+    { id: 'medoura', name: 'Medoura', faviconUrl: 'https://f.example/m.png' },
+  ];
+  const services = [
+    { id: 'cofabri-marketing', name: 'CoFabri Marketing' },
+    { id: 'cofabri-concierge', name: 'CoFabri Concierge' },
+  ];
+
+  it('lists the apps, then the services marked as services', () => {
+    expect(buildRelatedOptions(apps, services)).toEqual([
+      { value: 'cofabri-crm', label: 'CoFabri CRM', image: undefined },
+      { value: 'medoura', label: 'Medoura', image: 'https://f.example/m.png' },
+      { value: 'cofabri-marketing', label: 'CoFabri Marketing (service)', image: undefined },
+      { value: 'cofabri-concierge', label: 'CoFabri Concierge (service)', image: undefined },
+    ]);
+  });
+
+  it('works with no services, and never lists an id twice', () => {
+    expect(buildRelatedOptions(apps, [])).toHaveLength(2);
+    expect(buildRelatedOptions(apps, [{ id: 'medoura', name: 'Medoura Again' }])).toHaveLength(2);
+  });
+
+  it('finds what a link names, by id or by name, apps before services', () => {
+    expect(findRelated(apps, services, 'cofabri-marketing')?.id).toBe('cofabri-marketing');
+    expect(findRelated(apps, services, 'CoFabri Concierge')?.id).toBe('cofabri-concierge');
+    expect(findRelated(apps, services, 'MEDOURA')?.id).toBe('medoura');
+    expect(findRelated(apps, [{ id: 'medoura', name: 'Other' }], 'medoura')?.name).toBe('Medoura');
+  });
+
+  it('finds nothing for an unknown or empty value', () => {
+    expect(findRelated(apps, services, 'nope')).toBeUndefined();
+    expect(findRelated(apps, services, '')).toBeUndefined();
+    expect(findRelated(apps, services, null)).toBeUndefined();
+  });
+});

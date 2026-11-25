@@ -36,3 +36,34 @@ export function parseContactPrefill(get: (name: string) => string | null | undef
 
   return out;
 }
+
+// ---- The contact form's "related app or service" list ----
+
+export interface RelatedChoice {
+  id: string;
+  name: string;
+  faviconUrl?: string;
+}
+
+export interface RelatedOption {
+  value: string;
+  label: string;
+  image?: string;
+}
+
+/** Apps first, then services marked "(service)". A service never shadows an app with the same id. */
+export function buildRelatedOptions(apps: RelatedChoice[], services: RelatedChoice[]): RelatedOption[] {
+  const appIds = new Set(apps.map((a) => a.id));
+  return [
+    ...apps.map((a) => ({ value: a.id, label: a.name, image: a.faviconUrl })),
+    ...services.filter((s) => !appIds.has(s.id)).map((s) => ({ value: s.id, label: `${s.name} (service)`, image: s.faviconUrl })),
+  ];
+}
+
+/** Finds the app or service a link names, by id or by name, ignoring case. A service ID wins over nothing, an app over a service. */
+export function findRelated(apps: RelatedChoice[], services: RelatedChoice[], wanted: string | null | undefined): RelatedChoice | undefined {
+  const w = clean(wanted).toLowerCase();
+  if (!w) return undefined;
+  const match = (x: RelatedChoice) => x.id.toLowerCase() === w || x.name.toLowerCase() === w;
+  return apps.find(match) ?? services.find(match);
+}
