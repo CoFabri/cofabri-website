@@ -25,7 +25,7 @@
   --ink: #232E36;
   --ink-body: #36454F;
   --ink-muted: #5A6A75;
-  --ink-faint: #8494A0;
+  --ink-faint: #62717D; /* AA (4.5:1) on white, sunken and hover surfaces */
   --ink-disabled: #B3BEC6;
 
   /* accent */
@@ -87,7 +87,7 @@
   --ink: #F1F4F6;
   --ink-body: #C9D2D8;
   --ink-muted: #9AA8B2;
-  --ink-faint: #71818C;
+  --ink-faint: #8896A2; /* AA (4.5:1) on every dark surface */
   --ink-disabled: #55636D;
 
   /* accent */

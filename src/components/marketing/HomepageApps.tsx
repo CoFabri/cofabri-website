@@ -200,7 +200,7 @@ export default function HomepageApps({ onAppsLoaded }: HomepageAppsProps) {
               <div>
                 <div className="mb-1.5 flex items-center gap-2">
                   {featured.featureOnWebsite && (
-                    <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                    <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-[#0857BE] dark:text-accent-foreground">
                       Featured
                     </span>
                   )}
