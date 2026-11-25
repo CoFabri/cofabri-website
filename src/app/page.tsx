@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Hero from '@/components/marketing/Hero';
 import HomepageApps from '@/components/marketing/HomepageApps';
+import HomeServices from '@/components/marketing/HomeServices';
 import CoBuildSection from '@/components/marketing/CoBuildSection';
 import About from '@/components/marketing/About';
 import CompactRoadmap from '@/components/marketing/CompactRoadmap';
@@ -48,6 +49,7 @@ export default function Home() {
       <main>
         <Hero />
         <HomepageApps />
+        <HomeServices />
         <CoBuildSection />
         <About />
         <CompactRoadmap />

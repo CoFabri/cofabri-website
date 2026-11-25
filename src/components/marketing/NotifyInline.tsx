@@ -97,9 +97,16 @@ interface NotifyInlineProps {
   className?: string;
   /** Style of the closed "Notify Me" button: filled (default) or the secondary outline. */
   variant?: 'solid' | 'outline';
-  /** Stack the field above its button, for narrow columns. */
-  stacked?: boolean;
+  /**
+   * Stack the field above its button, for narrow columns. `true` always stacks; 'container' stacks when the
+   * nearest `@container` ancestor is narrower than the field plus button need (about 380px), so a card in a
+   * narrow grid column stacks without the viewport width deciding it.
+   */
+  stacked?: boolean | 'container';
 }
+
+// The open field and its button need about 373px in a row (a 240px field, an 8px gap, the button), so
+// 'container' goes to a row at 380px. The classes are written out whole: Tailwind only finds literal ones.
 
 export default function NotifyInline({ appId, id, className = '', variant = 'solid', stacked = false }: NotifyInlineProps) {
   const shared = useContext(NotifyContext);
@@ -131,7 +138,7 @@ export default function NotifyInline({ appId, id, className = '', variant = 'sol
           type="button"
           onClick={() => c.openField(id ?? '')}
           aria-expanded="false"
-          className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40 ${stacked ? 'w-full' : ''} ${
+          className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-[15px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40 ${stacked === 'container' ? 'w-full @min-[380px]:w-auto' : stacked ? 'w-full' : ''} ${
             variant === 'outline'
               ? 'border border-border-strong bg-transparent text-foreground hover:bg-muted'
               : 'bg-brand text-on-brand hover:bg-brand-hover'
@@ -152,12 +159,12 @@ export default function NotifyInline({ appId, id, className = '', variant = 'sol
         e.preventDefault();
         void c.submit();
       }}
-      className={className}
+      className={`${stacked === 'container' ? 'w-full @min-[380px]:w-auto' : ''} ${className}`.trim()}
     >
       <label id={labelId} htmlFor={`${labelId}-input`} className="sr-only">
         Your email
       </label>
-      <div className={`flex flex-col gap-2 ${stacked ? '' : 'sm:flex-row'}`}>
+      <div className={`flex flex-col gap-2 ${stacked === 'container' ? '@min-[380px]:flex-row' : stacked ? '' : 'sm:flex-row'}`}>
         <input
           id={`${labelId}-input`}
           ref={inputRef}
@@ -170,7 +177,7 @@ export default function NotifyInline({ appId, id, className = '', variant = 'sol
           disabled={c.status === 'submitting'}
           aria-invalid={c.error ? true : undefined}
           aria-describedby={c.error ? errorId : undefined}
-          className={`h-11 min-w-0 ${stacked ? 'shrink-0' : 'flex-1'} rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 ${stacked ? '' : 'sm:min-w-[240px]'}`}
+          className={`h-11 min-w-0 ${stacked === 'container' ? 'shrink-0 @min-[380px]:flex-1' : stacked ? 'shrink-0' : 'flex-1'} rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 ${stacked === 'container' ? '@min-[380px]:min-w-[240px]' : stacked ? '' : 'sm:min-w-[240px]'}`}
         />
         <button
           type="submit"
