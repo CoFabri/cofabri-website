@@ -81,7 +81,7 @@ export default function ServicePanel({ service, linkedApp }: ServicePanelProps) 
         </>
       )}
 
-      <div className="relative z-10 grid min-h-[248px] grid-cols-1 lg:grid-cols-[1fr_300px]">
+      <div className="duo-split relative z-10 grid min-h-[248px] grid-cols-1 lg:grid-cols-[1fr_300px]">
         <div className="p-6 sm:px-11 sm:py-10">
           <div className="flex items-center gap-4">
             <span className="sm:hidden">
@@ -95,7 +95,7 @@ export default function ServicePanel({ service, linkedApp }: ServicePanelProps) 
             </Badge>
           </div>
           <h3 className="m-0 mt-5 p-0 text-[28px] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[34px]">
-            <Link href={href} className="hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40">
+            <Link href={href} className="-my-2 inline-block py-2 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40">
               {service.name}
             </Link>
           </h3>

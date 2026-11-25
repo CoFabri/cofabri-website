@@ -7,8 +7,9 @@ import HandOffWindow from './HandOffWindow';
 
 // The interactive desktop versions of the hand-off scene on /services, inside
 // HandOffScene's section (the phone version is HandOffStack, rendered on the server):
-//  - desktop: a tall block with a sticky stage; scroll position scrubs steps 1 to 4
-//  - desktop with reduced motion: no pinning, no scrubbing; the list with step 4's window
+//  - from 1024px: a tall block with a sticky stage; scroll position scrubs steps 1 to 4
+//  - from 1024px with reduced motion: no pinning, no scrubbing; the list with step 4's window
+// Below 1024px (phones, tablets, a folded Surface Duo) HandOffStack is used instead.
 // The scroll listener is rAF-throttled, like NameOrigin's, rather than Framer Motion.
 
 const FOCUS_RING =
@@ -101,9 +102,9 @@ export default function HandOffStage() {
   return (
     <>
       {/* Desktop: pinned, scroll-scrubbed */}
-      <div ref={sceneRef} className="relative hidden md:motion-safe:block" style={{ height: '300vh' }}>
+      <div ref={sceneRef} className="relative hidden lg:motion-safe:block" style={{ height: '300vh' }}>
         <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-          <div className="mx-auto grid w-full max-w-[1200px] grid-cols-[400px_1fr] items-center gap-16 px-10 lg:gap-24">
+          <div className="duo-split mx-auto grid w-full max-w-[1200px] grid-cols-[400px_1fr] items-center gap-16 px-10 lg:gap-24">
             <div>
               <HandOffIntro headingId="ho-heading-pinned" />
               <StepList step={step} onSelect={choose} />
@@ -117,7 +118,7 @@ export default function HandOffStage() {
       </div>
 
       {/* Desktop with reduced motion: no pinning, no scrubbing */}
-      <div className="mx-auto hidden w-full max-w-[1200px] grid-cols-[400px_1fr] items-start gap-16 px-10 py-24 md:motion-reduce:grid lg:gap-24">
+      <div className="duo-split mx-auto hidden w-full max-w-[1200px] grid-cols-[400px_1fr] items-start gap-16 px-10 py-24 lg:motion-reduce:grid lg:gap-24">
         <div>
           <HandOffIntro headingId="ho-heading-static" />
           <StepList step={reducedStep} onSelect={setReducedStep} />

@@ -108,7 +108,7 @@ export default async function ServicesPage() {
       </RevealSection>
 
       <RevealSection className={`${SECTION} border-t border-border py-20`}>
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[320px_1fr] lg:gap-20">
+        <div className="duo-split grid grid-cols-1 gap-10 lg:grid-cols-[320px_1fr] lg:gap-20">
           <div>
             <h2 className="m-0 p-0 text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground sm:text-[32px]">What you can count on</h2>
             <span aria-hidden="true" className="mt-5 block h-0.5 w-10 bg-accent-solid" />
@@ -118,7 +118,7 @@ export default async function ServicesPage() {
             {PROMISES.map((promise, i) => (
               <li
                 key={promise.title}
-                className="grid grid-cols-[48px_1fr] gap-x-4 border-t border-border py-7 first:border-t-0 first:pt-0 sm:grid-cols-[64px_280px_1fr] sm:gap-x-6"
+                className="duo-rows grid grid-cols-[48px_1fr] gap-x-4 border-t border-border py-7 first:border-t-0 first:pt-0 sm:grid-cols-[64px_280px_1fr] sm:gap-x-6"
               >
                 <span className="pt-1.5 font-mono text-sm font-semibold text-accent-solid">{String(i + 1).padStart(2, '0')}</span>
                 <h3 className="m-0 p-0 text-[20px] font-semibold leading-snug tracking-[-0.015em] text-foreground sm:text-[22px]">{promise.title}</h3>

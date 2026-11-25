@@ -50,10 +50,10 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-[#35424C]">
-        <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-9 flex flex-col md:flex-row duo:flex-col duo:items-start items-center justify-between gap-6">
           <CofabriLogo variant="mark" tone="dark" height={40} href="/" />
 
-          <ul className="flex items-center gap-6 flex-wrap justify-center text-sm">
+          <ul className="flex items-center gap-6 flex-wrap justify-center duo:justify-start duo:max-w-[500px] text-sm">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (

@@ -148,14 +148,14 @@ const Navbar = ({
       <nav className="max-w-[1200px] mx-auto px-6 sm:px-10 h-[68px] flex items-center justify-between gap-6">
         <div className="flex items-center flex-shrink-0">{ink && inkLogo ? inkLogo : logo}</div>
 
-        <ul className="hidden lg:flex items-center gap-1">
+        <ul className="hidden lg:flex duo:hidden items-center gap-1">
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
               <li key={item.name}>
                 <Link
                   href={item.href}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[15px] font-medium leading-none transition-colors duration-200 ${
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[15px] font-medium leading-none transition-colors duration-200 xl:px-3.5 pointer-coarse:min-h-11 ${
                     ink
                       ? isActive(item.href)
                         ? 'bg-white/10 text-white'
@@ -165,7 +165,8 @@ const Navbar = ({
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                 >
-                  <Icon className="h-[15px] w-[15px] flex-shrink-0" />
+                  {/* Icons only from xl: with seven items the row does not fit at 1024 with them. */}
+                  <Icon className="hidden h-[15px] w-[15px] flex-shrink-0 xl:block" />
                   {item.name}
                 </Link>
               </li>
@@ -173,7 +174,7 @@ const Navbar = ({
           })}
         </ul>
 
-        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+        <div className="hidden lg:flex duo:hidden items-center gap-3 flex-shrink-0">
           <StatusIndicator />
           <ThemeToggle />
           {account ? (
@@ -209,7 +210,7 @@ const Navbar = ({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden duo:flex">
           <StatusIndicator />
           <ThemeToggle />
           <Sheet open={open} onOpenChange={setOpen}>
@@ -218,7 +219,7 @@ const Navbar = ({
                 <Bars3Icon className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="cover" showCloseButton={false} className="lg:hidden">
+            <SheetContent side="cover" showCloseButton={false} className="lg:hidden duo:flex">
               <SheetTitle className="sr-only">Menu</SheetTitle>
 
               {/* Pixel-matches the nav row above (max-w-[1200px] mx-auto,

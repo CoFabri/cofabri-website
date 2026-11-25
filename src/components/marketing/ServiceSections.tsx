@@ -167,7 +167,7 @@ export function ClosingBand({ heading, body, action }: { heading: string; body: 
   return (
     <section className="border-t border-border py-16">
       <div className="flex flex-col items-start justify-between gap-8 rounded-lg bg-surface-sunken p-8 sm:p-10 md:flex-row md:items-center">
-        <div className="max-w-[560px]">
+        <div className="max-w-[560px] duo:max-w-[400px]">
           <h2 className="m-0 p-0 text-[26px] font-semibold leading-[1.15] tracking-[-0.025em] text-foreground sm:text-[30px]">{heading}</h2>
           <p className="mt-3 text-base leading-[1.6] text-ink-muted">{body}</p>
         </div>

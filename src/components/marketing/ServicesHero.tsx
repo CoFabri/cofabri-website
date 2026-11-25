@@ -41,17 +41,18 @@ function Tile({ tile, size }: { tile: CompositionTile; size: number }) {
 function Label({ tile, className = '' }: { tile: CompositionTile; className?: string }) {
   return (
     <div className={className}>
-      <div className="text-[15px] font-semibold leading-snug text-[#F1F4F6]">{tile.name}</div>
-      <div className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.06em] text-[#9AA8B2]">{tile.sublabel}</div>
+      <div className="text-sm font-semibold leading-snug text-[#F1F4F6] sm:text-[15px]">{tile.name}</div>
+      <div className="mt-0.5 font-mono text-[10px] uppercase leading-[1.35] tracking-[0.05em] text-[#9AA8B2] sm:text-[11px] sm:tracking-[0.06em]">{tile.sublabel}</div>
     </div>
   );
 }
 
 function SimpleRow({ tiles }: { tiles: CompositionTile[] }) {
   return (
-    <ul aria-label="CoFabri apps and services" className="m-0 flex list-none flex-wrap items-start gap-x-6 gap-y-10 p-0 sm:gap-x-10">
+    <ul aria-label="CoFabri apps and services" className="m-0 flex list-none flex-wrap items-start gap-x-4 gap-y-10 p-0 sm:gap-x-10">
+      {/* Three to a row on a phone (a third of the width each, so three tiles never wrap); fixed width from sm up. */}
       {tiles.map((tile) => (
-        <li key={tile.id} className="flex w-[104px] flex-col items-start gap-4 sm:w-[132px]">
+        <li key={tile.id} className="flex w-[calc((100%-2rem)/3)] min-w-0 flex-col items-start gap-4 sm:w-[132px]">
           <span className="sm:hidden">
             <Tile tile={tile} size={72} />
           </span>
@@ -103,7 +104,7 @@ export default function ServicesHero({ tiles, arranged, primaryAction }: Service
   return (
     <section className="br-crm relative overflow-hidden bg-[var(--ink-bg)] text-[#B4BEC6]">
       <div className="relative mx-auto max-w-[1200px] px-6 pt-12 sm:px-10 lg:pt-20">
-        <div className={`grid grid-cols-1 items-center gap-14 lg:gap-16 ${tiles.length > 0 ? 'lg:grid-cols-[1fr_440px]' : ''}`}>
+        <div className={`grid grid-cols-1 items-center gap-14 lg:gap-16 ${tiles.length > 0 ? 'lg:grid-cols-[1fr_440px] duo-split' : ''}`}>
           <div>
             <InkEyebrow>Services</InkEyebrow>
             <h1 className="m-0 mt-6 p-0 text-[42px] font-semibold leading-[1.04] tracking-[-0.035em] text-[#F1F4F6] sm:text-[56px] lg:text-[68px]">
