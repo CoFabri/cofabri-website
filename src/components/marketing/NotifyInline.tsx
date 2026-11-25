@@ -170,7 +170,7 @@ export default function NotifyInline({ appId, id, className = '', variant = 'sol
           disabled={c.status === 'submitting'}
           aria-invalid={c.error ? true : undefined}
           aria-describedby={c.error ? errorId : undefined}
-          className={`h-11 min-w-0 flex-1 rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 ${stacked ? '' : 'sm:min-w-[240px]'}`}
+          className={`h-11 min-w-0 ${stacked ? 'shrink-0' : 'flex-1'} rounded-lg border border-input bg-background px-3.5 text-base text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-brand focus-visible:ring-[3px] focus-visible:ring-brand/30 aria-[invalid=true]:border-destructive disabled:opacity-60 ${stacked ? '' : 'sm:min-w-[240px]'}`}
         />
         <button
           type="submit"
