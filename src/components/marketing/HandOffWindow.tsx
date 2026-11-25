@@ -1,18 +1,39 @@
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { windowState, type PillTone } from '@/lib/services/handoff';
+import { DEMO, windowState, type PillTone } from '@/lib/services/handoff';
 import FamilyMark from './FamilyMark';
 
 // A stand-in for the CoFabri CRM window, built in JSX and CSS (not an image).
 // It is decorative: the step list next to it carries the meaning, so it is
 // aria-hidden and nothing in it is focusable. It follows the site theme (the
-// light app UI in light theme, the dark app UI in dark theme). Everything shown
-// is placeholder text: no real names, numbers or results.
+// light app UI in light theme, the dark app UI in dark theme). It shows a demo
+// (an invented business, ad and lead), labelled "Demo" in the title bar.
 
 const PILL: Record<PillTone, string> = {
   neutral: 'bg-muted text-ink-body',
   accent: 'bg-accent-tint text-[#0857BE] dark:text-accent-hover',
   success: 'bg-success/15 text-[#0F6B3A] dark:text-success',
 };
+
+// A simple illustrated "photo" for the demo ad: sky, sun, hills and a house.
+function DemoPhoto() {
+  return (
+    <svg viewBox="0 0 176 128" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden="true">
+      <defs>
+        <linearGradient id="ho-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#9CC4F5" />
+          <stop offset="1" stopColor="#FFE2D2" />
+        </linearGradient>
+      </defs>
+      <rect width="176" height="128" fill="url(#ho-sky)" />
+      <circle cx="132" cy="34" r="14" fill="#FFF3D6" />
+      <path d="M0 98 C32 70 62 70 92 90 C118 74 148 72 176 90 V128 H0 Z" fill="#7FA98B" />
+      <path d="M0 112 C40 94 84 98 120 108 C142 100 160 100 176 106 V128 H0 Z" fill="#5E8C6E" />
+      <path d="M66 96 L88 78 L110 96 V114 H66 Z" fill="#F4EBE2" />
+      <path d="M62 97 L88 74 L114 97 Z" fill="#B65C46" />
+      <rect x="82" y="100" width="12" height="14" rx="1.5" fill="#6B4A3A" />
+    </svg>
+  );
+}
 
 interface HandOffWindowProps {
   /** 0-based step, 0 to 3. */
@@ -53,7 +74,10 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
         </span>
         <FamilyMark appId="cofabri-crm" size={24} />
         <span className="text-sm font-semibold">CoFabri CRM</span>
-        <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:block">[Your business] · Campaigns</span>
+        <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:block">{DEMO.business} · Campaigns</span>
+        <span className="rounded-full border border-border-strong px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted sm:ml-3">
+          {DEMO.tag}
+        </span>
       </div>
 
       <div className="space-y-4 p-4 sm:p-5">
@@ -65,21 +89,13 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
 
         {/* Ad card */}
         <div className={`flex gap-4 rounded-lg border border-border bg-background p-3.5 ${compact ? 'items-center' : 'flex-col sm:flex-row'}`}>
-          <div
-            className={`flex flex-shrink-0 items-center justify-center rounded-lg border border-border text-center font-mono text-[11px] text-ink-muted ${
-              compact ? 'h-[72px] w-[72px]' : 'h-32 w-full sm:w-44'
-            }`}
-            style={{ backgroundImage: 'repeating-linear-gradient(135deg, var(--surface-sunken) 0 9px, var(--surface-hover) 9px 18px)' }}
-          >
-            {compact ? '' : '[Your photo]'}
+          <div className={`flex-shrink-0 overflow-hidden rounded-lg border border-border ${compact ? 'h-[72px] w-[72px]' : 'h-32 w-full sm:w-44'}`}>
+            <DemoPhoto />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">Facebook · Instagram ad</div>
-            <div className="mt-1 text-[15px] font-semibold">[Ad headline]</div>
-            <div className="mt-2.5 space-y-1.5">
-              <div className="h-2 w-full rounded-full bg-border" />
-              <div className="h-2 w-3/5 rounded-full bg-border" />
-            </div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">{DEMO.channel}</div>
+            <div className="mt-1 text-[15px] font-semibold">{DEMO.headline}</div>
+            <p className="m-0 mt-1.5 text-[13px] leading-[1.45] text-ink-muted">{compact ? DEMO.lines[0] : DEMO.lines.join(' ')}</p>
             <span
               key={state.pill.label}
               className={`ho-in mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${PILL[state.pill.tone]}`}
@@ -104,11 +120,11 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
         {state.lead && (
           <div className="ho-in flex items-center gap-3 rounded-lg border border-border bg-background p-3.5">
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-accent-tint text-xs font-semibold text-[#0857BE] dark:text-accent-hover">
-              LN
+              {DEMO.lead.initials}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">New lead · [Lead name]</span>
-              <span className="block truncate text-xs text-ink-muted">From the Facebook ad &ldquo;[Ad headline]&rdquo;</span>
+              <span className="block text-sm font-semibold">New lead · {DEMO.lead.name}</span>
+              <span className="block truncate text-xs text-ink-muted">From the Facebook ad &ldquo;{DEMO.headline}&rdquo;</span>
             </span>
             <FauxButton>Follow Up</FauxButton>
           </div>

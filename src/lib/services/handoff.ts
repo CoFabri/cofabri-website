@@ -1,7 +1,8 @@
 // Copy and state for the hand-off scene on /services (HandOffStage, HandOffWindow).
 // The scene is page-level copy that is the same for every service, shown here
-// with CoFabri Marketing, so it lives in the repo rather than in Core. Everything
-// shown inside the window is placeholder text: no real names, numbers or results.
+// with CoFabri Marketing, so it lives in the repo rather than in Core. The window
+// shows a demo: an invented business with an invented ad and lead. It is labelled
+// "Demo" in the window, and carries no real names, prices, numbers or results.
 
 export const HANDOFF_COPY = {
   eyebrow: 'How services work',
@@ -17,6 +18,16 @@ export const HANDOFF_STEPS = [
 ] as const;
 
 export const STEP_COUNT = HANDOFF_STEPS.length;
+
+/** What the demo CRM window shows. Invented; keep it free of digits, prices and results. */
+export const DEMO = {
+  tag: 'Demo',
+  business: 'Brightside Home Services',
+  channel: 'Facebook · Instagram ad',
+  headline: 'Your home, ready for spring',
+  lines: ['Licensed local pros, here when you need them.', 'Book a visit in a few taps.'],
+  lead: { initials: 'JL', name: 'Jordan Lee' },
+} as const;
 
 export type PillTone = 'neutral' | 'accent' | 'success';
 
