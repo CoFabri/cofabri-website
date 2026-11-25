@@ -12,6 +12,9 @@ import Breadcrumbs from './Breadcrumbs';
 import PageHero from './PageHero';
 import AppsCelebration from './AppsCelebration';
 import AppRow from './AppRow';
+import FamilyMark from './FamilyMark';
+import ManagedServiceCard from './ManagedServiceCard';
+import { hasFamilyMark } from '@/lib/family-marks';
 import RevealSection from './RevealSection';
 import StructuredData from './StructuredData';
 import { EmptyState } from './EmptyState';
@@ -38,9 +41,11 @@ const RESOURCES = [
 interface AppsPageContentProps {
   initialApps: App[];
   initialRoadmap: RoadmapFeature[];
+  /** Services shown as Managed cards, each right after the app it runs on. */
+  managedServices?: App[];
 }
 
-export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPageContentProps) {
+export default function AppsPageContent({ initialApps, initialRoadmap, managedServices = [] }: AppsPageContentProps) {
   const [apps, setApps] = useState<App[]>(initialApps);
   const [roadmap, setRoadmap] = useState<RoadmapFeature[]>(initialRoadmap);
   // Server already fetched this page's data (see apps/page.tsx) so the initial
@@ -90,6 +95,11 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
     }
     return seen;
   }, [rows]);
+
+  const managedAfter = (appId: string) =>
+    managedServices
+      .filter((service) => service.linkedAppId === appId)
+      .map((service) => <ManagedServiceCard key={service.id} service={service} runsOn={apps.find((a) => a.id === appId)?.name} />);
 
   const filteredRows = statusFilter === 'All' ? rows : rows.filter((a) => a.status === statusFilter);
 
@@ -159,7 +169,9 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
             <div className="mt-10 rounded-2xl border border-border bg-card p-9">
               <div className="flex flex-wrap items-start justify-between gap-7">
                 <div className="flex min-w-0 items-center gap-4">
-                  {featured.faviconUrl ? (
+                  {hasFamilyMark(featured.id) ? (
+                    <FamilyMark appId={featured.id} size={56} />
+                  ) : featured.faviconUrl ? (
                     <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[14px] border border-border bg-secondary">
                       <Image
                         src={featured.faviconUrl}
@@ -179,7 +191,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                   <div>
                     <div className="mb-1.5 flex items-center gap-2">
                       {featured.featureOnWebsite && (
-                        <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+                        <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-[#0857BE] dark:text-accent-foreground">
                           Featured
                         </span>
                       )}
@@ -193,7 +205,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                   </div>
                 </div>
                 <div className="mt-1 w-full border-t border-border pt-4 text-left md:mt-0 md:w-auto md:flex-shrink-0 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-right">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-faint">Momentum</div>
+                  <div className="font-mono text-[11px] uppercase tracking-[0.06em] text-ink-muted">Momentum</div>
                   <div className="mt-1 text-[15.5px] font-semibold text-foreground">{appMomentum(featured, roadmap)}</div>
                 </div>
               </div>
@@ -208,7 +220,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                     .filter((f): f is string => !!f)
                     .map((f, i) => (
                       <div key={f} className="max-w-[220px]">
-                        <span className="block font-mono text-xs text-ink-faint">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="block font-mono text-xs text-ink-muted">{String(i + 1).padStart(2, '0')}</span>
                         <span className="mt-1 block text-sm leading-[1.45] text-foreground">{f}</span>
                       </div>
                     ))}
@@ -226,17 +238,21 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
                     href={`/apps/${featured.id}`}
                     className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border-strong px-[22px] py-3 text-[15px] font-semibold text-foreground transition-colors hover:bg-muted"
                   >
-                    Learn more
+                    Learn More
                   </Link>
                 </div>
               </div>
             </div>
           )}
+          {featured && statusFilter === 'All' && managedAfter(featured.id)}
 
           {filteredRows.length > 0 ? (
             <div className="mt-2">
               {filteredRows.map((app) => (
-                <AppRow key={app.id} app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
+                <React.Fragment key={app.id}>
+                  <AppRow app={app} roadmap={roadmap} href={`/apps/${app.id}`} />
+                  {managedAfter(app.id)}
+                </React.Fragment>
               ))}
             </div>
           ) : statusFilter !== 'All' ? (
@@ -265,7 +281,7 @@ export default function AppsPageContent({ initialApps, initialRoadmap }: AppsPag
             >
               <div className="text-lg font-semibold tracking-[-0.015em]">{r.title}</div>
               <p className="mt-2.5 text-[15px] leading-[1.55] text-ink-muted">{r.body}</p>
-              <span className="mt-4 inline-block text-[15px] font-semibold text-primary">Learn more →</span>
+              <span className="mt-4 inline-block text-[15px] font-semibold text-primary">Learn More →</span>
             </Link>
           ))}
         </div>

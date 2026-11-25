@@ -2,13 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { Handshake } from 'lucide-react'; // No Heroicons equivalent for a handshake glyph — kept as the one exception.
 import {
-  Squares2X2Icon, ArrowTrendingUpIcon, SparklesIcon, BookOpenIcon, DocumentTextIcon, LifebuoyIcon, CodeBracketIcon,
+  Squares2X2Icon, BriefcaseIcon, ArrowTrendingUpIcon, SparklesIcon, BookOpenIcon, DocumentTextIcon, LifebuoyIcon, CodeBracketIcon,
 } from '@heroicons/react/24/outline';
 import CofabriLogo from './CofabriLogo';
 
 const navigation = [
   { name: 'Developers', href: '/developers', icon: CodeBracketIcon, featured: true },
   { name: 'Apps', href: '/apps', icon: Squares2X2Icon },
+  { name: 'Services', href: '/services', icon: BriefcaseIcon },
   { name: 'Co-Build', href: '/co-build', icon: Handshake },
   { name: 'Roadmap', href: '/roadmaps', icon: ArrowTrendingUpIcon },
   { name: 'Changelog', href: '/changelog', icon: SparklesIcon },
@@ -19,14 +20,17 @@ const navigation = [
 
 const Footer = () => {
   return (
-    <footer className="bg-[#232E36] text-white">
+    <footer className="bg-[#232E36] text-white dark:bg-[#0E1317]">
       <div className="max-w-[1200px] mx-auto px-6 sm:px-10 py-16 md:py-[88px] flex flex-col md:flex-row items-center md:items-center justify-between gap-8 md:gap-16 text-center md:text-left">
         <div>
           <h2 className="m-0 text-3xl md:text-[40px] font-semibold leading-[1.1] tracking-[-0.03em]">
             Start with one app.
           </h2>
-          <p className="mt-3.5 text-lg text-[#9BA7B0]">
-            No demo call. No onboarding fee. Sign up and use it.
+          <p className="mt-3.5 text-lg text-[#B4BEC6]">
+            Apps start in minutes. Need hands-on help?{' '}
+            <Link href="/contact" className="font-medium text-white underline underline-offset-4 hover:no-underline">
+              Talk to us.
+            </Link>
           </p>
         </div>
         <div className="flex gap-3 flex-shrink-0">
@@ -57,7 +61,7 @@ const Footer = () => {
                   <Link
                     href={item.href}
                     className={`flex items-center gap-1.5 transition-colors duration-200 ${
-                      item.featured ? 'text-white' : 'text-[#9BA7B0] hover:text-white'
+                      item.featured ? 'text-white' : 'text-[#B4BEC6] hover:text-white'
                     }`}
                   >
                     {item.featured ? <Icon className="size-3.5" aria-hidden="true" /> : null}
@@ -68,7 +72,7 @@ const Footer = () => {
             })}
           </ul>
 
-          <div className="flex-shrink-0 text-xs text-[#6B7880]">
+          <div className="flex-shrink-0 text-xs text-[#9BA7B0]">
             &copy; {new Date().getFullYear()} CoFabri. All rights reserved.
           </div>
         </div>

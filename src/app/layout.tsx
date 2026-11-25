@@ -175,6 +175,7 @@ export default async function RootLayout({
           />
           <Navbar
             logo={<CofabriLogo height={56} clearSpace="dense" href="/" />}
+            inkLogo={<CofabriLogo height={56} clearSpace="dense" href="/" tone="dark" />}
             loginUrl={process.env.COFABRI_API_BASE_URL ? `${process.env.COFABRI_API_BASE_URL}/web/account` : undefined}
             account={account}
           />

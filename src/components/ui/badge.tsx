@@ -18,6 +18,12 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         link: "text-primary underline-offset-4 [a&]:hover:underline",
+        // Service status pills. "Live" matches the app status pill; "Coming soon" is the
+        // accent tint (its text stays AA on the tint in both themes); "Managed" marks an app
+        // card that is really a service, outlined and neutral.
+        live: "bg-success/15 text-[#0F6B3A] dark:text-success",
+        comingSoon: "bg-accent-tint text-[#0857BE] dark:text-accent-hover",
+        managed: "border-border-strong bg-transparent text-ink-body",
       },
     },
     defaultVariants: {

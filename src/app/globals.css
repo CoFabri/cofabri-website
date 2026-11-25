@@ -25,7 +25,7 @@
   --ink: #232E36;
   --ink-body: #36454F;
   --ink-muted: #5A6A75;
-  --ink-faint: #8494A0;
+  --ink-faint: #62717D; /* AA (4.5:1) on white, sunken and hover surfaces */
   --ink-disabled: #B3BEC6;
 
   /* accent */
@@ -87,7 +87,7 @@
   --ink: #F1F4F6;
   --ink-body: #C9D2D8;
   --ink-muted: #9AA8B2;
-  --ink-faint: #71818C;
+  --ink-faint: #8896A2; /* AA (4.5:1) on every dark surface */
   --ink-disabled: #55636D;
 
   /* accent */
@@ -134,6 +134,115 @@
   --ring: var(--accent);
 }
 
+
+/*
+ * Per-page brand accent. A page sets one of the wrapper classes below
+ * (br-crm / br-marketing / br-concierge); pages without one keep the site
+ * accent, so nothing else changes. The fill (--brand) is the same in both
+ * themes with white text on it (4.9, 5.2 and 7.8:1); only --brand-text, the
+ * accent used for text, rules and numerals, changes with the theme.
+ */
+:root {
+  --brand: var(--accent);
+  --brand-hover: var(--accent-hover);
+  --on-brand: var(--on-accent);
+  --brand-text: var(--accent);
+  --brand-gradient: linear-gradient(90deg in oklch, var(--accent-hover), var(--accent));
+}
+
+.br-crm {
+  --brand: #0B6BE6;
+  --brand-hover: #0857BE;
+  --on-brand: #FFFFFF;
+  --brand-text: #0857BE;
+  --brand-gradient: linear-gradient(90deg in oklch, var(--accent-hover), var(--accent));
+}
+.br-marketing {
+  --brand: #C2410C;
+  --brand-hover: #9A3412;
+  --on-brand: #FFFFFF;
+  --brand-text: #B03A0B;
+  --brand-gradient: linear-gradient(90deg in oklch, #9A3412, #C2410C, #E8590C);
+}
+.br-concierge {
+  --brand: #7E2F8E;
+  --brand-hover: #64257A;
+  --on-brand: #FFFFFF;
+  --brand-text: #7E2F8E;
+  --brand-gradient: linear-gradient(90deg in oklch, #64257A, #7E2F8E, #A347B4);
+}
+.dark .br-crm { --brand-text: #83B8F8; }
+.dark .br-marketing {
+  --brand-text: #FDBA8C;
+  --brand-gradient: linear-gradient(90deg in oklch, #FB923C, #FDBA8C);
+}
+.dark .br-concierge {
+  --brand-text: #E2A8EE;
+  --brand-gradient: linear-gradient(90deg in oklch, #D08BE0, #ECC4F4);
+}
+
+/* Gradient text for the hero heading's emphasised words. */
+.brand-gradient-text {
+  background-image: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+
+/*
+ * The dark "ink" surface used by the Services page's header, hero and hand-off scene. Only /services
+ * uses these. Text on it: headings #F1F4F6, body #B4BEC6, eyebrows #9AA8B2 (all AA on both ink colours).
+ */
+:root {
+  --ink-bg: #12171B;
+  --ink-line: rgba(255, 255, 255, 0.09);
+}
+.dark {
+  --ink-bg: #0E1317;
+}
+
+/* Gradient text for the /services H1: the three product tile icon colours. */
+.ink-gradient-text {
+  background-image: linear-gradient(100deg in oklch, #CFE4FF, #FFD8D0, #E4DDFF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The site header, dark on /services only (Navbar sets data-ink-header there), in both themes. */
+[data-ink-header] .ink-chrome {
+  background-color: transparent;
+  border-color: var(--ink-line);
+  color: #F1F4F6;
+}
+[data-ink-header] .ink-chrome:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+[data-ink-header] [data-slot='button'][data-variant='default'] {
+  background-color: #0B6BE6;
+  color: #FFFFFF;
+}
+[data-ink-header] [data-slot='button'][data-variant='default']:hover {
+  background-color: #0857BE;
+}
+
+/* Hand-off window: new elements fade up. Off for reduced motion. */
+@keyframes ho-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ho-in {
+  /* `backwards`, not `both`: once finished nothing stays applied (no leftover transform). */
+  animation: ho-fade-up 0.45s ease-out backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-in { animation: none; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -175,6 +284,10 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-brand-text: var(--brand-text);
 
   --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
