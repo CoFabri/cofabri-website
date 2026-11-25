@@ -82,6 +82,18 @@ export default function Turnstile({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Callers pass inline arrow functions, so they change on every render of the form. Keep the latest in refs and
+  // leave them out of the effect's dependencies; otherwise each keystroke runs the cleanup below, which resets the
+  // widget (it re-challenges, and the token the form holds is no longer the widget's).
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onErrorRef.current = onError;
+    onExpireRef.current = onExpire;
+  });
+
   useEffect(() => {
     let mounted = true;
 
@@ -92,7 +104,7 @@ export default function Turnstile({
           setHasError(true);
           setIsLoading(false);
           // Call onVerify with a dummy token to allow form submission
-          onVerify('development-mode');
+          onVerifyRef.current('development-mode');
           return;
         }
 
@@ -108,9 +120,9 @@ export default function Turnstile({
 
         const options = {
           sitekey: siteKey,
-          callback: onVerify,
-          'expired-callback': onExpire,
-          'error-callback': onError,
+          callback: (token: string) => onVerifyRef.current(token),
+          'expired-callback': () => onExpireRef.current?.(),
+          'error-callback': () => onErrorRef.current?.(),
           theme,
           size
         };
@@ -143,7 +155,7 @@ export default function Turnstile({
         }
       }
     };
-  }, [siteKey, theme, size, onVerify, onError, onExpire]);
+  }, [siteKey, theme, size]);
 
   // If site key is not configured, show a fallback message
   if (hasError) {
