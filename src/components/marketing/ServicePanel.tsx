@@ -2,9 +2,12 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import type { App } from '@/lib/api-client';
 import { FAMILY_MARKS } from '@/lib/family-marks';
+import type { RunsOnApp } from '@/lib/services/runs-on';
 import { brandClass, isComingSoon, resolveServiceContent } from '@/lib/services';
 import FamilyMark, { FamilyMarkIcon } from './FamilyMark';
+import BookCallButton from './BookCallButton';
 import NotifyInline from './NotifyInline';
+import RunsOnLine from './RunsOnLine';
 
 // A wide, tinted panel for one service on /services (used while there are four
 // or fewer): content on the left, a 300px action column on the right.
@@ -36,18 +39,15 @@ const TINTS: Record<string, Tint> = {
 
 interface ServicePanelProps {
   service: App;
-  /** The app this service runs on, for the "Runs on" line. */
-  linkedApp?: Pick<App, 'id' | 'name'>;
+  /** The apps this service runs on, for the "Runs on" line. */
+  runsOn?: RunsOnApp[];
 }
 
-export default function ServicePanel({ service, linkedApp }: ServicePanelProps) {
+export default function ServicePanel({ service, runsOn = [] }: ServicePanelProps) {
   const comingSoon = isComingSoon(service);
   const content = resolveServiceContent(service);
   const tint = TINTS[service.id];
   const mark = FAMILY_MARKS[service.id];
-  const runsOn =
-    linkedApp ??
-    (service.linkedAppId ? { id: service.linkedAppId, name: FAMILY_MARKS[service.linkedAppId]?.label ?? service.linkedAppId } : undefined);
   const href = `/services/${service.id}`;
 
   const style = tint
@@ -81,7 +81,7 @@ export default function ServicePanel({ service, linkedApp }: ServicePanelProps) 
         </>
       )}
 
-      <div className="relative z-10 grid min-h-[248px] grid-cols-1 lg:grid-cols-[1fr_300px]">
+      <div className="duo-split relative z-10 grid min-h-[248px] grid-cols-1 lg:grid-cols-[1fr_300px]">
         <div className="p-6 sm:px-11 sm:py-10">
           <div className="flex items-center gap-4">
             <span className="sm:hidden">
@@ -95,18 +95,12 @@ export default function ServicePanel({ service, linkedApp }: ServicePanelProps) 
             </Badge>
           </div>
           <h3 className="m-0 mt-5 p-0 text-[28px] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[34px]">
-            <Link href={href} className="hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40">
+            <Link href={href} className="-my-2 inline-block py-2 hover:underline focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40">
               {service.name}
             </Link>
           </h3>
           <p className="mt-3 max-w-[560px] text-[17px] leading-[1.5] text-ink-muted sm:text-[18px]">{content?.outcome ?? service.description}</p>
-          {runsOn && (
-            <p className="mt-5 flex items-center gap-2 text-sm text-ink-muted">
-              Runs on
-              <FamilyMark appId={runsOn.id} size={24} />
-              <span className="font-medium text-ink-body">{runsOn.name}</span>
-            </p>
-          )}
+          <RunsOnLine apps={runsOn} className="mt-5" />
         </div>
 
         <div
@@ -125,12 +119,17 @@ export default function ServicePanel({ service, linkedApp }: ServicePanelProps) 
               </Link>
             </>
           ) : (
-            <Link
-              href={href}
-              className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
-            >
-              Learn More
-            </Link>
+            <>
+              <Link
+                href={href}
+                className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand/40"
+              >
+                Learn More
+              </Link>
+              <BookCallButton service={{ id: service.id, name: service.name }} variant="outline" className="w-full">
+                Book a Call
+              </BookCallButton>
+            </>
           )}
         </div>
       </div>

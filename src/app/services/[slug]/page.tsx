@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getApp, getService } from '@/lib/api-client';
+import { getApps, getService } from '@/lib/api-client';
+import { resolveRunsOn } from '@/lib/services/runs-on';
 import { brandClass, isComingSoon, resolveServiceContent } from '@/lib/services';
 import { buildDescription } from '@/lib/meta-description';
 import { buildServiceSchema } from '@/lib/structured-data';
@@ -65,7 +66,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
 
   const content = resolveServiceContent(service);
   const comingSoon = isComingSoon(service);
-  const linkedApp = service.linkedAppId ? await getApp(service.linkedAppId) : null;
+  const runsOn = resolveRunsOn(service, await getApps());
   const target = { id: service.id, name: service.name };
 
   // "CoFabri" in the heading's plain colour, the rest of the name in the brand gradient.
@@ -76,7 +77,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
   const meta: MetaRow[] = (content?.meta ?? []).map((row) => ({
     label: row.label,
     value: row.value,
-    appId: row.kind === 'app' ? (linkedApp?.id ?? service.linkedAppId) : undefined,
+    apps: row.kind === 'app' ? runsOn : undefined,
   }));
 
   const heroCtaId = comingSoon ? 'notify-hero' : 'service-hero-cta';

@@ -12,8 +12,9 @@ export const SERVICE_FALLBACKS: Record<string, ServiceContent> = {
   'cofabri-marketing': {
     outcome: 'Paid ads that bring in new customers, run for you by our team.',
     cardLine: 'We run your paid ads, from setup to reporting.',
+    runsOn: ['cofabri-crm', 'medoura'],
     meta: [
-      { label: 'Runs on', value: 'CoFabri CRM', kind: 'app' },
+      { label: 'Runs on', value: 'CoFabri CRM and Medoura', kind: 'app' },
       { label: 'Who does the work', value: 'The CoFabri team' },
       { label: 'Ad platforms', value: 'Facebook · Instagram' },
       { label: 'Billing', value: 'Month to month' },

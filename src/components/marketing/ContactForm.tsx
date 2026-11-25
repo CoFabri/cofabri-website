@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import { CoreLoader } from '@/components/ui/core-loader';
 import Turnstile from './Turnstile';
+import { buildRelatedOptions, findRelated, parseContactPrefill } from '@/lib/contact-prefill';
 import PhoneField from './PhoneField';
 import PreferredContactMethodField from './PreferredContactMethodField';
 import { contactSchema, zodIssuesToFieldErrors, checkContactMethodRequirement, FIELD_LIMITS, INQUIRY_TYPES } from '@/lib/validation/schemas';
@@ -234,6 +235,7 @@ export default function ContactForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [apps, setApps] = useState<App[]>([]);
+  const [services, setServices] = useState<App[]>([]);
   const [isLoadingApps, setIsLoadingApps] = useState(true);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [turnstileError, setTurnstileError] = useState<string>('');
@@ -245,11 +247,10 @@ export default function ContactForm() {
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        const response = await fetch('/api/apps');
-        if (response.ok) {
-          const appsData = await response.json();
-          setApps(appsData);
-        }
+        // Apps, and the services (CoFabri Marketing and the like), so a link can name either.
+        const [response, servicesResponse] = await Promise.all([fetch('/api/apps'), fetch('/api/services')]);
+        if (response.ok) setApps(await response.json());
+        if (servicesResponse.ok) setServices(await servicesResponse.json());
       } catch (error) {
         console.error('Failed to fetch apps:', error);
       } finally {
@@ -262,25 +263,17 @@ export default function ContactForm() {
 
   // Update relatedApp when apps are loaded and we have URL parameters
   useEffect(() => {
-    if (!isLoadingApps && apps.length > 0) {
-      // Check if we have URL parameters for apps
-      const urlApp = searchParams?.get('app') || '';
-      
-      if (urlApp) {
-        // Find app by name (case-insensitive)
-        const foundApp = apps.find(app => 
-          app.name.toLowerCase() === urlApp.toLowerCase()
-        );
-        
-        if (foundApp) {
-          setFormData(prev => ({
-            ...prev,
-            relatedApp: foundApp.id
-          }));
-        }
+    if (!isLoadingApps && (apps.length > 0 || services.length > 0)) {
+      // A link can name an app or a service, by id or by name (case-insensitive).
+      const foundApp = findRelated(apps, services, searchParams?.get('app'));
+      if (foundApp) {
+        setFormData(prev => ({
+          ...prev,
+          relatedApp: foundApp.id
+        }));
       }
     }
-  }, [isLoadingApps, apps, searchParams]);
+  }, [isLoadingApps, apps, services, searchParams]);
 
   // Pre-fill form with URL parameters
   useEffect(() => {
@@ -289,10 +282,9 @@ export default function ContactForm() {
     const email = searchParams?.get('email') || '';
     const rawPhone = searchParams?.get('phone') || '';
     const language = searchParams?.get('language') || 'English';
-    const urlTopic = searchParams?.get('topic') || '';
-    const topic = INQUIRY_TYPES.some(type => type.value === urlTopic)
-      ? (urlTopic as (typeof INQUIRY_TYPES)[number]['value'])
-      : '';
+    // topic, subject and message come from the link (see lib/contact-prefill); the visitor still reviews and sends.
+    const prefill = parseContactPrefill((name) => searchParams?.get(name));
+    const topic = prefill.topic ?? '';
 
     // Format phone number if it comes from URL parameters. This only runs
     // at mount (before the user could have picked a different country), so
@@ -307,7 +299,9 @@ export default function ContactForm() {
       email,
       phone,
       languagePreference: language,
-      ...(topic ? { inquiryType: topic } : {})
+      ...(topic ? { inquiryType: topic } : {}),
+      ...(prefill.subject ? { subject: prefill.subject } : {}),
+      ...(prefill.message ? { message: prefill.message } : {})
     }));
   }, [searchParams]);
 
@@ -532,12 +526,8 @@ export default function ContactForm() {
   // filter to a status ('Active') apps are never actually in, which
   // silently emptied the list.
   const appOptions = [
-    { value: '', label: 'Select an app (optional)', image: undefined },
-    ...apps.map(app => ({
-      value: app.id, // Use record ID instead of app name
-      label: app.name,
-      image: app.faviconUrl
-    }))
+    { value: '', label: 'Select an app or service (optional)', image: undefined },
+    ...buildRelatedOptions(apps, services)
   ];
 
   return (
@@ -756,7 +746,7 @@ export default function ContactForm() {
 
         <div>
           <label htmlFor="relatedApp" className="block text-sm font-medium text-foreground mb-2">
-            Application (Optional)
+            App or service (Optional)
           </label>
           {isLoadingApps ? (
             <div className="w-full px-4 py-3 border border-border rounded-lg bg-muted text-muted-foreground">
@@ -767,7 +757,7 @@ export default function ContactForm() {
               options={appOptions}
               value={formData.relatedApp}
               onChange={handleAppChange}
-              placeholder="Select an app (optional)"
+              placeholder="Select an app or service (optional)"
               disabled={isLoadingApps}
             />
           )}

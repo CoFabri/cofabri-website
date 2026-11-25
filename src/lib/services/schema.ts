@@ -19,6 +19,11 @@ export const serviceContentSchema = z.object({
   subline: text.optional(),
   /** One-line description for service cards. */
   cardLine: text.optional(),
+  /**
+   * The app_ids of every app the service runs on, the first being the primary one (apps.linked_app_id
+   * holds just that one). Absent: the service runs on its linked app, if it has one.
+   */
+  runsOn: z.array(text).min(1).max(6).optional(),
   /** At-a-glance rows for the hero meta card. A row with kind "app" shows the linked app's tile. */
   meta: z
     .array(z.object({ label: text, value: text, kind: z.enum(['text', 'app']).optional() }))

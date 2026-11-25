@@ -4,7 +4,6 @@ import ServicesHero from './ServicesHero';
 import type { CompositionTile } from '@/lib/services/composition';
 
 const tiles: CompositionTile[] = [
-  { id: 'cofabri-crm', name: 'CoFabri CRM', sublabel: 'App · you run it', kind: 'app' },
   { id: 'cofabri-marketing', name: 'CoFabri Marketing', sublabel: 'Service · Live', kind: 'service' },
   { id: 'cofabri-concierge', name: 'CoFabri Concierge', sublabel: 'Service · Coming soon', kind: 'service' },
 ];
@@ -23,26 +22,34 @@ describe('ServicesHero', () => {
     }
   });
 
-  it('shows a tile and a label for each service Core returns', () => {
+  it('shows a tile and a label for each service Core returns, and no app', () => {
     const out = render(tiles);
     for (const t of tiles) {
       expect(out).toContain(`data-family-mark="${t.id}"`);
       expect(out).toContain(t.name);
     }
-    expect(out).toContain('App · you run it');
+    expect(out).toContain('Service · Live');
     expect(out).toContain('Service · Coming soon');
+    expect(out).not.toContain('data-family-mark="cofabri-crm"');
+    expect(out).not.toContain('you run it');
   });
 
   it('leaves out the tile column, not an empty box, when Core returns nothing', () => {
     const out = render([]);
     expect(out).not.toContain('data-family-mark');
-    expect(out).not.toContain('CoFabri apps and services');
+    expect(out).not.toContain('CoFabri services');
     expect(out).not.toContain('lg:grid-cols-[1fr_440px]');
   });
 
   it('uses a simple row when the arrangement does not apply', () => {
-    const out = render(tiles.slice(0, 2), false);
+    const out = render(tiles.slice(0, 1), false);
     expect(out).toContain('data-family-mark="cofabri-marketing"');
     expect(out).not.toContain('h-[400px]');
+  });
+
+  it('lays out two services in the designed arrangement', () => {
+    const out = render(tiles, true);
+    expect(out).toContain('h-[400px]');
+    expect(out).toContain('data-family-mark="cofabri-concierge"');
   });
 });

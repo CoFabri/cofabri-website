@@ -17,7 +17,9 @@ import { buildSoftwareApplicationSchema } from '@/lib/structured-data';
 import FamilyMark from '@/components/marketing/FamilyMark';
 import CheckoutButtons from '@/components/marketing/CheckoutButtons';
 import { hasFamilyMark } from '@/lib/family-marks';
-import { brandClass, resolveServiceContent } from '@/lib/services';
+import { brandClass, isComingSoon, resolveServiceContent } from '@/lib/services';
+import BookCallButton from '@/components/marketing/BookCallButton';
+import { servicesRunningOn } from '@/lib/services/runs-on';
 
 interface AppDetailPageProps {
   params: Promise<{ id: string }>;
@@ -98,7 +100,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const shippedItems = hasActiveRoadmap(app.status) ? await getAppReleases(app.id) : [];
   const guides = pickAppIntroArticles(app.id, await getKnowledgeBaseArticles());
   const features = [app.feature1, app.feature2, app.feature3].filter((f): f is string => !!f);
-  const linkedServices = (await getServices()).filter((service) => service.linkedAppId === app.id);
+  const linkedServices = servicesRunningOn(await getServices(), app.id);
   // Self-service checkout needs both links in apps.metadata.checkout; with either missing the buttons stay hidden.
   // TODO(checkout): no checkout links are stored in Core yet (CoFabri CRM and others), so none show today.
   const checkout = app.checkout?.monthly && app.checkout?.annual ? { monthly: app.checkout.monthly, annual: app.checkout.annual } : null;
@@ -242,7 +244,8 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         )}
 
         {linkedServices.map((service) => {
-          const line = resolveServiceContent(service)?.appBand;
+          // The written line is about the service's primary app (CRM). On any other app it runs on, a plain line.
+          const line = service.linkedAppId === app.id ? resolveServiceContent(service)?.appBand : undefined;
           return (
             <div
               key={service.id}
@@ -253,9 +256,17 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
                 <h2 className="m-0 p-0 text-xl font-semibold leading-snug tracking-[-0.02em] text-foreground">Want us to run this for you?</h2>
                 <p className="mt-1.5 max-w-[560px] text-[15px] leading-[1.55] text-ink-muted">{line ?? `${service.name} is a service from the CoFabri team that runs on ${app.name}.`}</p>
               </div>
-              <Link href={`/services/${service.id}`} className="whitespace-nowrap text-[15px] font-semibold text-primary hover:underline">
-                See {service.name} →
-              </Link>
+              {/* The button takes the service's own accent (Marketing's orange), not the app page's. */}
+              <div className={`flex flex-col gap-3 sm:items-end ${brandClass(service.id)}`}>
+                {!isComingSoon(service) && (
+                  <BookCallButton service={{ id: service.id, name: service.name }} className="w-full sm:w-auto">
+                    Book a Call
+                  </BookCallButton>
+                )}
+                <Link href={`/services/${service.id}`} className="whitespace-nowrap text-[15px] font-semibold text-brand-text hover:underline">
+                  See {service.name} →
+                </Link>
+              </div>
             </div>
           );
         })}

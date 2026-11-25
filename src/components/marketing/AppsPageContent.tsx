@@ -15,6 +15,7 @@ import AppRow from './AppRow';
 import FamilyMark from './FamilyMark';
 import ManagedServiceCard from './ManagedServiceCard';
 import { hasFamilyMark } from '@/lib/family-marks';
+import { placeAfterApp, resolveRunsOn } from '@/lib/services/runs-on';
 import RevealSection from './RevealSection';
 import StructuredData from './StructuredData';
 import { EmptyState } from './EmptyState';
@@ -98,8 +99,14 @@ export default function AppsPageContent({ initialApps, initialRoadmap, managedSe
 
   const managedAfter = (appId: string) =>
     managedServices
-      .filter((service) => service.linkedAppId === appId)
-      .map((service) => <ManagedServiceCard key={service.id} service={service} runsOn={apps.find((a) => a.id === appId)?.name} />);
+      .filter((service) => placeAfterApp(service, apps.map((a) => a.id)) === appId)
+      .map((service) => (
+        <ManagedServiceCard
+          key={service.id}
+          service={service}
+          runsOn={resolveRunsOn(service, apps).map((a) => a.name).join(' and ') || undefined}
+        />
+      ));
 
   const filteredRows = statusFilter === 'All' ? rows : rows.filter((a) => a.status === statusFilter);
 

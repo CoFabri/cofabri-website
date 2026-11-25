@@ -6,7 +6,9 @@ import FamilyMark from './FamilyMark';
 // It is decorative: the step list next to it carries the meaning, so it is
 // aria-hidden and nothing in it is focusable. It follows the site theme (the
 // light app UI in light theme, the dark app UI in dark theme). It shows a demo
-// (an invented business, ad and lead), labelled "Demo" in the title bar.
+// (an invented business, ad and lead), labelled "Demo" in the title bar. Its layout
+// follows its own width (container queries), not the screen's: the same window sits in a
+// 560px column on desktop and a 320px one on a tablet, and simplifies itself when narrow.
 
 const PILL: Record<PillTone, string> = {
   neutral: 'bg-muted text-ink-body',
@@ -63,24 +65,24 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
       aria-hidden="true"
       data-handoff-window
       data-step={Math.max(0, Math.min(3, Math.trunc(step)))}
-      className="w-full overflow-hidden rounded-[12px] border border-border bg-card text-foreground shadow-[0_30px_80px_-24px_rgba(0,0,0,0.65)]"
+      className="@container w-full overflow-hidden rounded-[12px] border border-border bg-card text-foreground shadow-[0_30px_80px_-24px_rgba(0,0,0,0.65)]"
     >
       {/* Title bar */}
       <div className="flex items-center gap-3 border-b border-border bg-surface-sunken px-4 py-3">
-        <span className="hidden gap-1.5 sm:flex">
+        <span className="hidden gap-1.5 @sm:flex">
           <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
           <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
           <span className="h-2.5 w-2.5 rounded-full bg-border-strong" />
         </span>
         <FamilyMark appId="cofabri-crm" size={24} />
         <span className="text-sm font-semibold">CoFabri CRM</span>
-        <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:block">{DEMO.business} · Campaigns</span>
-        <span className="rounded-full border border-border-strong px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted sm:ml-3">
+        <span className="ml-auto hidden font-mono text-xs text-ink-muted @sm:block">{DEMO.business} · Campaigns</span>
+        <span className="rounded-full border border-border-strong px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-muted ml-auto @sm:ml-3">
           {DEMO.tag}
         </span>
       </div>
 
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="space-y-4 p-4 @sm:p-5">
         <div className="flex items-center gap-2 text-sm text-ink-muted">
           Run by
           <FamilyMark appId="cofabri-marketing" size={24} />
@@ -88,8 +90,8 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
         </div>
 
         {/* Ad card */}
-        <div className={`flex gap-4 rounded-lg border border-border bg-background p-3.5 ${compact ? 'items-center' : 'flex-col sm:flex-row'}`}>
-          <div className={`flex-shrink-0 overflow-hidden rounded-lg border border-border ${compact ? 'h-[72px] w-[72px]' : 'h-32 w-full sm:w-44'}`}>
+        <div className={`flex gap-4 rounded-lg border border-border bg-background p-3.5 ${compact ? 'items-center' : 'flex-col @sm:flex-row'}`}>
+          <div className={`flex-shrink-0 overflow-hidden rounded-lg border border-border ${compact ? 'h-[72px] w-[72px]' : 'h-32 w-full @sm:w-44'}`}>
             <DemoPhoto />
           </div>
           <div className="min-w-0 flex-1">
@@ -108,7 +110,7 @@ export default function HandOffWindow({ step, compact = false }: HandOffWindowPr
         </div>
 
         {state.approval && (
-          <div className="ho-in flex flex-col gap-3 rounded-lg border border-border bg-surface-sunken p-3.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="ho-in flex flex-col gap-3 rounded-lg border border-border bg-surface-sunken p-3.5 @sm:flex-row @sm:items-center @sm:justify-between">
             <span className="text-sm font-medium">Approve this ad before it runs?</span>
             <span className="flex gap-2">
               <FauxButton>Request Changes</FauxButton>

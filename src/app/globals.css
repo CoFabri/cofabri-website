@@ -230,6 +230,28 @@
   background-color: #0857BE;
 }
 
+/*
+ * Dual-screen (Surface Duo spanned: two 540px screens with a 34px hinge). The `duo:` variant matches
+ * when the viewport spans two screens. .duo-split puts a two-column layout's columns one on each
+ * screen with the hinge as the gap, so no text or window crosses it (it relies on the section's
+ * 40px side padding, which is what leaves each column exactly one screen wide).
+ */
+@custom-variant duo (@media (horizontal-viewport-segments: 2));
+
+@media (horizontal-viewport-segments: 2) {
+  .duo-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: calc(env(viewport-segment-left 1 0, 574px) - env(viewport-segment-right 0 0, 540px));
+  }
+  /* Numbered rows with a title and a body: number and title on one line, body under the title. */
+  .duo-rows {
+    grid-template-columns: 3rem minmax(0, 1fr);
+  }
+  .duo-rows > :last-child {
+    grid-column-start: 2;
+  }
+}
+
 /* Hand-off window: new elements fade up. Off for reduced motion. */
 @keyframes ho-fade-up {
   from { opacity: 0; transform: translateY(8px); }
