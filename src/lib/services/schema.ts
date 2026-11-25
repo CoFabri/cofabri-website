@@ -42,6 +42,8 @@ export const serviceContentSchema = z.object({
   closing: z.object({ heading: text, body: text }).optional(),
   /** One sentence for the "Want us to run this for you?" band on the linked app's page. */
   appBand: text.optional(),
+  /** Band sentence for other apps the service runs on, keyed by app id. Wins over `appBand` on that app's page. */
+  appBands: z.record(z.string(), text).optional(),
 });
 
 export type ServiceContent = z.infer<typeof serviceContentSchema>;
