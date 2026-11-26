@@ -48,6 +48,7 @@ describe('handleBackstop', () => {
     '/manifest.json',
     '/robots.txt',
     '/sitemap.xml',
+    '/0123456789abcdef0123456789abcdef.txt',
     '/favicon.ico',
     '/images/logo.PNG',
     '/google1234567890abcdef.html',
