@@ -1,0 +1,46 @@
+# Notify IndexNow after a successful production deploy of cofabri.com.
+# The key is public by design (public/<key>.txt). A failed ping is logged
+# and does not fail this job. Preview deployments are not pinged.
+# See docs/indexnow.md.
+name: IndexNow
+
+on:
+  deployment_status:
+
+jobs:
+  ping:
+    # Vercel names the GitHub environment "Production – <project>" (en dash).
+    # Exact "Production" is also accepted. The personal project
+    # "co-fabri-website" does not serve cofabri.com, and its environment
+    # name does not end in "cofabri-website", so it is skipped. Previews
+    # start with "Preview", not "Production".
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.creator.login == 'vercel[bot]' &&
+      startsWith(github.event.deployment_status.environment, 'Production') &&
+      startsWith(github.event.deployment.environment, 'Production') &&
+      (
+        github.event.deployment_status.environment == 'Production' ||
+        endsWith(github.event.deployment_status.environment, 'cofabri-website')
+      ) &&
+      (
+        github.event.deployment.environment == 'Production' ||
+        endsWith(github.event.deployment.environment, 'cofabri-website')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout deployed commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Submit sitemap URLs to IndexNow
+        run: node .github/scripts/indexnow.mjs
