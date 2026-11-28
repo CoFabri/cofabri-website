@@ -236,7 +236,7 @@ export const praxisGuide: AppGuide = {
             rows: [
               ['id', 'string', 'Your identifier for the note.'],
               ['author', 'string or null', 'The name shown with the note. With null, Praxis shows "Unknown Author".'],
-              ['writtenAt', 'string', 'When the note was written: ISO 8601 with an offset or `Z`.'],
+              ['writtenAt', 'string', 'When the note was written, in ISO 8601 (fractional seconds are fine). Send an offset or `Z`: a time without an offset, or a date alone, is read as UTC.'],
               ['body', 'string', 'Plain text. Praxis never renders it as HTML or links.'],
             ],
           },
@@ -252,9 +252,9 @@ export const praxisGuide: AppGuide = {
             headers: ['Your answer', 'When to send it', 'What the provider sees'],
             rows: [
               ['200', 'The patient\'s notes, or an empty array.', 'The notes newest first, or "No Previous Notes".'],
-              ['403', 'The patient is no longer in Praxis care, so their notes are not shared. Do not include any.', '"Notes Not Shared for This Patient", with no Retry.'],
+              ['403', 'The patient is no longer in Praxis care, so their notes are not shared. Send the JSON body `{"error":"not_shared"}` and no notes. Any other 403 is treated like "Anything else" below.', '"Notes Not Shared for This Patient", with no Retry.'],
               ['404', 'You do not know this patient, or they belong to another account.', '"Couldn\'t Load Notes", with Retry.'],
-              ['Anything else', 'Including `401`, `5xx` and redirects.', '"Couldn\'t Load Notes", with Retry.'],
+              ['Anything else', 'Including `401`, `5xx`, a `403` without that body, and redirects.', '"Couldn\'t Load Notes", with Retry.'],
             ],
           },
         },

@@ -79,6 +79,16 @@ describe('getAppGuide', () => {
     expect(createHmac('sha256', secret).update(`${t}.${pathname}`).digest('hex')).toBe(signature);
   });
 
+  it('the patient notes section says a 403 needs the not_shared body and how writtenAt without an offset is read', () => {
+    const notes = getAppGuide('praxis')!.sections.find((s) => s.id === 'patient-notes')!;
+    const rows = notes.blocks.flatMap((b) => (b.kind === 'table' ? b.table!.rows : []));
+    const forbidden = rows.find((r) => r[0] === '403')!;
+    expect(forbidden.join(' ')).toContain('`{"error":"not_shared"}`');
+    expect(forbidden.join(' ')).toMatch(/any other 403/i);
+    const writtenAt = rows.find((r) => r[0] === 'writtenAt')!;
+    expect(writtenAt.join(' ')).toMatch(/without an offset.*read as UTC/);
+  });
+
   it('the FHIR mapping section documents the external-patient-id identifier system', () => {
     const guide = getAppGuide('praxis')!;
     const fhirMapping = guide.sections.find((s) => s.id === 'fhir-mapping')!;
