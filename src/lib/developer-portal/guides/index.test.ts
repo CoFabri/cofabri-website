@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import { getAppGuide } from './index';
 
@@ -60,6 +61,22 @@ describe('getAppGuide', () => {
     expect(text).toMatch(/Deduplicate on `eventId`/);
     expect(text).not.toMatch(/dedupe on `?messageId/i);
     expect(text).toContain('messaging_disabled');
+  });
+
+  it('the patient notes section documents the signed pathname, the answers and the limits', () => {
+    const guide = getAppGuide('praxis')!;
+    const notes = guide.sections.find((s) => s.id === 'patient-notes')!;
+    expect(notes).toBeDefined();
+    const text = JSON.stringify(notes);
+    for (const phrase of ['Patient Notes URL', '<t>.<url pathname>', '403', 'no longer in Praxis care', '5 seconds', '1,048,576', '500 notes', '20,000']) {
+      expect(text).toContain(phrase);
+    }
+    // The fixed example must really verify, or integrators chase a bug that is ours.
+    const request = notes.blocks.find((b) => b.kind === 'code' && b.language === 'http')!.code!;
+    const [, pathname] = /^GET (\S+) /.exec(request)!;
+    const [, t, signature] = /X-Praxis-Signature: t=(\d+),v1=([0-9a-f]{64})/.exec(request)!;
+    const secret = 'whsec_test_0123456789abcdef0123456789abcdef';
+    expect(createHmac('sha256', secret).update(`${t}.${pathname}`).digest('hex')).toBe(signature);
   });
 
   it('the FHIR mapping section documents the external-patient-id identifier system', () => {

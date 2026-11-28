@@ -194,6 +194,95 @@ export const praxisGuide: AppGuide = {
       ],
     },
     {
+      id: 'patient-notes',
+      title: 'Patient Notes',
+      blocks: [
+        {
+          kind: 'paragraph',
+          text: 'Praxis providers can read a patient\'s previous notes from your EMR. This is the one endpoint here that you host and Praxis calls. Praxis reads it live when someone opens the patient or visit page, and does not store or log what you return. It is read-only: nothing is written back to your EMR.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'To turn it on, open your connection (Admin > EMR Connections, or Platform Admin > EMR Connections for CoFabri staff), choose **Edit Connection**, enter your base address in **Patient Notes URL**, then choose **Save Changes**. The field appears when you edit a connection, not while you first connect it. Leave it empty and Praxis shows no notes card. Medoura connections need no setting.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'The address must use `https`, resolve only to public addresses (checked again on every request), and have no username, password, query string or fragment. Praxis adds the patient\'s `externalPatientId`, the one you sent at hand-off, percent-encoded as one path segment:',
+        },
+        {
+          kind: 'code',
+          language: 'http',
+          code:
+            'GET /praxis/patient-notes/your-emr-id-123 HTTP/1.1\nHost: emr.example.com\nAccept: application/json\nX-Praxis-Signature: t=1735689600,v1=61959c662367da31926b94d748460ec6a55e3b02d09c5b5808991a9b35a02905',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Check the signature before you read anything. It uses your connection\'s webhook signing secret and the same header format and 5-minute window as webhooks, but a GET has no body: the signed string is `"<t>.<url pathname>"`. Pass the pathname where the examples under "Verifying webhook signatures" take the raw body, for example `verifyPraxisSignature(pathname, secret, header)` in Node, or `verify_praxis_signature(pathname.encode(), secret, header)` in Python. Use the whole path exactly as it arrives, still percent-encoded and including any prefix from your Patient Notes URL, without the host. Many frameworks decode the path or strip a mount prefix, so read the raw request path. The request above is a valid fixed example for the secret `whsec_test_0123456789abcdef0123456789abcdef` (it is outside the 5-minute window now, so relax that check when testing with it). Answer `401` if verification fails.',
+        },
+        {
+          kind: 'paragraph',
+          text: 'Answer `200` with a `notes` array. An empty array means the patient has no notes.',
+        },
+        {
+          kind: 'code',
+          language: 'json',
+          code:
+            '{\n  "notes": [\n    {\n      "id": "note-001",\n      "author": "Jordan Rivera",\n      "writtenAt": "2026-03-14T09:30:00-07:00",\n      "body": "Example note text."\n    }\n  ]\n}',
+        },
+        {
+          kind: 'table',
+          table: {
+            headers: ['Field', 'Type', 'Meaning'],
+            rows: [
+              ['id', 'string', 'Your identifier for the note.'],
+              ['author', 'string or null', 'The name shown with the note. With null, Praxis shows "Unknown Author".'],
+              ['writtenAt', 'string', 'When the note was written: ISO 8601 with an offset or `Z`.'],
+              ['body', 'string', 'Plain text. Praxis never renders it as HTML or links.'],
+            ],
+          },
+        },
+        {
+          kind: 'note',
+          tone: 'warning',
+          text: 'One note with a missing or wrongly typed `id`, `body` or `writtenAt`, or a wrongly typed `author`, makes Praxis reject the whole response.',
+        },
+        {
+          kind: 'table',
+          table: {
+            headers: ['Your answer', 'When to send it', 'What the provider sees'],
+            rows: [
+              ['200', 'The patient\'s notes, or an empty array.', 'The notes newest first, or "No Previous Notes".'],
+              ['403', 'The patient is no longer in Praxis care, so their notes are not shared. Do not include any.', '"Notes Not Shared for This Patient", with no Retry.'],
+              ['404', 'You do not know this patient, or they belong to another account.', '"Couldn\'t Load Notes", with Retry.'],
+              ['Anything else', 'Including `401`, `5xx` and redirects.', '"Couldn\'t Load Notes", with Retry.'],
+            ],
+          },
+        },
+        {
+          kind: 'note',
+          tone: 'warning',
+          text: 'Your endpoint decides what is shared. Only return notes for a patient who belongs to the account that owns the signing secret and who is in Praxis care now; otherwise answer `404` or `403` as above. Pausing the connection in Praxis does not stop these reads. To stop them, clear the Patient Notes URL or refuse the request on your side.',
+        },
+        {
+          kind: 'table',
+          table: {
+            headers: ['Limit', 'What happens'],
+            rows: [
+              ['5 seconds', 'The whole response, body included, must arrive in this time.'],
+              ['No retries, no redirects', 'Praxis makes one request. A person can choose Retry to make another.'],
+              ['1 MB (1,048,576 bytes)', 'A larger response is rejected whole. Send it uncompressed.'],
+              ['500 notes', 'Praxis keeps the newest 500 and shows "Showing the Newest 500".'],
+              ['20,000 characters per body', 'A longer body is cut and marked "Note Shortened".'],
+            ],
+          },
+        },
+        {
+          kind: 'paragraph',
+          text: 'Praxis sorts the notes itself, so you can send them in any order. It never requests an `externalPatientId` of `.` or `..`.',
+        },
+      ],
+    },
+    {
       id: 'fhir-mapping',
       title: 'FHIR mapping and identifier systems',
       blocks: [
